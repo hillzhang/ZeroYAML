@@ -44,8 +44,10 @@ export function CodeViewer() {
     if (currentOverride.isActive && value !== undefined) {
       setSaveStatus('saving');
       setOverrideCode(activeTab, value);
-      setTimeout(() => setSaveStatus('saved'), 500);
-      setTimeout(() => setSaveStatus(null), 2000);
+      
+      const timer = setTimeout(() => setSaveStatus('saved'), 400);
+      const timer2 = setTimeout(() => setSaveStatus(null), 1800);
+      return () => { clearTimeout(timer); clearTimeout(timer2); };
     }
   };
 
@@ -138,7 +140,7 @@ export function CodeViewer() {
           >
             <Code2 className={`w-3.5 h-3.5 ${currentOverride.isActive ? 'animate-pulse' : ''}`} />
             <span className="text-[10px] font-black uppercase tracking-widest leading-none">
-               {currentOverride.isActive ? '已进入手动模式' : '直接修改'}
+               {currentOverride.isActive ? '退出手动模式' : '直接修改'}
             </span>
           </button>
 
@@ -166,8 +168,8 @@ export function CodeViewer() {
 
       {/* Editor Container */}
       <div className="flex-1 relative overflow-hidden bg-white dark:bg-[#080B10]">
-        {mounted && (
-          <div className="w-full h-full animate-in fade-in duration-1000">
+        <div key={activeTab} className="w-full h-full animate-in fade-in duration-500">
+          {mounted && (
             <Editor
               height="100%"
               language={activeTab === 'dockerfile' ? 'dockerfile' : 'yaml'}
@@ -193,8 +195,8 @@ export function CodeViewer() {
                 }
               }}
             />
-          </div>
-        )}
+          )}
+        </div>
         
         {/* Manual Edit Overlay */}
         {currentOverride.isActive && (
