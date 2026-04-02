@@ -8,9 +8,9 @@ interface AppState {
 
   // Manual Overrides Management
   overrides: {
-    dockerfile: { isActive: boolean; code: string };
-    compose: { isActive: boolean; code: string };
-    kubernetes: { isActive: boolean; code: string };
+    dockerfile: { isEnabled: boolean; isEditing: boolean; code: string };
+    compose: { isEnabled: boolean; isEditing: boolean; code: string };
+    kubernetes: { isEnabled: boolean; isEditing: boolean; code: string };
   };
 
   setActiveTab: (tab: 'dockerfile' | 'compose' | 'kubernetes') => void;
@@ -19,7 +19,8 @@ interface AppState {
   setIsFullStack: (is: boolean) => void;
   
   // New actions for tab-specific overrides
-  setOverrideActive: (tab: 'dockerfile' | 'compose' | 'kubernetes', active: boolean) => void;
+  setOverrideEnabled: (tab: 'dockerfile' | 'compose' | 'kubernetes', enabled: boolean) => void;
+  setOverrideEditing: (tab: 'dockerfile' | 'compose' | 'kubernetes', editing: boolean) => void;
   setOverrideCode: (tab: 'dockerfile' | 'compose' | 'kubernetes', code: string) => void;
 }
 
@@ -30,9 +31,9 @@ export const useAppStore = create<AppState>((set) => ({
   isFullStack: false,
   
   overrides: {
-    dockerfile: { isActive: false, code: '' },
-    compose: { isActive: false, code: '' },
-    kubernetes: { isActive: false, code: '' },
+    dockerfile: { isEnabled: false, isEditing: false, code: '' },
+    compose: { isEnabled: false, isEditing: false, code: '' },
+    kubernetes: { isEnabled: false, isEditing: false, code: '' },
   },
 
   setActiveTab: (tab: 'dockerfile' | 'compose' | 'kubernetes') => set({ activeTab: tab }),
@@ -40,8 +41,11 @@ export const useAppStore = create<AppState>((set) => ({
   setActiveMenu: (menuId: string) => set({ activeMenu: menuId }),
   setIsFullStack: (is: boolean) => set({ isFullStack: is }),
 
-  setOverrideActive: (tab: 'dockerfile' | 'compose' | 'kubernetes', active: boolean) => set((s) => ({
-    overrides: { ...s.overrides, [tab]: { ...s.overrides[tab], isActive: active } }
+  setOverrideEnabled: (tab: 'dockerfile' | 'compose' | 'kubernetes', enabled: boolean) => set((s) => ({
+    overrides: { ...s.overrides, [tab]: { ...s.overrides[tab], isEnabled: enabled } }
+  })),
+  setOverrideEditing: (tab: 'dockerfile' | 'compose' | 'kubernetes', editing: boolean) => set((s) => ({
+    overrides: { ...s.overrides, [tab]: { ...s.overrides[tab], isEditing: editing } }
   })),
   setOverrideCode: (tab: 'dockerfile' | 'compose' | 'kubernetes', code: string) => set((s) => ({
     overrides: { ...s.overrides, [tab]: { ...s.overrides[tab], code } }
