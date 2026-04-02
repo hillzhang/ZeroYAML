@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# ZeroYAML 🚀
 
-## Getting Started
+**Zero-effort Configuration for Modern DevOps.**
 
-First, run the development server:
+ZeroYAML is an intuitive, visual configurator for your container-native infrastructure. Generate production-ready **Dockerfiles**, **Docker Compose** files, and **Kubernetes manifests** through a sleek, modernized interface—without writing a single line of YAML from scratch.
+
+![Banner Placeholder](https://via.placeholder.com/1200x600/0D1117/FFFFFF?text=ZeroYAML+Unified+DevOps+Visualizer)
+
+## ✨ Key Features
+
+- **🚀 Triple-Stack Generation**: Seamlessly toggle between Dockerfile, Docker Compose, and Kubernetes manifests.
+- **📝 Direct Edit Mode**: Need to tweak a generated file? Hit the **"Direct Edit"** button to jump into a full-featured Monaco editor.
+- **🌓 Dynamic Themes**: Fully optimized for both Dark and Light modes with a premium, glassmorphism-inspired design.
+- **📦 Modular Component System**: A unified UI library built for developer speed and visual consistency.
+- **🛡️ Real-time Synchronization**: Every toggle, input, and configuration change is instantly reflected in the live preview.
+- **📥 One-Click Export**: Copy to clipboard or download your configuration files directly.
+
+## 🛠️ Technology Stack
+
+- **Framework**: [Next.js 15+](https://nextjs.org) (App Router)
+- **Editor**: [Monaco Editor](https://microsoft.github.io/monaco-editor/) (via `@monaco-editor/react`)
+- **State Management**: [Zustand](https://github.com/pmndrs/zustand)
+- **Styling**: [Tailwind CSS 4](https://tailwindcss.com) & [Lucide Icons](https://lucide.dev)
+- **Theming**: `next-themes`
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18.17.0 or later
+- npm or pnpm
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/hillzhang/ZeroYAML.git
+   cd ZeroYAML
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) with your browser to start configuring.
+
+## 📁 Project Structure
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+src/
+├── app/             # Next.js App Router (pages & layout)
+├── components/      
+│   ├── preview/     # Monaco Editor & Code Viewer logic
+│   ├── tabs/        # Specific logic for Docker/Compose/K8s
+│   └── ui/          # Generic, reusable UI components
+├── hooks/           # Custom React hooks (Code Generation)
+├── store/           # Zustand store definitions
+└── types/           # Global TypeScript definitions
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🤝 Contributing
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-## Learn More
+## 📄 License
 
-To learn more about Next.js, take a look at the following resources:
+Distributed under the MIT License. See `LICENSE` for more information.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+Built with ❤️ by [hillzhang](https://github.com/hillzhang)
