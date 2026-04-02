@@ -1,63 +1,88 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { Layers, Rocket, Zap, Search, HelpCircle } from "lucide-react";
+import { useAppStore } from '@/store/useAppStore';
+import { ComposeTab } from '../components/tabs/ComposeTab';
+import { DockerfileTab } from '../components/tabs/DockerfileTab';
+import { KubernetesTab } from '../components/tabs/KubernetesTab';
+import { CodeViewer } from '../components/preview/CodeViewer';
+import { ThemeSwitch } from '../components/ThemeSwitch';
+
+export default function ZeroYAMLApp() {
+  const { activeTab, setActiveTab, setActiveTooltip } = useAppStore();
+
+  const tabs = [
+    { id: 'dockerfile', label: 'Dockerfile', icon: Rocket },
+    { id: 'compose', label: 'Docker Compose', icon: Layers },
+    { id: 'kubernetes', label: 'Kubernetes', icon: Zap },
+  ];
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div 
+      className="min-h-screen bg-white dark:bg-[#0D1117] text-gray-900 dark:text-gray-200 font-sans flex flex-col selection:bg-blue-100 dark:selection:bg-blue-900 selection:text-blue-700 dark:selection:text-blue-300"
+      onClick={() => setActiveTooltip(null)}
+    >
+      {/* 🧊 PREMIUM HEADER */}
+      <header className="sticky top-0 h-16 border-b border-gray-200/60 dark:border-gray-800/60 bg-white/80 dark:bg-[#161B22]/80 backdrop-blur-xl flex items-center justify-between px-6 z-50 shadow-sm">
+        <div className="flex items-center gap-4">
+          <div className="relative group">
+            <div className="absolute inset-0 bg-blue-600 blur-lg opacity-20 group-hover:opacity-40 transition-opacity" />
+            <div className="relative bg-blue-600 p-2 rounded-xl shadow-lg transform group-hover:scale-105 active:scale-95 transition-all">
+              <Layers className="text-white w-5 h-5" />
+            </div>
+          </div>
+          <div className="flex flex-col">
+            <h1 className="text-lg font-black text-gray-900 dark:text-white leading-none tracking-tight">ZeroYAML</h1>
+            <span className="text-[9px] font-black uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400 mt-1 opacity-80">PRO Orchestration Engine</span>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+
+        {/* 🚀 NAVIGATION TABS */}
+        <nav className="flex items-center bg-gray-100/50 dark:bg-[#0D1117] p-1 rounded-2xl border border-gray-200/50 dark:border-gray-800 gap-1">
+          {tabs.map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`
+                  flex items-center gap-2 px-6 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all
+                  ${isActive 
+                    ? 'bg-white dark:bg-[#1C2128] text-blue-600 dark:text-blue-400 shadow-sm border border-gray-200/50 dark:border-gray-700/50' 
+                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                  }
+                `}
+              >
+                <Icon className={`w-3.5 h-3.5 ${isActive ? 'animate-pulse' : ''}`} />
+                {tab.label}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="flex items-center gap-6">
+          <div className="hidden md:flex items-center gap-4 text-gray-400 dark:text-gray-600">
+             <Search className="w-4 h-4 hover:text-blue-500 cursor-pointer transition-colors" />
+             <HelpCircle className="w-4 h-4 hover:text-blue-500 cursor-pointer transition-colors" />
+          </div>
+          <div className="h-6 w-[1px] bg-gray-200 dark:bg-gray-800" />
+          <ThemeSwitch />
+        </div>
+      </header>
+
+      {/* 📦 MAIN VIEWPORT */}
+      <main className="flex-1 flex overflow-hidden">
+        {/* 左侧：可视化配置层 */}
+        <section className="w-[45%] min-w-[520px] bg-white dark:bg-[#0D1117] overflow-y-auto pb-32">
+          <div className="p-8 max-w-4xl mx-auto">
+             {activeTab === 'compose' ? <ComposeTab /> : activeTab === 'dockerfile' ? <DockerfileTab /> : <KubernetesTab />}
+          </div>
+        </section>
+
+        {/* 右侧：代码实时预览层 */}
+        <div className="flex-1 bg-gray-50 dark:bg-[#1E1E1E] flex flex-col">
+          <CodeViewer />
         </div>
       </main>
     </div>
