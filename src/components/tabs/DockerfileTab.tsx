@@ -17,7 +17,7 @@ const inpSm = "w-full bg-white dark:bg-[#0D1117] border border-gray-200 dark:bor
 const btnSm = "flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-full border transition-all font-black uppercase tracking-wider shadow-sm hover:scale-105 active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-900";
 
 // ── Collapsible Section ──────────────────────────────────────────────────────
-function Section({ title, icon, children, defaultOpen = true, theme = "blue", badge }: { title: string; icon: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean; theme?: string; badge?: string }) {
+function Section({ title, icon, children, defaultOpen = false, theme = "blue", badge }: { title: string; icon: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean; theme?: string; badge?: string }) {
   const [open, setOpen] = useState(defaultOpen);
   const themes: Record<string, { icon: string; bg: string; border: string; badge: string }> = {
     blue: { icon: "text-blue-500", bg: "bg-blue-50/30 dark:bg-blue-900/10", border: "border-blue-500/20", badge: "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800" },

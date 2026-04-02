@@ -19,7 +19,7 @@ const card = "p-4 border border-gray-200 dark:border-gray-800 rounded-[1.5rem] c
 const cardActive = "p-4 border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-900/20 rounded-[1.5rem] shadow-lg shadow-blue-500/10";
 
 // ── Collapsible Section ──────────────────────────────────────────────────────
-function Section({ title, icon, children, defaultOpen = true }: { title: string; icon: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean }) {
+function Section({ title, icon, children, defaultOpen = false }: { title: string; icon: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="border border-gray-200 dark:border-gray-800 rounded-2xl overflow-hidden mb-4 shadow-sm bg-white dark:bg-[#0D1117] transition-all">
