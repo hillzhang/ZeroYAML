@@ -14,6 +14,7 @@ ZeroYAML is an intuitive, visual configurator for your container-native infrastr
 - **📦 Modular Component System**: A unified UI library built for developer speed and visual consistency.
 - **🛡️ Real-time Synchronization**: Every toggle, input, and configuration change is instantly reflected in the live preview.
 - **📥 One-Click Export**: Copy to clipboard or download your configuration files directly.
+- **🌐 Bilingual Localization**: Full support for both **English** and **Chinese** (Simplified), including reactive code comments and UI labels.
 
 ## 🛠️ Technology Stack
 
@@ -59,7 +60,8 @@ src/
 │   ├── preview/     # Monaco Editor & Code Viewer logic
 │   ├── tabs/        # Specific logic for Docker/Compose/K8s
 │   └── ui/          # Generic, reusable UI components
-├── hooks/           # Custom React hooks (Code Generation)
+├── hooks/           # Custom React hooks (i18n & Code Gen)
+├── i18n/            # Localization dictionaries (zh/en)
 ├── store/           # Zustand store definitions
 └── types/           # Global TypeScript definitions
 ```
