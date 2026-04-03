@@ -254,6 +254,134 @@ function MetadataEditor(props: MetadataEditorProps & { theme?: string }) {
 }
 
 
+// ── Env Item (Isolated to prevent focus loss) ──────────────────────────────
+const EnvItem = ({ e, i, wlId, updateWorkloadEnv, removeWorkloadEnv, configMaps, secrets, t, inpSm }: any) => {
+  const upE = (patch: Partial<typeof e>) => updateWorkloadEnv(wlId, i, patch);
+
+  return (
+    <div key={e.id} className={`p-4 border rounded-2xl bg-white dark:bg-[#0D1117] shadow-sm transition-all duration-200 border-gray-100 dark:border-gray-800 hover:shadow-md hover:border-blue-100 dark:hover:border-blue-900/40 animate-in fade-in slide-in-from-left-2 duration-300`}>
+      <div className="grid grid-cols-[1fr_20px_1.5fr_100px_32px] gap-2.5 items-center">
+        {/* Name input */}
+        <div className="relative group">
+          <p className="absolute -top-4 left-1 text-[9px] font-black text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity uppercase">NAME</p>
+          <input type="text" placeholder="NAME" value={e.name}
+            onChange={ev => upE({ name: ev.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_') })}
+            className={`${inpSm} font-black font-mono text-[11px] !bg-gray-50/50 dark:!bg-black/20 border-transparent focus:border-blue-500`} />
+        </div>
+
+        <div className="text-center text-gray-300 dark:text-gray-700 font-black text-xs">=</div>
+
+        {/* Value / Reference input */}
+        <div className="relative group min-w-0">
+          <p className="absolute -top-4 left-1 text-[9px] font-black text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity uppercase">VALUE</p>
+          {e.type === 'value' ? (
+            <input type="text" placeholder="VALUE" value={e.value}
+              onChange={ev => upE({ value: ev.target.value })} 
+              className={`${inpSm} font-mono !bg-white dark:!bg-gray-900 border-gray-200 dark:border-gray-800 shadow-inner`} />
+          ) : (
+            <div className="grid grid-cols-[1.5fr_1fr] gap-1.5 h-[36px]">
+              <div className="relative">
+                <input 
+                  list={`env-names-${e.id}`}
+                  placeholder={e.type === 'configMapKeyRef' ? 'CM Name' : 'Secret Name'}
+                  value={e.refName}
+                  onChange={ev => upE({ refName: ev.target.value, refKey: '' })}
+                  className={`${inpSm} font-bold text-[10px] w-full !bg-white dark:!bg-gray-900 border-blue-100 dark:border-blue-900 shadow-inner`} 
+                />
+                <datalist id={`env-names-${e.id}`}>
+                  {(e.type === 'configMapKeyRef' ? configMaps : secrets).map((r: any) => (
+                    <option key={r.id} value={r.name}>{r.name}</option>
+                  ))}
+                </datalist>
+              </div>
+
+              <div className="relative">
+                <input 
+                  list={`env-keys-${e.id}`}
+                  placeholder="Key" 
+                  value={e.refKey}
+                  onChange={ev => upE({ refKey: ev.target.value })} 
+                  className={`${inpSm} font-mono text-[10px] w-full !bg-white dark:!bg-gray-900 border-gray-100 dark:border-gray-800 shadow-inner`} 
+                />
+                <datalist id={`env-keys-${e.id}`}>
+                  {(() => {
+                    const resource = (e.type === 'configMapKeyRef' ? configMaps : secrets).find((r: any) => r.name === e.refName);
+                    return resource?.data.map((d: any) => (
+                      <option key={d.key} value={d.key}>{d.key}</option>
+                    )) || [];
+                  })()}
+                </datalist>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Type select */}
+        <select value={e.type} onChange={ev => upE({ type: ev.target.value as any, value: '', refName: '', refKey: '' })}
+          className="bg-gray-100 dark:bg-gray-800 rounded-xl font-black uppercase text-[9px] h-9 text-center appearance-none cursor-pointer border-none shadow-inner hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+          <option value="value">Static</option>
+          <option value="configMapKeyRef">Config</option>
+          <option value="secretKeyRef">Secret</option>
+        </select>
+
+        {/* Delete */}
+        <button onClick={() => removeWorkloadEnv(wlId, i)}
+          className="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all">
+          <Trash2 className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ── Env From Item (Isolated) ───────────────────────────────────────────
+const EnvFromItem = ({ ef, i, wlId, updateWorkloadEnvFrom, removeWorkloadEnvFrom, configMaps, secrets, t, inpSm }: any) => {
+  return (
+    <div key={ef.id} className="p-4 bg-gray-50/30 dark:bg-black/20 border border-gray-100 dark:border-gray-800 rounded-2xl space-y-3 transition-colors hover:border-blue-100 dark:hover:border-blue-900/30">
+      <div className="flex justify-between items-center text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+          EnvFrom
+        </div>
+        <button onClick={() => removeWorkloadEnvFrom(wlId, i)} className="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all">
+          <Trash2 className="w-3 h-3" />
+        </button>
+      </div>
+
+      <div className="grid grid-cols-[110px_1fr_120px] gap-2">
+        <select value={ef.type}
+          onChange={ev => updateWorkloadEnvFrom(wlId, i, { type: ev.target.value as any, name: '' })}
+          className={`${inpSm} !bg-white dark:!bg-[#0D1117] font-black uppercase text-[10px] border-none shadow-sm`}>
+          <option value="configMap">ConfigMap</option>
+          <option value="secret">Secret</option>
+        </select>
+
+        <div className="relative min-w-0">
+          <input 
+            list={`ef-names-${ef.id}`}
+            placeholder={ef.type === 'configMap' ? 'Choose or type ConfigMap name' : 'Choose or type Secret name'}
+            value={ef.name}
+            onChange={ev => updateWorkloadEnvFrom(wlId, i, { name: ev.target.value })}
+            className={`${inpSm} w-full !bg-white dark:!bg-[#0D1117] font-bold border-gray-100 dark:border-gray-800 shadow-inner`} 
+          />
+          <datalist id={`ef-names-${ef.id}`}>
+            {(ef.type === 'configMap' ? configMaps : secrets).map((r: any) => (
+              <option key={r.id} value={r.name}>{r.name}</option>
+            ))}
+          </datalist>
+        </div>
+
+        <div className="relative group">
+          <p className="absolute -top-3.5 left-1 text-[8px] font-black text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity uppercase">PREFIX</p>
+          <input type="text" placeholder="PREFIX_" value={ef.prefix}
+            onChange={ev => updateWorkloadEnvFrom(wlId, i, { prefix: ev.target.value.toUpperCase() })}
+            className={`${inpSm} !bg-white dark:!bg-[#0D1117] font-mono text-[10px] border-none shadow-sm`} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // ── Workload Editor ──────────────────────────────────────────────────────────
 function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
   const {
@@ -459,100 +587,53 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
 
         {/* Env Vars */}
         <Section title={t.common.env} icon={<Tag className="w-4 h-4 text-teal-500" />} defaultOpen={true}>
-          <div className="space-y-2">
-            {wl.envs.map((e, i) => {
-              const upE = (patch: Partial<typeof e>) => updateWorkloadEnv(wl.id, i, patch);
-              const colors: Record<string, string> = {
-                value: 'border-gray-200 dark:border-gray-700',
-                configMapKeyRef: 'border-teal-300 dark:border-teal-700 bg-teal-50/30 dark:bg-teal-900/10',
-                secretKeyRef: 'border-amber-300 dark:border-amber-700 bg-amber-50/30 dark:bg-amber-900/10',
-              };
-              return (
-                <div key={e.id} className={`p-2.5 border rounded-lg space-y-1.5 ${colors[e.type]}`}>
-                  <div className="flex gap-2 items-center">
-                    <input type="text" placeholder="ENV_NAME" value={e.name}
-                      onChange={ev => upE({ name: ev.target.value })}
-                      className={`${inpSm} font-mono !bg-white dark:!bg-[#161B22] flex-1`} />
-                    <select value={e.type} onChange={ev => upE({ type: ev.target.value as any, value: '', refName: '', refKey: '' })}
-                      className={`${inpSm} shrink-0 w-36 !bg-white dark:!bg-[#161B22]`}>
-                      <option value="value">Static Value</option>
-                      <option value="configMapKeyRef">ConfigMap Key</option>
-                      <option value="secretKeyRef">Secret Key</option>
-                    </select>
-                    <button onClick={() => removeWorkloadEnv(wl.id, i)} className="shrink-0 text-gray-400 hover:text-red-400 text-sm px-1">×</button>
-                  </div>
-
-                  {e.type === 'value' ? (
-                    <input type="text" placeholder="value" value={e.value}
-                      onChange={ev => upE({ value: ev.target.value })} className={inpSm} />
-                  ) : (
-                    <div className="flex gap-1.5 flex-wrap">
-                      <select value={e.refName} onChange={ev => upE({ refName: ev.target.value, refKey: '' })} className={`flex-1 min-w-28 ${inpSm}`}>
-                        <option value="">-- {t.common.add} {e.type === 'configMapKeyRef' ? 'ConfigMap' : 'Secret'} --</option>
-                        {(e.type === 'configMapKeyRef' ? configMaps : secrets).map(r => (
-                          <option key={r.id} value={r.name}>{r.name}</option>
-                        ))}
-                      </select>
-
-                      {(() => {
-                        const resource = (e.type === 'configMapKeyRef' ? configMaps : secrets).find(r => r.name === e.refName);
-                        const keys = resource?.data.map(d => d.key) || [];
-
-                        if (keys.length > 0) {
-                          return (
-                            <select value={e.refKey} onChange={ev => upE({ refKey: ev.target.value })} className={`w-36 ${inpSm} font-mono`}>
-                              <option value="">-- Select Key --</option>
-                              {keys.map(k => <option key={k} value={k}>{k}</option>)}
-                            </select>
-                          );
-                        }
-                        return (
-                          <input type="text" placeholder="key" value={e.refKey}
-                            onChange={ev => upE({ refKey: ev.target.value })} className={`w-36 ${inpSm} font-mono`} />
-                        );
-                      })()}
-
-                      <Checkbox checked={e.optional} onChange={v => upE({ optional: v })} label="optional" />
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+          <div className="space-y-3">
+            {wl.envs.map((e, i) => (
+              <EnvItem 
+                key={e.id} 
+                e={e} 
+                i={i} 
+                wlId={wl.id}
+                updateWorkloadEnv={updateWorkloadEnv} 
+                removeWorkloadEnv={removeWorkloadEnv}
+                configMaps={configMaps}
+                secrets={secrets}
+                t={t}
+                inpSm={inpSm}
+              />
+            ))}
           </div>
-          <button onClick={() => addWorkloadEnv(wl.id)} className="text-xs text-teal-600 hover:text-teal-500 font-medium my-2">+ {t.common.add} {t.common.env}</button>
+          <button onClick={() => addWorkloadEnv(wl.id)} className="w-full mt-4 py-3 border-2 border-dashed border-teal-100 dark:border-teal-900/40 text-teal-600 dark:text-teal-400 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-teal-50/50 hover:border-teal-300 transition-all flex items-center justify-center gap-2">
+            <Plus className="w-4 h-4" /> {t.common.add} {t.common.env}
+          </button>
 
-          <div className="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 font-bold uppercase tracking-wider">envFrom ({t.tabs.preview.toUpperCase()})</p>
-            <div className="space-y-2">
+          <div className="pt-6 border-t border-gray-100 dark:border-gray-800 mt-6 md:p-6 transition-all duration-300">
+            <div className="flex items-center justify-between mb-4 px-1">
+              <p className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest flex items-center gap-2">
+                <ListTree className="w-3.5 h-3.5" />
+                envFrom ({t.tabs.preview.toUpperCase()})
+              </p>
+            </div>
+            <div className="space-y-3">
               {(wl.envFrom || []).map((ef, i) => (
-                <div key={ef.id} className="p-3 bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-lg space-y-2">
-                  <div className="flex justify-between items-center text-xs font-semibold text-gray-400 uppercase">
-                    <div className="flex items-center gap-1.5"><ListTree className="w-3.5 h-3.5" />envFrom</div>
-                    <button onClick={() => removeWorkloadEnvFrom(wl.id, i)} className="text-gray-400 hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
-                  </div>
-                  <div className="flex gap-2">
-                    <select value={ef.type}
-                      onChange={ev => updateWorkloadEnvFrom(wl.id, i, { type: ev.target.value as any, name: '' })}
-                      className={`${inpSm} w-32 shrink-0 !bg-white dark:!bg-[#161B22]`}>
-                      <option value="configMap">ConfigMap</option>
-                      <option value="secret">Secret</option>
-                    </select>
-                    <select value={ef.name}
-                      onChange={ev => updateWorkloadEnvFrom(wl.id, i, { name: ev.target.value })}
-                      className={`${inpSm} flex-1 min-w-0 !bg-white dark:!bg-[#161B22]`}>
-                      <option value="">-- {t.k8s.bindResource} --</option>
-                      {(ef.type === 'configMap' ? configMaps : secrets).map(r => (
-                        <option key={r.id} value={r.name}>{r.name}</option>
-                      ))}
-                    </select>
-                    <input type="text" placeholder={`${t.k8s.prefix} (${t.k8s.optional})`} value={ef.prefix}
-                      onChange={ev => updateWorkloadEnvFrom(wl.id, i, { prefix: ev.target.value })}
-                      className={`${inpSm} w-32 shrink-0 !bg-white dark:!bg-[#161B22]`} />
-                  </div>
-                </div>
+                <EnvFromItem 
+                  key={ef.id} 
+                  ef={ef} 
+                  i={i} 
+                  wlId={wl.id}
+                  updateWorkloadEnvFrom={updateWorkloadEnvFrom}
+                  removeWorkloadEnvFrom={removeWorkloadEnvFrom}
+                  configMaps={configMaps}
+                  secrets={secrets}
+                  t={t}
+                  inpSm={inpSm}
+                />
               ))}
             </div>
-            <button onClick={() => addWorkloadEnvFrom(wl.id)} className="text-xs text-indigo-500 hover:text-indigo-400 font-medium py-1 mt-1 font-bold">+ {t.common.add} envFrom</button>
+            <button onClick={() => addWorkloadEnvFrom(wl.id)} 
+              className="w-full mt-4 py-3 border-2 border-dashed border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-blue-50/10 dark:hover:bg-blue-900/10 transition-all flex items-center justify-center gap-2">
+              <Plus className="w-4 h-4" /> {t.common.add} envFrom
+            </button>
           </div>
         </Section>
 
