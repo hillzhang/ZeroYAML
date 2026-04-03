@@ -8,7 +8,7 @@ import {
   Box, Info, Settings, Plus, Trash2, ChevronDown, Rocket,
   Terminal, Shield, FileCode, Tag, Database, Activity,
   Files, Layers, User, Globe, Layout, Palette, Zap,
-  Check, ListTree, FileText, Link, Hammer
+  Check, ListTree, FileText, Link, Hammer, RefreshCw
 } from "lucide-react";
 
 // ── Shared styles ────────────────────────────────────────────────────────────
@@ -102,7 +102,7 @@ function MetadataGroup({ title, items, onUpdate, colorTheme = "blue", icon: Icon
 }
 
 export function DockerfileTab() {
-  const { activeTooltip, setActiveTooltip } = useAppStore();
+  const { activeTooltip, setActiveTooltip, resetOverride } = useAppStore();
   const {
     appName, setAppName, baseImage, setBaseImage, workdir, setWorkdir, port, setPort,
     startCmd, setStartCmd, entrypoint, setEntrypoint, envVars, setEnvVars, volumes, setVolumes,
@@ -122,7 +122,7 @@ export function DockerfileTab() {
   };
 
   return (
-    <div className="animate-in fade-in duration-700 flex flex-col pb-20">
+    <div className="animate-in fade-in duration-700 flex flex-col pb-20 pt-4">
       {/* 1. Base Config */}
       <Section title="1. 基础配置与核心定义" icon={<Rocket className="w-4 h-4" />} theme="blue" badge="CORE DEFINITION">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

@@ -3,15 +3,21 @@
 import Editor from "@monaco-editor/react";
 import { useAppStore } from '@/store/useAppStore';
 import { useCodeGenerators } from '@/hooks/useCodeGenerators';
-import { Code2, Copy, Download, RotateCcw, CheckCircle2 } from 'lucide-react';
+import { Code2, Copy, Download, RotateCcw, CheckCircle2, RotateCw } from 'lucide-react';
 import { useTheme } from "next-themes";
+import { useComposeStore } from '@/store/useComposeStore';
+import { useDockerfileStore } from '@/store/useDockerfileStore';
+import { useKubernetesStore } from '@/store/useKubernetesStore';
 import { useEffect, useState } from "react";
 
 export function CodeViewer() {
-  const { activeTab, isFullStack, setIsFullStack, overrides, setOverrideEnabled, setOverrideEditing, setOverrideCode } = useAppStore();
+  const { activeTab, isFullStack, setIsFullStack, overrides, setOverrideEnabled, setOverrideEditing, setOverrideCode, resetOverride } = useAppStore();
   const { dockerfileContent, composeYamlContent, kubernetesYamlContent } = useCodeGenerators();
+  const composeReset = useComposeStore(s => s.reset);
+  const dockerfileReset = useDockerfileStore(s => s.reset);
+  const kubernetesReset = useKubernetesStore(s => s.reset);
   const { resolvedTheme } = useTheme();
-  
+
   const [mounted, setMounted] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | null>(null);
@@ -20,7 +26,7 @@ export function CodeViewer() {
 
   const currentOverride = overrides[activeTab];
   const generatedCode = activeTab === 'kubernetes' ? kubernetesYamlContent : activeTab === 'compose' ? composeYamlContent : dockerfileContent;
-  
+
   // Logic: Show manual code if override is ENABLED. Otherwise show generated code.
   const displayCode = currentOverride.isEnabled ? currentOverride.code : generatedCode;
 
@@ -41,11 +47,27 @@ export function CodeViewer() {
     setOverrideEditing(activeTab, false);
   };
 
+  const handleGlobalReset = () => {
+    const msg = activeTab === 'dockerfile' 
+      ? '确定要清空 Dockerfile 配置并重置吗？' 
+      : activeTab === 'compose' 
+        ? '确定要清空 Docker Compose 配置并新建吗？' 
+        : '确定要清空 Kubernetes 所有资源并重置吗？';
+    
+    if (window.confirm(`${msg}\n(This will clear all current configurations for this module.)`)) {
+      if (activeTab === 'dockerfile') dockerfileReset();
+      else if (activeTab === 'compose') composeReset();
+      else if (activeTab === 'kubernetes') kubernetesReset();
+      
+      resetOverride(activeTab);
+    }
+  };
+
   const handleEditorChange = (value: string | undefined) => {
     if (currentOverride.isEditing && value !== undefined) {
       setSaveStatus('saving');
       setOverrideCode(activeTab, value);
-      
+
       const timer = setTimeout(() => setSaveStatus('saved'), 400);
       const timer2 = setTimeout(() => setSaveStatus(null), 1800);
       return () => { clearTimeout(timer); clearTimeout(timer2); };
@@ -57,7 +79,7 @@ export function CodeViewer() {
     const code = displayCode;
     let filename = activeTab === 'kubernetes' ? 'k8s-manifest.yaml' : activeTab === 'compose' ? 'docker-compose.yml' : 'Dockerfile';
     if (activeTab === 'kubernetes' && isFullStack) filename = 'k8s-full-stack.yaml';
-    
+
     const blob = new Blob([code], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -77,7 +99,7 @@ export function CodeViewer() {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  const currentTitle = activeTab === 'kubernetes' 
+  const currentTitle = activeTab === 'kubernetes'
     ? (isFullStack ? 'k8s-full-stack.yaml' : 'kubernetes.yaml')
     : (activeTab === 'compose' ? 'docker-compose.yml' : 'Dockerfile');
 
@@ -102,7 +124,7 @@ export function CodeViewer() {
               )}
             </div>
           </div>
-          
+
           <div className="h-4 w-[1px] bg-gray-200 dark:bg-gray-800" />
 
           {activeTab === 'kubernetes' && !currentOverride.isEnabled && (
@@ -125,7 +147,7 @@ export function CodeViewer() {
 
         <div className="flex gap-2.5">
           {currentOverride.isEnabled && (
-            <button 
+            <button
               onClick={handleRestoreAuto}
               className="flex items-center gap-2 px-4 h-10 transition-all rounded-xl border border-blue-200/50 dark:border-blue-900/30 bg-blue-50/50 dark:bg-blue-900/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 active:scale-95 group"
               title="恢复与表单动态同步"
@@ -135,29 +157,39 @@ export function CodeViewer() {
             </button>
           )}
 
-          <button 
+          <button
             onClick={currentOverride.isEditing ? handleStopEdit : handleStartEdit}
             className={`flex items-center gap-2 px-5 h-10 transition-all rounded-2xl ${currentOverride.isEditing ? 'bg-blue-600 text-white shadow-lg border-blue-500' : 'bg-white dark:bg-[#1C2128] text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 border border-gray-200 dark:border-gray-800 shadow-sm'}`}
+            title="手动编辑生成的代码"
           >
             <Code2 className={`w-3.5 h-3.5 ${currentOverride.isEditing ? 'animate-pulse' : ''}`} />
             <span className="text-[10px] font-black uppercase tracking-widest leading-none">
-               {currentOverride.isEditing ? '完成编辑' : '直接修改'}
+              {currentOverride.isEditing ? '完成编辑' : '直接修改'}
             </span>
+          </button>
+
+          <button
+            onClick={handleGlobalReset}
+            className="flex items-center gap-2 px-4 h-10 bg-white dark:bg-[#1C2128] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm transition-all active:scale-95 group"
+            title="清空当前模块的所有配置 (Reset)"
+          >
+            <RotateCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />
+            <span className="text-[10px] font-black uppercase tracking-widest leading-none">新建/清空</span>
           </button>
 
           <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-800 self-center mx-1" />
 
-          <button 
+          <button
             onClick={handleCopy}
             className={`flex items-center gap-2 px-6 h-10 transition-all rounded-2xl border ${isCopied ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-white dark:bg-[#1C2128] hover:bg-gray-50 dark:hover:bg-[#252A31] text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-800 shadow-sm'}`}
           >
             {isCopied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             <span className="text-[10px] font-black uppercase tracking-widest leading-none">
-               {isCopied ? '已复制' : '复制内容'}
+              {isCopied ? '已复制' : '复制内容'}
             </span>
           </button>
 
-          <button 
+          <button
             onClick={handleDownload}
             className="flex items-center gap-2 px-6 h-10 bg-gray-900 dark:bg-blue-600 hover:bg-black dark:hover:bg-blue-500 transition-all rounded-2xl text-white shadow-xl shadow-blue-500/10 border-gray-800 dark:border-blue-500"
           >
@@ -198,7 +230,7 @@ export function CodeViewer() {
             />
           )}
         </div>
-        
+
         {/* Manual Edit Overlay */}
         {currentOverride.isEditing && (
           <div className="absolute right-10 bottom-10 p-5 rounded-[2rem] bg-orange-500 text-white shadow-2xl shadow-orange-500/20 animate-bounce pointer-events-none z-20">

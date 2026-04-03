@@ -10,10 +10,11 @@ import {
   ChevronDown, Plus, Trash2, Globe, Shield, Cpu, Tag, Activity, KeyRound, FileText, ListTree,
   HardDrive, Link, Check, ShieldCheck, UserCheck, Settings2, Zap,
 } from 'lucide-react';
+import { useAppStore } from '@/store/useAppStore';
 
 // ── Shared styles ────────────────────────────────────────────────────────────
-const inp = "w-full bg-white dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-xl py-2 px-4 text-sm focus:outline-none focus:border-blue-500 focus:ring-4 ring-blue-500/5 transition-all text-gray-900 dark:text-gray-100 placeholder:text-gray-400 shadow-sm hover:border-gray-300 dark:hover:border-gray-700";
-const inpSm = "w-full bg-white dark:bg-[#1C2128] border border-gray-300 dark:border-gray-700 rounded py-1.5 px-2 text-[13px] focus:outline-none focus:border-blue-400 transition-all";
+const inp = "w-full bg-white dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-xl py-2 px-4 text-sm focus:outline-none focus:border-blue-500 focus:ring-4 ring-blue-500/5 transition-all text-gray-900 dark:text-gray-100 placeholder:text-gray-400 shadow-sm hover:border-gray-300 dark:hover:border-gray-700 h-[42px]";
+const inpSm = "w-full bg-white dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-xl py-1.5 px-3 text-[13px] focus:outline-none focus:border-blue-500 focus:ring-4 ring-blue-500/5 transition-all text-gray-900 dark:text-gray-100 placeholder:text-gray-400 shadow-sm hover:border-gray-300 dark:hover:border-gray-700 h-[36px]";
 const btnSm = "flex items-center gap-1.5 text-[10px] px-3 py-1.5 rounded-full border transition-all font-black uppercase tracking-wider shadow-sm hover:scale-105 active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-900";
 const card = "p-4 border border-gray-200 dark:border-gray-800 rounded-[1.5rem] cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition-all bg-white dark:bg-[#0D1117] shadow-sm";
 const cardActive = "p-4 border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-900/20 rounded-[1.5rem] shadow-lg shadow-blue-500/10";
@@ -66,10 +67,10 @@ function ProbeEditor({ label, probe, onChange }: { label: string; probe: K8sProb
 
 // ── Resource Selector (Select + Manual Input Toggle) ─────────────────────────
 function ResourceSelector({
-  label, value, onChange, options, placeholder = "-- 请选择 --", manualPlaceholder = "输入已有资源名称...", className = ""
+  label, value, onChange, options, placeholder = "-- 请选择 --", manualPlaceholder = "输入已有资源名称...", className = "", inputClassName = inpSm
 }: {
   label: string; value: string; onChange: (v: string) => void; options: { id: string; name: string; info?: string }[];
-  placeholder?: string; manualPlaceholder?: string; className?: string;
+  placeholder?: string; manualPlaceholder?: string; className?: string; inputClassName?: string;
 }) {
   const [isManual, setIsManual] = useState(() => {
     if (!value) return false;
@@ -90,9 +91,9 @@ function ResourceSelector({
         </button>
       </div>
       {isManual ? (
-        <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={manualPlaceholder} className={inpSm} />
+        <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={manualPlaceholder} className={inputClassName} />
       ) : (
-        <select value={value} onChange={e => onChange(e.target.value)} className={inpSm}>
+        <select value={value} onChange={e => onChange(e.target.value)} className={inputClassName}>
           <option value="">{placeholder}</option>
           {options.map(o => <option key={o.id} value={o.name}>{o.name}{o.info ? ` (${o.info})` : ''}</option>)}
         </select>
@@ -150,10 +151,10 @@ function MetadataEditorContent({
             <div key={i} className="flex gap-2 group animate-in fade-in slide-in-from-left-2 duration-300">
               <input type="text" placeholder="KEY..." value={it.key}
                 onChange={e => onUpdate(items.map((x: any, idx: number) => idx === i ? { ...x, key: e.target.value } : x))}
-                className={`${inpSm} font-mono !bg-white dark:!bg-[#1C2128] border-gray-100 dark:border-gray-700 shadow-inner rounded-xl`} />
+                className={`${inpSm} font-mono !bg-white dark:!bg-[#161B22] border-gray-100 dark:border-gray-800 shadow-inner`} />
               <input type="text" placeholder="VALUE..." value={it.value}
                 onChange={e => onUpdate(items.map((x: any, idx: number) => idx === i ? { ...x, value: e.target.value } : x))}
-                className={`${inpSm} font-mono !bg-white dark:!bg-[#1C2128] border-gray-100 dark:border-gray-700 shadow-inner rounded-xl`} />
+                className={`${inpSm} font-mono !bg-white dark:!bg-[#161B22] border-gray-100 dark:border-gray-800 shadow-inner`} />
               <button onClick={() => onRemove(items.filter((_: any, idx: number) => idx !== i))}
                 className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all opacity-0 group-hover:opacity-100">
                 <Trash2 className="w-4 h-4" />
@@ -301,12 +302,13 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
             <div><p className="text-xs text-gray-500 mb-1">命名空间</p><input type="text" value={wl.namespace} onChange={e => up({ namespace: e.target.value })} className={inp} /></div>
             <div className="col-span-2"><p className="text-xs text-gray-500 mb-1">镜像 (Image)</p><input type="text" value={wl.image} onChange={e => up({ image: e.target.value })} className={inp} /></div>
             {!isDaemon && !isCronJob && (
-              <div className="grid grid-cols-2 gap-2 col-span-2">
-                <div><p className="text-xs text-gray-500 mb-0.5">副本数</p><input type="number" min="1" value={wl.replicas} onChange={e => up({ replicas: parseInt(e.target.value) || 1 })} className={inpSm} /></div>
+              <div className="grid grid-cols-2 gap-3 col-span-2">
+                <div><p className="text-xs text-gray-500 mb-1 pl-1">副本数 (REPLICAS)</p><input type="number" min="1" value={wl.replicas} onChange={e => up({ replicas: parseInt(e.target.value) || 1 })} className={inp} /></div>
                 <div>
                   <ResourceSelector
-                    label="镜像拉取密钥 (imagePullSecrets)"
+                    label="镜像拉取密钥 (IMAGEPULLSECRETS)"
                     value={wl.imagePullSecrets?.[0]?.name || ''}
+                    inputClassName={inp}
                     onChange={val => up({ imagePullSecrets: val ? [{ name: val }] : [] })}
                     options={[
                       ...secrets.filter(s => s.secretType === 'kubernetes.io/dockerconfigjson').map(s => ({ id: s.id, name: s.name, info: '私有镜像仓库密钥' })),
@@ -369,9 +371,9 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                   value={wl.command}
                   onChange={e => up({ command: e.target.value })}
                   placeholder="如: /usr/bin/python3"
-                  className={inpSm + " font-mono !bg-white dark:!bg-[#1C2128] border-blue-200 dark:border-blue-800"}
+                  className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-blue-200 dark:border-blue-800"}
                 />
-                <p className="text-[9px] text-gray-500 dark:text-gray-400 mt-0.5 pl-1 italic font-medium">对应 Docker Entrypoint</p>
+                <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5 pl-1 italic font-medium">对应 Docker Entrypoint</p>
               </div>
 
               <div className="space-y-1">
@@ -387,7 +389,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                   value={wl.args}
                   onChange={e => up({ args: e.target.value })}
                   placeholder="如: app.py --port 80"
-                  className={inpSm + " font-mono !bg-white dark:!bg-[#1C2128] border-emerald-200 dark:border-emerald-800"}
+                  className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-emerald-200 dark:border-emerald-800"}
                 />
                 <p className="text-[9px] text-emerald-600 dark:text-emerald-400 mt-0.5 pl-1 italic font-medium">对应 Docker CMD</p>
               </div>
@@ -459,9 +461,9 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                   <div className="flex gap-2 items-center">
                     <input type="text" placeholder="ENV_NAME" value={e.name}
                       onChange={ev => upE({ name: ev.target.value })}
-                      className="min-w-0 flex-1 bg-white dark:bg-[#1C2128] border border-gray-300 dark:border-gray-700 rounded py-1 px-2 text-xs font-mono focus:outline-none focus:border-blue-400" />
+                      className={`${inpSm} font-mono !bg-white dark:!bg-[#161B22] flex-1`} />
                     <select value={e.type} onChange={ev => upE({ type: ev.target.value as any, value: '', refName: '', refKey: '' })}
-                      className="shrink-0 w-36 bg-white dark:bg-[#1C2128] border border-gray-300 dark:border-gray-700 rounded py-1 px-2 text-xs focus:outline-none focus:border-blue-400">
+                      className={`${inpSm} shrink-0 w-36 !bg-white dark:!bg-[#161B22]`}>
                       <option value="value">直接值</option>
                       <option value="configMapKeyRef">ConfigMap Key</option>
                       <option value="secretKeyRef">Secret Key</option>
@@ -520,13 +522,13 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                   <div className="flex gap-2">
                     <select value={ef.type}
                       onChange={ev => updateWorkloadEnvFrom(wl.id, i, { type: ev.target.value as any, name: '' })}
-                      className="w-32 shrink-0 bg-white dark:bg-[#1C2128] border border-gray-300 dark:border-gray-700 rounded py-1 px-2 text-xs focus:outline-none focus:border-blue-400">
+                      className={`${inpSm} w-32 shrink-0 !bg-white dark:!bg-[#161B22]`}>
                       <option value="configMap">ConfigMap</option>
                       <option value="secret">Secret</option>
                     </select>
                     <select value={ef.name}
                       onChange={ev => updateWorkloadEnvFrom(wl.id, i, { name: ev.target.value })}
-                      className="flex-1 min-w-0 bg-white dark:bg-[#1C2128] border border-gray-300 dark:border-gray-700 rounded py-1 px-2 text-xs focus:outline-none focus:border-blue-400">
+                      className={`${inpSm} flex-1 min-w-0 !bg-white dark:!bg-[#161B22]`}>
                       <option value="">-- 选择由「存储」定义的资源 --</option>
                       {(ef.type === 'configMap' ? configMaps : secrets).map(r => (
                         <option key={r.id} value={r.name}>{r.name}</option>
@@ -534,7 +536,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                     </select>
                     <input type="text" placeholder="Prefix (可选)" value={ef.prefix}
                       onChange={ev => updateWorkloadEnvFrom(wl.id, i, { prefix: ev.target.value })}
-                      className="w-32 shrink-0 bg-white dark:bg-[#1C2128] border border-gray-300 dark:border-gray-700 rounded py-1 px-2 text-xs focus:outline-none focus:border-blue-400" />
+                      className={`${inpSm} w-32 shrink-0 !bg-white dark:!bg-[#161B22]`} />
                   </div>
                 </div>
               ))}
@@ -1413,6 +1415,7 @@ function StorageSection() {
 
 // ── Main Tab ─────────────────────────────────────────────────────────────────
 export function KubernetesTab() {
+  const { resetOverride } = useAppStore();
   const {
     activeSection, setSection, workloads, activeWorkloadId, setActiveWorkloadId, addWorkload, removeWorkload,
     globalNamespace, setNamespace,
@@ -1448,8 +1451,8 @@ export function KubernetesTab() {
               placeholder="命名空间 (如 prod)"
               className="bg-white dark:bg-[#0E1117] border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 w-40" />
             <button onClick={syncAllNamespaces}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-sm transition-all active:scale-95">
-              <RefreshCw className="w-3.5 h-3.5" />一键同步所有资源
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg text-[11px] font-black uppercase tracking-wider shadow-sm transition-all active:scale-95">
+              <RefreshCw className="w-3 h-3" /> 一键同步
             </button>
           </div>
         </div>

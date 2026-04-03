@@ -22,6 +22,7 @@ interface AppState {
   setOverrideEnabled: (tab: 'dockerfile' | 'compose' | 'kubernetes', enabled: boolean) => void;
   setOverrideEditing: (tab: 'dockerfile' | 'compose' | 'kubernetes', editing: boolean) => void;
   setOverrideCode: (tab: 'dockerfile' | 'compose' | 'kubernetes', code: string) => void;
+  resetOverride: (tab: 'dockerfile' | 'compose' | 'kubernetes') => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -49,5 +50,8 @@ export const useAppStore = create<AppState>((set) => ({
   })),
   setOverrideCode: (tab: 'dockerfile' | 'compose' | 'kubernetes', code: string) => set((s) => ({
     overrides: { ...s.overrides, [tab]: { ...s.overrides[tab], code } }
+  })),
+  resetOverride: (tab) => set((s) => ({
+    overrides: { ...s.overrides, [tab]: { isEnabled: false, isEditing: false, code: '' } }
   })),
 }));

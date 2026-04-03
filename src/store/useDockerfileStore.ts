@@ -45,6 +45,7 @@ interface DockerfileState {
   setRunCmds: (runCmds: string[]) => void;
   setCopyAddItems: (copyAddItems: CopyAddItem[]) => void;
   setUseShellWrapper: (useShellWrapper: boolean) => void;
+  reset: () => void;
 }
 
 export const useDockerfileStore = create<DockerfileState>((set) => ({
@@ -79,4 +80,21 @@ export const useDockerfileStore = create<DockerfileState>((set) => ({
   setRunCmds: (runCmds) => set({ runCmds }),
   setCopyAddItems: (copyAddItems) => set({ copyAddItems }),
   setUseShellWrapper: (useShellWrapper) => set({ useShellWrapper }),
+  reset: () => set({
+    appName: "",
+    baseImage: "",
+    workdir: "",
+    port: "",
+    startCmd: "",
+    entrypoint: "",
+    envVars: [],
+    volumes: [],
+    user: "",
+    healthcheck: "",
+    args: [],
+    labels: [],
+    runCmds: [],
+    copyAddItems: [],
+    useShellWrapper: false,
+  }),
 }));

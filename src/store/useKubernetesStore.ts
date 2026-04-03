@@ -175,7 +175,7 @@ export interface K8sPvDef {
 }
 
 export interface K8sStorageClass {
-  id: string; name: string; 
+  id: string; name: string;
   provisioner: string; // e.g., kubernetes.io/no-provisioner, rancher.io/local-path
   reclaimPolicy: 'Delete' | 'Retain';
   volumeBindingMode: 'Immediate' | 'WaitForFirstConsumer';
@@ -188,7 +188,7 @@ const defaultPv = (): K8sPvDef => ({
   id: uid(), name: 'my-pv',
   capacity: '10Gi', accessMode: 'ReadWriteOnce', reclaimPolicy: 'Retain',
   storageClass: 'standard', sourceType: 'hostPath',
-  hostPath: '/mnt/data', nfsServer: '10.0.0.1', nfsPath: '/export/pv1', 
+  hostPath: '/mnt/data', nfsServer: '10.0.0.1', nfsPath: '/export/pv1',
   csiDriver: 'hostpath.csi.k8s.io', csiHandle: 'vol-12345',
   labels: [], annotations: [],
 });
@@ -311,6 +311,7 @@ export interface KubernetesState {
   addStorageClassParam: (id: string) => void;
   removeStorageClassParam: (id: string, idx: number) => void;
   updateStorageClassParam: (id: string, idx: number, field: 'key' | 'value', value: string) => void;
+  reset: () => void;
 }
 
 // ── Store ────────────────────────────────────────────────────────────────────
@@ -406,4 +407,24 @@ export const useKubernetesStore = create<KubernetesState>()((set) => ({
   }),
   removeStorageClassParam: (id, idx) => set((s) => ({ storageClasses: s.storageClasses.map(v => v.id === id ? { ...v, parameters: v.parameters.filter((_, i) => i !== idx) } : v) })),
   updateStorageClassParam: (id, idx, field, value) => set((s) => ({ storageClasses: s.storageClasses.map(v => v.id === id ? { ...v, parameters: v.parameters.map((p, i) => i === idx ? { ...p, [field]: value } : p) } : v) })),
+  reset: () => set({
+    workloads: [],
+    services: [],
+    ingresses: [],
+    pvcs: [],
+    configMaps: [],
+    secrets: [],
+    pvs: [],
+    storageClasses: [],
+    globalNamespace: 'default',
+    activeSection: 'workload',
+    activeWorkloadId: null,
+    activeServiceId: null,
+    activeIngressId: null,
+    activePvcId: null,
+    activeConfigMapId: null,
+    activeSecretId: null,
+    activePvId: null,
+    activeStorageClassId: null,
+  }),
 }));

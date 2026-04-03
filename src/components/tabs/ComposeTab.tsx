@@ -4,10 +4,10 @@ import { useState } from 'react';
 import { useComposeStore, ComposeService } from '@/store/useComposeStore';
 import { useAppStore } from '@/store/useAppStore';
 import { Checkbox } from '@/components/ui/Checkbox';
-import { 
-  Box, Layers, Info, Shield, Terminal, Activity, Zap, Check, Plus, 
+import {
+  Box, Layers, Info, Shield, Terminal, Activity, Zap, Check, Plus,
   ChevronDown, Trash2, Globe, Database, Settings, Layout, Rocket,
-  Cpu, HardDrive, ListTree, FileCode, Tag, MousePointer2, Share2
+  Cpu, HardDrive, ListTree, FileCode, Tag, MousePointer2, Share2, RefreshCw
 } from "lucide-react";
 
 // ── Shared styles ────────────────────────────────────────────────────────────
@@ -91,13 +91,37 @@ function MetadataEditor({ title, items, onUpdate, theme = "blue", icon: Icon }: 
 }
 
 export function ComposeTab() {
-  const { composeServices, setComposeServices, activeSvcId, setActiveSvcId, composeAddons, setComposeAddons, composeVersion, setComposeVersion } = useComposeStore();
+  const { composeServices, setComposeServices, activeSvcId, setActiveSvcId, composeAddons, setComposeAddons, composeVersion, setComposeVersion, networkName, setNetworkName, useSharedNetwork, setUseSharedNetwork } = useComposeStore();
   const { activeTooltip, setActiveTooltip } = useAppStore();
 
   const activeSvcIndex = composeServices.findIndex(s => s.id === activeSvcId);
   const svc = composeServices[activeSvcIndex];
 
-  if (!svc) return null;
+  const addSvc = () => {
+    const newId = "svc-" + Date.now();
+    setComposeServices([...composeServices, {
+      id: newId, name: `service-${composeServices.length + 1}`, buildMode: "image", image: "", dockerfile: "Dockerfile", context: ".", ports: [], restart: "unless-stopped", envs: [], vols: [], command: "", entrypoint: "", user: "", privileged: false, cpus: "", memLimit: "", extraHosts: [], capAdd: [], envFiles: [], logDriver: "default", logMaxSize: "10m", logMaxFile: "3", healthcheck: { enabled: false, test: "curl -f http://localhost/ || exit 1", interval: "30s", timeout: "10s", retries: "3", startPeriod: "40s" }, dependsOn: [], useGpu: false, labels: [], networkMode: "bridge", shmSize: "", pid: "", tty: false, stdinOpen: false, customYaml: "", useShellWrapper: false
+    }]);
+    setActiveSvcId(newId);
+  };
+
+  if (!svc) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 animate-in fade-in zoom-in duration-500">
+        <div className="p-6 rounded-[3rem] bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 shadow-xl mb-6">
+          <Rocket className="w-12 h-12 text-blue-500 animate-pulse-subtle" />
+        </div>
+        <h2 className="text-xl font-black text-gray-800 dark:text-gray-100 uppercase tracking-widest mb-2">当前项目为空</h2>
+        <p className="text-gray-400 text-sm mb-8 font-medium">点击下方按钮添加第一个服务以开始配置</p>
+        <button
+          onClick={addSvc}
+          className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl font-black uppercase tracking-widest shadow-xl shadow-blue-500/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-3"
+        >
+          <Plus className="w-5 h-5" /> START NEW SERVICE
+        </button>
+      </div>
+    );
+  }
 
   const updateSvc = (field: keyof ComposeService, value: any) => {
     const n = [...composeServices];
@@ -110,7 +134,7 @@ export function ComposeTab() {
     const lst = [...(n[activeSvcIndex][lf] as any[])];
     if (sf) lst[idx] = { ...lst[idx], [sf]: val };
     else lst[idx] = val;
-    n[activeSvcIndex] = { ...n[activeSvcIndex], [lf] : lst } as any;
+    n[activeSvcIndex] = { ...n[activeSvcIndex], [lf]: lst } as any;
     setComposeServices(n);
   };
 
@@ -118,7 +142,7 @@ export function ComposeTab() {
     const n = [...composeServices];
     const lst = [...(n[activeSvcIndex][lf] as any[])];
     lst.push(empty);
-    n[activeSvcIndex] = { ...n[activeSvcIndex], [lf] : lst } as any;
+    n[activeSvcIndex] = { ...n[activeSvcIndex], [lf]: lst } as any;
     setComposeServices(n);
   };
 
@@ -126,7 +150,7 @@ export function ComposeTab() {
     const n = [...composeServices];
     const lst = [...(n[activeSvcIndex][lf] as any[])];
     lst.splice(idx, 1);
-    n[activeSvcIndex] = { ...n[activeSvcIndex], [lf] : lst } as any;
+    n[activeSvcIndex] = { ...n[activeSvcIndex], [lf]: lst } as any;
     setComposeServices(n);
   };
 
@@ -141,15 +165,15 @@ export function ComposeTab() {
               <button
                 onClick={() => setActiveSvcId(tabSvc.id)}
                 className={`flex items-center gap-3 px-5 py-3 text-xs font-black rounded-3xl transition-all duration-500 relative z-10 
-                  ${activeSvcId === tabSvc.id 
-                    ? 'bg-white dark:bg-[#0D1117] text-blue-600 shadow-lg dark:shadow-black/40 border border-gray-200 dark:border-gray-700 scale-105 active:scale-100' 
+                  ${activeSvcId === tabSvc.id
+                    ? 'bg-white dark:bg-[#0D1117] text-blue-600 shadow-lg dark:shadow-black/40 border border-gray-200 dark:border-gray-700 scale-105 active:scale-100'
                     : 'text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200'}`}
               >
                 <div className={`w-2 h-2 rounded-full transition-all duration-500 ${activeSvcId === tabSvc.id ? 'bg-blue-500 scale-125' : 'bg-gray-300 dark:bg-gray-700'}`} />
                 {tabSvc.name.toUpperCase() || 'UNNAMED'}
               </button>
               {composeServices.length > 1 && (
-                <button 
+                <button
                   onClick={(e) => {
                     e.stopPropagation();
                     const next = composeServices.filter(s => s.id !== tabSvc.id);
@@ -163,14 +187,8 @@ export function ComposeTab() {
               )}
             </div>
           ))}
-          <button 
-            onClick={() => {
-              const newId = "svc-" + Date.now();
-              setComposeServices([...composeServices, { 
-                id: newId, name: `service-${composeServices.length + 1}`, buildMode: "image", image: "nginx:alpine", dockerfile: "Dockerfile", context: ".", ports: [{ host: "80", container: "80" }], restart: "unless-stopped", envs: [], vols: [], command: "", entrypoint: "", user: "", privileged: false, cpus: "", memLimit: "", extraHosts: [], capAdd: [], envFiles: [], logDriver: "default", logMaxSize: "", logMaxFile: "3", healthcheck: { enabled: false, test: "curl -f http://localhost/ || exit 1", interval: "30s", timeout: "10s", retries: "3", startPeriod: "40s" }, dependsOn: [], useGpu: false, labels: [], networkMode: "bridge", shmSize: "", pid: "", tty: false, stdinOpen: false, customYaml: "", useShellWrapper: false 
-              }]);
-              setActiveSvcId(newId);
-            }}
+          <button
+            onClick={addSvc}
             className="px-6 py-3 text-xs font-black text-blue-500 hover:bg-white dark:hover:bg-[#0D1117] rounded-full transition-all flex items-center gap-2 group/add"
           >
             <Plus className="w-4 h-4 group-hover/add:rotate-90 transition-transform" />
@@ -180,8 +198,8 @@ export function ComposeTab() {
 
         <div className="flex items-center gap-4 bg-gray-50/50 dark:bg-[#161B22]/50 p-2 rounded-full border border-gray-200 dark:border-gray-800 shrink-0">
           <div className="flex items-center gap-2 px-4">
-             <Settings className="w-3.5 h-3.5 text-gray-400" />
-             <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">VERSION</span>
+            <Settings className="w-3.5 h-3.5 text-gray-400" />
+            <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest leading-none">VERSION</span>
           </div>
           <select
             value={composeVersion}
@@ -203,8 +221,8 @@ export function ComposeTab() {
             <div className="space-y-6">
               <div className="relative group">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5 group-hover:text-blue-500 transition-colors">
-                   服务标识 (SERVICE NAME)
-                   <Info className="w-3.5 h-3.5 cursor-help opacity-40 hover:opacity-100" onClick={() => setActiveTooltip(activeTooltip === 'name' ? null : 'name')} />
+                  服务标识 (SERVICE NAME)
+                  <Info className="w-3.5 h-3.5 cursor-help opacity-40 hover:opacity-100" onClick={() => setActiveTooltip(activeTooltip === 'name' ? null : 'name')} />
                 </p>
                 {activeTooltip === 'name' && <div className="absolute left-0 -top-12 bg-gray-900 text-white p-2 text-[10px] rounded-xl shadow-2xl w-[200px] z-20 border border-gray-700">Compose 内部唯一的服务键名</div>}
                 <input type="text" value={svc.name} onChange={e => updateSvc("name", e.target.value)} className={inp} placeholder="web-api" />
@@ -214,9 +232,9 @@ export function ComposeTab() {
                 <div className="flex items-center justify-between">
                   <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">部署来源 (DEPLOY SOURCE)</p>
                   <div className="flex bg-white dark:bg-[#0D1117] rounded-full border border-gray-200 dark:border-gray-800 p-1.5 shadow-inner">
-                    <button onClick={() => updateSvc('buildMode', 'build')} 
+                    <button onClick={() => updateSvc('buildMode', 'build')}
                       className={`px-4 py-1.5 text-[9px] font-black rounded-full transition-all ${svc.buildMode === 'build' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}>BUILD</button>
-                    <button onClick={() => updateSvc('buildMode', 'image')} 
+                    <button onClick={() => updateSvc('buildMode', 'image')}
                       className={`px-4 py-1.5 text-[9px] font-black rounded-full transition-all ${svc.buildMode === 'image' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}>IMAGE</button>
                   </div>
                 </div>
@@ -262,9 +280,9 @@ export function ComposeTab() {
                   {composeServices.filter(s => s.id !== svc.id).map(ds => {
                     const isChecked = (svc.dependsOn || []).includes(ds.id);
                     return (
-                      <button key={ds.id} 
+                      <button key={ds.id}
                         onClick={() => {
-                          const newDeps = isChecked 
+                          const newDeps = isChecked
                             ? (svc.dependsOn || []).filter(id => id !== ds.id)
                             : [...(svc.dependsOn || []), ds.id];
                           updateSvc("dependsOn", newDeps);
@@ -284,105 +302,161 @@ export function ComposeTab() {
 
         {/* 2. Networking */}
         <Section title="2. 网络接口与端口映射" icon={<Globe className="w-4 h-4" />} theme="indigo" badge="NETWORKING">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-            <div className="p-6 bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 rounded-3xl space-y-6">
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-[11px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-widest">暴露端口 (PORTS)</p>
-                  <span className="text-[9px] font-black text-blue-500 bg-blue-50 dark:bg-blue-900/20 px-2.5 py-1 rounded-full border border-blue-200/50">HOST:CONTAINER</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
+            
+            {/* Left: Port Center */}
+            <div className="p-8 bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 rounded-[2.5rem] space-y-6 relative overflow-hidden group/ports shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex items-start justify-between relative z-10 px-1">
+                <div className="space-y-1">
+                  <p className="text-[11px] font-black text-gray-800 dark:text-gray-200 uppercase tracking-[0.2em]">暴露端口 (PORTS)</p>
+                  <p className="text-[9px] text-gray-400 font-medium italic leading-relaxed">配置宿主机到容器的流量映射通道</p>
                 </div>
-                <button onClick={() => addArr("ports", { host: "", container: "" })} className={btnSm + " !bg-white dark:!bg-[#0D1117] border-blue-200 text-blue-600"}><Plus className="w-3.5 h-3.5" /> ADD PORT</button>
+                <button onClick={() => addArr("ports", { host: "", container: "" })} 
+                  className="flex items-center gap-2 text-[10px] px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap">
+                  <Plus className="w-3.5 h-3.5" /> ADD PORT
+                </button>
               </div>
-              
-              <div className="space-y-6">
+
+              <div className="space-y-4">
+                {svc.ports.length > 0 && (
+                  <div className="flex px-5 items-center justify-between opacity-40">
+                    <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Host Port</p>
+                    <div className="flex-1 flex justify-center">
+                      <span className="text-[8px] font-black text-indigo-500 border border-indigo-200 dark:border-indigo-800 px-2 py-0.5 rounded-lg">HOST:CONTAINER</span>
+                    </div>
+                    <p className="text-[8px] font-black text-gray-500 uppercase tracking-widest">Cluster</p>
+                  </div>
+                )}
                 {svc.ports.map((p, i) => (
-                  <div key={i} className="group animate-in slide-in-from-top-1 space-y-1.5">
-                    <div className="flex gap-4 items-center">
-                      <div className="flex-1 relative group">
+                  <div key={i} className="group/item animate-in slide-in-from-right-4 duration-300">
+                    <div className="flex gap-4 items-center bg-white dark:bg-[#0D1117] p-3 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm transition-all hover:border-indigo-500/30 hover:shadow-md">
+                      <div className="flex-1 space-y-1.5 text-center">
                         <input type="text" placeholder="8080" value={p.host} onChange={e => updateArr("ports", i, "host", e.target.value)}
-                          className={`${inp} !text-center !font-mono focus:ring-blue-500/20 !py-2 shadow-sm border-gray-100 dark:border-gray-800`} />
-                      </div>
-                      
-                      <div className="w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-800 rounded-2xl shrink-0 border border-black/5 dark:border-white/5 shadow-inner">
-                        <ChevronDown className="w-3.5 h-3.5 text-blue-500 -rotate-90 stroke-[3]" />
-                      </div>
-                      
-                      <div className="flex-1 relative group">
-                        <input type="text" placeholder="80" value={p.container} onChange={e => updateArr("ports", i, "container", e.target.value)}
-                          className={`${inp} !text-center !font-mono focus:ring-emerald-500/20 !py-2 shadow-sm border-gray-100 dark:border-gray-800`} />
+                          className="w-full bg-transparent border-b border-transparent focus:border-indigo-500 text-center font-mono text-sm dark:text-gray-200 focus:outline-none transition-all placeholder:text-gray-300" />
+                        <p className="text-[8px] text-gray-400 uppercase font-black tracking-tighter opacity-50">Entry</p>
                       </div>
 
-                      {svc.ports.length > 1 && (
-                        <button onClick={() => remArr("ports", i)} className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
-                    </div>
-                    
-                    <div className="grid grid-cols-2 gap-12 px-2">
-                       <p className="text-[8px] text-gray-400 text-center italic uppercase font-black tracking-[0.2em] opacity-60">Entry Port</p>
-                       <p className="text-[8px] text-gray-400 text-center italic uppercase font-black tracking-[0.2em] opacity-60">Inside Port</p>
+                      <div className="w-10 h-10 flex items-center justify-center rounded-2xl shrink-0 opacity-40">
+                        <Share2 className="w-4 h-4 text-gray-400 rotate-90" />
+                      </div>
+
+                      <div className="flex-1 space-y-1.5 text-center">
+                        <input type="text" placeholder="80" value={p.container} onChange={e => updateArr("ports", i, "container", e.target.value)}
+                          className="w-full bg-transparent border-b border-transparent focus:border-emerald-500 text-center font-mono text-sm dark:text-gray-200 focus:outline-none transition-all placeholder:text-gray-300" />
+                        <p className="text-[8px] text-gray-400 uppercase font-black tracking-tighter opacity-50">Inside</p>
+                      </div>
+
+                      <button onClick={() => remArr("ports", i)} className="p-2 ml-2 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all">
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 ))}
+                
                 {svc.ports.length === 0 && (
-                  <div className="py-6 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-2xl flex items-center justify-center">
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest italic">No ports exposed</p>
+                  <div className="py-12 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-3xl flex flex-col items-center justify-center gap-4 bg-white/30 dark:bg-transparent">
+                    <div className="p-4 rounded-full bg-gray-50 dark:bg-gray-800/50">
+                      <Rocket className="w-6 h-6 text-gray-300" />
+                    </div>
+                    <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] italic">No active port mapping</p>
+                    <button onClick={() => addArr("ports", { host: "", container: "" })} 
+                      className="text-[9px] px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-full text-gray-500 hover:bg-white dark:hover:bg-gray-800 transition-all font-bold">
+                      ADD FIRST PORT
+                    </button>
                   </div>
                 )}
               </div>
             </div>
 
-            <div className="space-y-6">
-               <div className="relative group">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">网络模式 (NETWORK MODE)</p>
-                <select value={svc.networkMode || "bridge"} onChange={e => updateSvc("networkMode", e.target.value)}
-                  className={`${inp} appearance-none bg-no-repeat bg-[right_1rem_center]`} style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")` }}>
-                  <option value="bridge">bridge (Default Isolated)</option>
-                  <option value="host">host (Share Host Network)</option>
-                  <option value="none">none (No Network Stack)</option>
-                </select>
-               </div>
-               <div className="relative group">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">进程间通讯 (PID)</p>
-                <select value={svc.pid || ""} onChange={e => updateSvc("pid", e.target.value)}
-                  className={`${inp} appearance-none bg-no-repeat bg-[right_1rem_center]`} style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")` }}>
-                  <option value="">Default (Isolated)</option>
-                  <option value="host">host (Visible to System)</option>
-                </select>
-               </div>
-            </div>
+            {/* Right: Network Policy */}
+            <div className="space-y-8">
+              {/* Global Net Card */}
+              <div className="p-8 bg-blue-50/30 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-900/40 rounded-[2rem] space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-blue-500 shadow-lg shadow-blue-500/30">
+                      <Globe className="w-4 h-4 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-[11px] font-black text-blue-700 dark:text-blue-400 uppercase tracking-widest">共享网络 (SHARED NET)</p>
+                      <p className="text-[9px] text-blue-600/60 dark:text-blue-400/60 font-medium italic">定义整个项目的内部通信网</p>
+                    </div>
+                  </div>
+                  <Checkbox checked={useSharedNetwork} onChange={setUseSharedNetwork} theme="blue" />
+                </div>
+                
+                {useSharedNetwork ? (
+                  <div className="animate-in fade-in slide-in-from-top-4 space-y-4">
+                    <div className="space-y-1.5 px-1">
+                      <p className="text-[9px] font-black text-blue-600/40 uppercase tracking-widest">NETWORK ID</p>
+                      <input 
+                        type="text" 
+                        value={networkName} 
+                        onChange={e => setNetworkName(e.target.value)} 
+                        className="w-full bg-white dark:bg-[#0D1117] border border-blue-200/50 dark:border-blue-800/50 rounded-xl py-2 px-4 text-sm font-mono text-blue-900 dark:text-blue-100 focus:outline-none focus:ring-4 ring-blue-500/10 transition-all"
+                        placeholder="app-net" 
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="py-4 border border-dashed border-blue-200 dark:border-blue-900/50 rounded-2xl flex items-center justify-center opacity-60">
+                    <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold italic tracking-wider">已禁用自定义网络 (使用系统默认值)</p>
+                  </div>
+                )}
+              </div>
 
-            <div className="md:col-span-2">
-              <MetadataEditor title="本地域名解析 (EXTRA HOSTS)" items={(svc.extraHosts || []).map(h => ({ key: h.host, value: h.ip }))} 
-                onUpdate={(newItems: any) => updateSvc("extraHosts", newItems.map((it: any) => ({ host: it.key, ip: it.value })))}
-                theme="indigo" icon={Settings} />
+              {/* Advanced Policy Card */}
+              <div className="grid grid-cols-1 gap-6 p-1">
+                <div className="space-y-3">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">网络连通模式 (NETWORK MODE)</p>
+                  <select value={svc.networkMode || "bridge"} onChange={e => updateSvc("networkMode", e.target.value)}
+                    className={`${inp} appearance-none bg-no-repeat bg-[right_1rem_center] border-gray-100 dark:border-gray-800 focus:ring-gray-500/5`} style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")` }}>
+                    <option value="bridge">bridge ({useSharedNetwork ? "Join Shared" : "Default Project"})</option>
+                    <option value="host">host (Share Host Stack)</option>
+                    <option value="none">none (Isolated)</option>
+                  </select>
+                </div>
+                
+                <div className="space-y-3">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">进程命名空间 (PID)</p>
+                  <select value={svc.pid || ""} onChange={e => updateSvc("pid", e.target.value)}
+                    className={`${inp} appearance-none bg-no-repeat bg-[right_1rem_center] border-gray-100 dark:border-gray-800 focus:ring-gray-500/5`} style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")` }}>
+                    <option value="">Default (Isolated Namespace)</option>
+                    <option value="host">host (Share with Host OS)</option>
+                  </select>
+                </div>
+              </div>
+              <div className="md:col-span-2">
+                <MetadataEditor title="本地域名解析 (EXTRA HOSTS)" items={(svc.extraHosts || []).map(h => ({ key: h.host, value: h.ip }))}
+                  onUpdate={(newItems: any) => updateSvc("extraHosts", newItems.map((it: any) => ({ host: it.key, ip: it.value })))}
+                  theme="indigo" icon={Settings} />
+              </div>
             </div>
           </div>
         </Section>
 
         {/* 3. Environment & Variables */}
         <Section title="3. 环境变量与标签" icon={<Tag className="w-4 h-4" />} theme="teal" badge="METADATA & VARS">
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <MetadataEditor title="环境变量 (ENVIRONMENT)" items={svc.envs} onUpdate={(val: any) => updateSvc("envs", val)} theme="teal" icon={Zap} />
-              <MetadataEditor title="服务标签 (LABELS)" items={svc.labels} onUpdate={(val: any) => updateSvc("labels", val)} theme="blue" icon={Tag} />
-              <div className="md:col-span-2 p-6 bg-teal-50/20 dark:bg-teal-900/10 border border-teal-100 dark:border-teal-900/30 rounded-3xl space-y-4">
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest">外部变量文件 (ENV FILE)</p>
-                  <button onClick={() => addArr("envFiles", "")} className={btnSm + " !bg-white dark:!bg-[#0D1117] border-teal-200 text-teal-600"}><Plus className="w-3.5 h-3.5" /> ADD ENV_FILE</button>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {svc.envFiles.map((f, i) => (
-                    <div key={i} className="flex gap-2 group animate-in slide-in-from-top-1">
-                      <input type="text" value={f} onChange={e => updateArr("envFiles", i, null, e.target.value)} placeholder=".env.production"
-                        className={`${inpSm} !bg-white dark:!bg-[#0D1117] border-teal-200/50 dark:border-teal-800/50`} />
-                      <button onClick={() => remArr("envFiles", i)} className="p-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
-                    </div>
-                  ))}
-                  {svc.envFiles.length === 0 && <p className="text-[10px] text-gray-400 italic">No environment files defined.</p>}
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <MetadataEditor title="环境变量 (ENVIRONMENT)" items={svc.envs} onUpdate={(val: any) => updateSvc("envs", val)} theme="teal" icon={Zap} />
+            <MetadataEditor title="服务标签 (LABELS)" items={svc.labels} onUpdate={(val: any) => updateSvc("labels", val)} theme="blue" icon={Tag} />
+            <div className="md:col-span-2 p-6 bg-teal-50/20 dark:bg-teal-900/10 border border-teal-100 dark:border-teal-900/30 rounded-3xl space-y-4">
+              <div className="flex items-center justify-between">
+                <p className="text-[10px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest">外部变量文件 (ENV FILE)</p>
+                <button onClick={() => addArr("envFiles", "")} className={btnSm + " !bg-white dark:!bg-[#0D1117] border-teal-200 text-teal-600"}><Plus className="w-3.5 h-3.5" /> ADD ENV_FILE</button>
               </div>
-           </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {svc.envFiles.map((f, i) => (
+                  <div key={i} className="flex gap-2 group animate-in slide-in-from-top-1">
+                    <input type="text" value={f} onChange={e => updateArr("envFiles", i, null, e.target.value)} placeholder=".env.production"
+                      className={`${inpSm} !bg-white dark:!bg-[#0D1117] border-teal-200/50 dark:border-teal-800/50`} />
+                    <button onClick={() => remArr("envFiles", i)} className="p-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                ))}
+                {svc.envFiles.length === 0 && <p className="text-[10px] text-gray-400 italic">No environment files defined.</p>}
+              </div>
+            </div>
+          </div>
         </Section>
 
         {/* 4. Persistence & Execution */}
@@ -414,66 +488,66 @@ export function ComposeTab() {
             </div>
 
             <div className="p-8 bg-gradient-to-br from-gray-50 to-orange-50/30 dark:from-[#161B22] dark:to-orange-900/10 border border-orange-100 dark:border-orange-900/40 rounded-[2rem] space-y-6">
-               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="p-2 rounded-xl bg-orange-600 shadow-xl shadow-orange-500/20">
-                      <Terminal className="w-4 h-4 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest leading-none">启动执行指令</p>
-                      <p className="text-[8px] text-gray-400 font-bold uppercase tracking-tighter mt-1">ENTRYPOINT & COMMAND WRAPPING</p>
-                    </div>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-orange-600 shadow-xl shadow-orange-500/20">
+                    <Terminal className="w-4 h-4 text-white" />
                   </div>
-                  <div className="flex items-center gap-6">
-                    <Checkbox checked={svc.useShellWrapper} onChange={(val) => updateSvc("useShellWrapper", val)} label="SH -EC WRAPPER" theme="yellow" />
+                  <div>
+                    <p className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest leading-none">启动执行指令</p>
+                    <p className="text-[8px] text-gray-400 font-bold uppercase tracking-tighter mt-1">ENTRYPOINT & COMMAND WRAPPING</p>
                   </div>
-               </div>
+                </div>
+                <div className="flex items-center gap-6">
+                  <Checkbox checked={svc.useShellWrapper} onChange={(val) => updateSvc("useShellWrapper", val)} label="SH -EC WRAPPER" theme="yellow" />
+                </div>
+              </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-10 relative items-start">
-                  <div className="hidden md:flex absolute left-1/2 top-[42px] -translate-x-1/2 -translate-y-1/2 z-10 w-8 h-8 items-center justify-center bg-white dark:bg-[#0D1117] border border-orange-200 dark:border-orange-800 rounded-full shadow-lg text-orange-500 hover:scale-110 transition-transform cursor-pointer">
-                    <Plus className="w-4 h-4 stroke-[3]" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-10 relative items-start">
+                <div className="hidden md:flex absolute left-1/2 top-[42px] -translate-x-1/2 -translate-y-1/2 z-10 w-8 h-8 items-center justify-center bg-white dark:bg-[#0D1117] border border-orange-200 dark:border-orange-800 rounded-full shadow-lg text-orange-500 hover:scale-110 transition-transform cursor-pointer">
+                  <Plus className="w-4 h-4 stroke-[3]" />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.1em] flex items-center gap-2"><Shield className="w-3.5 h-3.5 text-orange-500" /> ENTRYPOINT</p>
+                    <span className="text-[8px] font-black bg-orange-100 dark:bg-orange-900/60 text-orange-600 px-2.5 py-0.5 rounded-full">FIXED</span>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between px-1">
-                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.1em] flex items-center gap-2"><Shield className="w-3.5 h-3.5 text-orange-500" /> ENTRYPOINT</p>
-                      <span className="text-[8px] font-black bg-orange-100 dark:bg-orange-900/60 text-orange-600 px-2.5 py-0.5 rounded-full">FIXED</span>
-                    </div>
-                    <input type="text" placeholder="[bin/sh]" value={svc.entrypoint} onChange={e => updateSvc("entrypoint", e.target.value)}
-                      className={`${inp} !bg-white dark:!bg-[#0D1117] border-orange-200 dark:border-orange-800 focus:ring-orange-500/10 shadow-sm`} />
+                  <input type="text" placeholder="[bin/sh]" value={svc.entrypoint} onChange={e => updateSvc("entrypoint", e.target.value)}
+                    className={`${inp} !bg-white dark:!bg-[#0D1117] border-orange-200 dark:border-orange-800 focus:ring-orange-500/10 shadow-sm`} />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between px-1">
+                    <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.1em] flex items-center gap-2"><Activity className="w-3.5 h-3.5 text-emerald-500" /> COMMAND</p>
+                    <span className="text-[8px] font-black bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 px-2.5 py-0.5 rounded-full">ARGS</span>
                   </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between px-1">
-                      <p className="text-[10px] font-black text-gray-500 uppercase tracking-[0.1em] flex items-center gap-2"><Activity className="w-3.5 h-3.5 text-emerald-500" /> COMMAND</p>
-                      <span className="text-[8px] font-black bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 px-2.5 py-0.5 rounded-full">ARGS</span>
-                    </div>
-                    <input type="text" placeholder="[start.sh]" value={svc.command} onChange={e => updateSvc("command", e.target.value)}
-                      className={`${inp} !bg-white dark:!bg-[#0D1117] border-emerald-200 dark:border-emerald-800 focus:ring-emerald-500/10 shadow-sm`} />
+                  <input type="text" placeholder="[start.sh]" value={svc.command} onChange={e => updateSvc("command", e.target.value)}
+                    className={`${inp} !bg-white dark:!bg-[#0D1117] border-emerald-200 dark:border-emerald-800 focus:ring-emerald-500/10 shadow-sm`} />
+                </div>
+                <div className="col-span-1 md:col-span-2 pt-2">
+                  <div className="px-5 py-3 bg-white/60 dark:bg-black/40 rounded-2xl border border-orange-100 dark:border-orange-900/30 shadow-inner">
+                    <p className="text-[10px] font-mono text-gray-500 tracking-tight leading-relaxed">
+                      <span className="text-orange-500 font-bold opacity-60 mr-2">PREVIEW:</span>
+                      {svc.useShellWrapper ? 'sh -ec "' : ''}<span className="text-gray-800 dark:text-gray-200">{svc.entrypoint || '<ENTRYPOINT>'}</span> <span className="text-gray-600 dark:text-gray-400">{svc.command || '<COMMAND>'}</span>{svc.useShellWrapper ? '"' : ''}
+                    </p>
                   </div>
-                  <div className="col-span-1 md:col-span-2 pt-2">
-                    <div className="px-5 py-3 bg-white/60 dark:bg-black/40 rounded-2xl border border-orange-100 dark:border-orange-900/30 shadow-inner">
-                      <p className="text-[10px] font-mono text-gray-500 tracking-tight leading-relaxed">
-                        <span className="text-orange-500 font-bold opacity-60 mr-2">PREVIEW:</span>
-                        {svc.useShellWrapper ? 'sh -ec "' : ''}<span className="text-gray-800 dark:text-gray-200">{svc.entrypoint || '<ENTRYPOINT>'}</span> <span className="text-gray-600 dark:text-gray-400">{svc.command || '<COMMAND>'}</span>{svc.useShellWrapper ? '"' : ''}
-                      </p>
-                    </div>
-                  </div>
-               </div>
+                </div>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-               <div className="space-y-2">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">运行用户 (USER)</p>
-                  <input type="text" placeholder="node / 1001" value={svc.user} onChange={e => updateSvc("user", e.target.value)} className={inp} />
-               </div>
-               <div className="space-y-2 flex flex-col justify-end">
-                  <div className="p-3 bg-gray-50 dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm hover:bg-white transition-all">
-                    <Checkbox checked={svc.privileged} onChange={(val: boolean) => updateSvc("privileged", val)} label="特权模式 (PRIVILEGED)" theme="orange" />
-                  </div>
-               </div>
-               <div className="space-y-2">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">共享内存 (SHM_SIZE)</p>
-                  <input type="text" placeholder="e.g. 2gb" value={svc.shmSize} onChange={e => updateSvc("shmSize", e.target.value)} className={inp} />
-               </div>
+              <div className="space-y-2">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">运行用户 (USER)</p>
+                <input type="text" placeholder="node / 1001" value={svc.user} onChange={e => updateSvc("user", e.target.value)} className={inp} />
+              </div>
+              <div className="space-y-2 flex flex-col justify-end">
+                <div className="p-3 bg-gray-50 dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm hover:bg-white transition-all">
+                  <Checkbox checked={svc.privileged} onChange={(val: boolean) => updateSvc("privileged", val)} label="特权模式 (PRIVILEGED)" theme="orange" />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">共享内存 (SHM_SIZE)</p>
+                <input type="text" placeholder="e.g. 2gb" value={svc.shmSize} onChange={e => updateSvc("shmSize", e.target.value)} className={inp} />
+              </div>
             </div>
           </div>
         </Section>
@@ -481,117 +555,118 @@ export function ComposeTab() {
         {/* 5. Resources & Health */}
         <Section title="5. 资源配额与健康检查" icon={<Cpu className="w-4 h-4" />} theme="teal" badge="HEALTH & LIMITS">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-             <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-emerald-50/50 to-blue-50/30 dark:from-[#161B22] dark:to-emerald-900/10 border border-emerald-100 dark:border-emerald-900/40 space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-2xl bg-emerald-500 shadow-xl shadow-emerald-500/20"><Activity className="w-4 h-4 text-white" /></div>
-                    <p className="text-[11px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">健康探测 (HEALTHCHECK)</p>
+            <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-emerald-50/50 to-blue-50/30 dark:from-[#161B22] dark:to-emerald-900/10 border border-emerald-100 dark:border-emerald-900/40 space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-2xl bg-emerald-500 shadow-xl shadow-emerald-500/20"><Activity className="w-4 h-4 text-white" /></div>
+                  <p className="text-[11px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">健康探测 (HEALTHCHECK)</p>
+                </div>
+                <div className="flex items-center gap-3 px-3 py-1.5 bg-white/80 dark:bg-black/30 rounded-full border border-emerald-100 dark:border-emerald-990 shadow-sm">
+                  <Checkbox checked={!!svc.healthcheck?.enabled} onChange={(val) => updateSvc("healthcheck", { ...(svc.healthcheck || {}), enabled: val })} label="ENABLE" theme="emerald" />
+                </div>
+              </div>
+
+              {svc.healthcheck?.enabled ? (
+                <div className="space-y-5 animate-in fade-in slide-in-from-top-2">
+                  <div>
+                    <p className="text-[9px] font-black text-gray-400 mb-2 uppercase tracking-widest font-mono">COMMAND (CMD-SHELL)</p>
+                    <input type="text" placeholder="curl -f http://localhost:8080/ || exit 1" value={svc.healthcheck.test} onChange={e => updateSvc("healthcheck", { ...svc.healthcheck, test: e.target.value })}
+                      className={`${inp} !bg-white dark:!bg-[#0D1117] !py-3 shadow-md border-emerald-200 focus:ring-emerald-500/10 font-mono`} />
                   </div>
-                  <div className="flex items-center gap-3 px-3 py-1.5 bg-white/80 dark:bg-black/30 rounded-full border border-emerald-100 dark:border-emerald-990 shadow-sm">
-                    <Checkbox checked={!!svc.healthcheck?.enabled} onChange={(val) => updateSvc("healthcheck", { ...(svc.healthcheck || {}), enabled: val })} label="ENABLE" theme="emerald" />
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    {[
+                      { label: 'INTERVAL', key: 'interval', placeholder: '30s' },
+                      { label: 'TIMEOUT', key: 'timeout', placeholder: '10s' },
+                      { label: 'START PG', key: 'startPeriod', placeholder: '40s' },
+                      { label: 'RETRIES', key: 'retries', placeholder: '3' },
+                    ].map(f => (
+                      <div key={f.key} className="space-y-1.5">
+                        <p className="text-[8px] font-black text-gray-400 uppercase tracking-tighter">{f.label}</p>
+                        <input type="text" placeholder={f.placeholder} value={svc.healthcheck ? (svc.healthcheck as any)[f.key] : ''} onChange={e => updateSvc("healthcheck", { ...svc.healthcheck, [f.key]: e.target.value })}
+                          className={`${inpSm} !py-2 !rounded-xl !bg-white dark:!bg-[#0D1117] text-center font-bold`} />
+                      </div>
+                    ))}
                   </div>
                 </div>
+              ) : (
+                <div className="py-12 border-2 border-dashed border-emerald-500/10 rounded-[2rem] flex flex-col items-center justify-center opacity-40 group hover:opacity-100 transition-opacity cursor-pointer" onClick={() => updateSvc("healthcheck", { ...(svc.healthcheck || {}), enabled: true })}>
+                  <Activity className="w-8 h-8 text-emerald-500 mb-3" />
+                  <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest italic">Disabled - Click to Enable</p>
+                </div>
+              )}
+            </div>
 
-                {svc.healthcheck?.enabled ? (
-                  <div className="space-y-5 animate-in fade-in slide-in-from-top-2">
-                    <div>
-                      <p className="text-[9px] font-black text-gray-400 mb-2 uppercase tracking-widest font-mono">COMMAND (CMD-SHELL)</p>
-                      <input type="text" placeholder="curl -f http://localhost:8080/ || exit 1" value={svc.healthcheck.test} onChange={e => updateSvc("healthcheck", { ...svc.healthcheck, test: e.target.value })}
-                        className={`${inp} !bg-white dark:!bg-[#0D1117] !py-3 shadow-md border-emerald-200 focus:ring-emerald-500/10 font-mono`} />
-                    </div>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {[
-                        { label: 'INTERVAL', key: 'interval', placeholder: '30s' },
-                        { label: 'TIMEOUT', key: 'timeout', placeholder: '10s' },
-                        { label: 'START PG', key: 'startPeriod', placeholder: '40s' },
-                        { label: 'RETRIES', key: 'retries', placeholder: '3' },
-                      ].map(f => (
-                        <div key={f.key} className="space-y-1.5">
-                          <p className="text-[8px] font-black text-gray-400 uppercase tracking-tighter">{f.label}</p>
-                          <input type="text" placeholder={f.placeholder} value={svc.healthcheck ? (svc.healthcheck as any)[f.key] : ''} onChange={e => updateSvc("healthcheck", { ...svc.healthcheck, [f.key]: e.target.value })}
-                            className={`${inpSm} !py-2 !rounded-xl !bg-white dark:!bg-[#0D1117] text-center font-bold`} />
-                        </div>
-                      ))}
-                    </div>
+            <div className="space-y-8">
+              <div className="p-6 bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 rounded-3xl space-y-6">
+                <div className="flex items-center gap-2">
+                  <Settings className="w-4 h-4 text-blue-500" />
+                  <p className="text-[11px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-widest">资源配额限制 (LIMITS)</p>
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div className="space-y-1.5">
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">CPU 核心 (E.G. 0.5)</p>
+                    <input type="text" value={svc.cpus} onChange={e => updateSvc("cpus", e.target.value)} className={inp} placeholder="0.25" />
                   </div>
-                ) : (
-                  <div className="py-12 border-2 border-dashed border-emerald-500/10 rounded-[2rem] flex flex-col items-center justify-center opacity-40 group hover:opacity-100 transition-opacity cursor-pointer" onClick={() => updateSvc("healthcheck", { ...(svc.healthcheck || {}), enabled: true })}>
-                    <Activity className="w-8 h-8 text-emerald-500 mb-3" />
-                    <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest italic">Disabled - Click to Enable</p>
+                  <div className="space-y-1.5">
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">内存容量 (E.G. 512M)</p>
+                    <input type="text" value={svc.memLimit} onChange={e => updateSvc("memLimit", e.target.value)} className={inp} placeholder="1G" />
                   </div>
-                )}
-             </div>
+                </div>
+                <label className="flex items-center gap-3 p-3 bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 rounded-2xl cursor-pointer hover:border-gray-400 transition-all shadow-sm">
+                  <input type="checkbox" checked={svc.useGpu} onChange={e => updateSvc("useGpu", e.target.checked)} className="w-4 h-4 rounded text-blue-600" />
+                  <span className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest flex items-center gap-2">
+                    请求核心级 GPU 加速 (1X NVIDIA GPU)
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  </span>
+                </label>
+              </div>
 
-             <div className="space-y-8">
-               <div className="p-6 bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 rounded-3xl space-y-6">
-                 <div className="flex items-center gap-2">
-                   <Settings className="w-4 h-4 text-blue-500" />
-                   <p className="text-[11px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-widest">资源配额限制 (LIMITS)</p>
-                 </div>
-                 <div className="grid grid-cols-2 gap-6">
-                   <div className="space-y-1.5">
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">CPU 核心 (E.G. 0.5)</p>
-                      <input type="text" value={svc.cpus} onChange={e => updateSvc("cpus", e.target.value)} className={inp} placeholder="0.25" />
-                   </div>
-                   <div className="space-y-1.5">
-                      <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">内存容量 (E.G. 512M)</p>
-                      <input type="text" value={svc.memLimit} onChange={e => updateSvc("memLimit", e.target.value)} className={inp} placeholder="1G" />
-                   </div>
-                 </div>
-                 <label className="flex items-center gap-3 p-3 bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 rounded-2xl cursor-pointer hover:border-gray-400 transition-all shadow-sm">
-                    <input type="checkbox" checked={svc.useGpu} onChange={e => updateSvc("useGpu", e.target.checked)} className="w-4 h-4 rounded text-blue-600" />
-                    <span className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest flex items-center gap-2">
-                      请求核心级 GPU 加速 (1X NVIDIA GPU)
-                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    </span>
-                 </label>
-               </div>
-
-               <div className="relative group">
-                  <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                    <MousePointer2 className="w-3.5 h-3.5" /> 专家延展配置 (CUSTOM YAML)
-                  </p>
-                  <textarea value={svc.customYaml} onChange={e => updateSvc("customYaml", e.target.value)} rows={3} placeholder="sysctls:&#10;  - net.core.somaxconn=1024"
-                    className="w-full bg-[#1E1E1E] text-orange-200 p-4 rounded-3xl text-xs font-mono focus:ring-4 ring-orange-500/10 transition-all border border-transparent focus:border-orange-500/30" />
-               </div>
-             </div>
+              <div className="relative group">
+                <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                  <MousePointer2 className="w-3.5 h-3.5" /> 专家延展配置 (CUSTOM YAML)
+                </p>
+                <textarea value={svc.customYaml} onChange={e => updateSvc("customYaml", e.target.value)} rows={3} placeholder="sysctls:&#10;  - net.core.somaxconn=1024"
+                  className="w-full bg-[#1E1E1E] text-orange-200 p-4 rounded-3xl text-xs font-mono focus:ring-4 ring-orange-500/10 transition-all border border-transparent focus:border-orange-500/30" />
+              </div>
+            </div>
           </div>
         </Section>
 
         {/* 6. Add-ons */}
         <Section title="6. 全局附加组件库" icon={<Plus className="w-4 h-4" />} theme="purple" badge="ADD-ONS">
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[
-                { id: 'redis', name: 'Redis 7', desc: 'High Performance Cache', icon: <Zap className="w-5 h-5" />, color: 'orange' },
-                { id: 'postgres', name: 'PostgreSQL 15', desc: 'Advanced SQL Support', icon: <Database className="w-5 h-5" />, color: 'blue' },
-                { id: 'mysql', name: 'MySQL 8.0', desc: 'Standard Relational DB', icon: <Settings className="w-5 h-5" />, color: 'indigo' },
-              ].map(item => (
-                <label key={item.id} className={`group relative p-6 rounded-[2.5rem] border-2 cursor-pointer transition-all duration-500 overflow-hidden 
-                  ${composeAddons[item.id as keyof typeof composeAddons] 
-                    ? 'bg-purple-500 border-purple-500 text-white shadow-2xl shadow-purple-500/40 scale-105' 
-                    : 'bg-white dark:bg-[#0D1117] border-gray-100 dark:border-gray-800 hover:border-purple-300 hover:-translate-y-1 shadow-sm'}`}>
-                  <input type="checkbox" checked={composeAddons[item.id as keyof typeof composeAddons]} 
-                    onChange={(e) => setComposeAddons({ ...composeAddons, [item.id]: e.target.checked })} className="hidden" />
-                  
-                  <div className={`p-3 rounded-2xl mb-4 w-fit transition-transform group-hover:rotate-6 
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { id: 'redis', name: 'Redis 7', desc: 'High Performance Cache', icon: <Zap className="w-5 h-5" />, color: 'orange' },
+              { id: 'postgres', name: 'PostgreSQL 15', desc: 'Advanced SQL Support', icon: <Database className="w-5 h-5" />, color: 'blue' },
+              { id: 'mysql', name: 'MySQL 8.0', desc: 'Standard Relational DB', icon: <Settings className="w-5 h-5" />, color: 'indigo' },
+            ].map(item => (
+              <label key={item.id} className={`group relative p-6 rounded-[2.5rem] border-2 cursor-pointer transition-all duration-500 overflow-hidden 
+                  ${composeAddons[item.id as keyof typeof composeAddons]
+                  ? 'bg-purple-500 border-purple-500 text-white shadow-2xl shadow-purple-500/40 scale-105'
+                  : 'bg-white dark:bg-[#0D1117] border-gray-100 dark:border-gray-800 hover:border-purple-300 hover:-translate-y-1 shadow-sm'}`}>
+                <input type="checkbox" checked={composeAddons[item.id as keyof typeof composeAddons]}
+                  onChange={(e) => setComposeAddons({ ...composeAddons, [item.id]: e.target.checked })} className="hidden" />
+
+                <div className={`p-3 rounded-2xl mb-4 w-fit transition-transform group-hover:rotate-6 
                     ${composeAddons[item.id as keyof typeof composeAddons] ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-800'}`}>
-                    <div className={composeAddons[item.id as keyof typeof composeAddons] ? 'text-white' : `text-${item.color}-500`}>{item.icon}</div>
-                  </div>
-                  
-                  <p className="text-sm font-black uppercase tracking-tight">{item.name}</p>
-                  <p className={`text-[10px] mt-1 font-bold ${composeAddons[item.id as keyof typeof composeAddons] ? 'text-purple-100' : 'text-gray-400'}`}>{item.desc}</p>
-                  
-                  {composeAddons[item.id as keyof typeof composeAddons] && (
-                    <div className="absolute top-4 right-4 animate-in fade-in zoom-in-50 duration-300">
-                      <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-purple-600 shadow-xl">
-                        <Check className="w-4 h-4 stroke-[4]" />
-                      </div>
+                  <div className={composeAddons[item.id as keyof typeof composeAddons] ? 'text-white' : `text-${item.color}-500`}>{item.icon}</div>
+                </div>
+
+                <p className="text-sm font-black uppercase tracking-tight">{item.name}</p>
+                <p className={`text-[10px] mt-1 font-bold ${composeAddons[item.id as keyof typeof composeAddons] ? 'text-purple-100' : 'text-gray-400'}`}>{item.desc}</p>
+
+                {composeAddons[item.id as keyof typeof composeAddons] && (
+                  <div className="absolute top-4 right-4 animate-in fade-in zoom-in-50 duration-300">
+                    <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center text-purple-600 shadow-xl">
+                      <Check className="w-4 h-4 stroke-[4]" />
                     </div>
-                  )}
-                </label>
-              ))}
-           </div>
+                  </div>
+                )}
+              </label>
+            ))}
+          </div>
         </Section>
+
       </div>
     </div>
   );

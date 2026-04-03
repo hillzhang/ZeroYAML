@@ -12,7 +12,7 @@ export function useCodeGenerators() {
     healthcheck, args, labels, runCmds, copyAddItems, useShellWrapper
   } = useDockerfileStore();
 
-  const { composeServices, composeAddons, composeVersion } = useComposeStore();
+  const { composeServices, composeAddons, composeVersion, networkName, useSharedNetwork } = useComposeStore();
   const k8sState = useKubernetesStore();
   const { isFullStack } = useAppStore();
 
@@ -31,25 +31,25 @@ export function useCodeGenerators() {
   const formatVolumes = () => {
     const validVols = volumes.filter(Boolean);
     if (validVols.length === 0) return '';
-    return `\n# 【科普：数据卷】持久化数据目录，容器重启数据不丢\nVOLUME [${validVols.map(v => `"${v}"`).join(', ')}]`;
+    return `\n# 挂载数据卷(持久化目录)\nVOLUME [${validVols.map(v => `"${v}"`).join(', ')}]`;
   };
 
   const formatArgs = () => {
     const validArgs = args.filter(a => a.key.trim());
     if (validArgs.length === 0) return '';
-    return `\n# 【科普：构建参数】仅在 docker build 构建时可用的宏变量\n${validArgs.map(a => `ARG ${a.key}${a.value ? `=${a.value}` : ''}`).join('\n')}`;
+    return `\n# 定义构建参数(仅在 build 时有效)\n${validArgs.map(a => `ARG ${a.key}${a.value ? `=${a.value}` : ''}`).join('\n')}`;
   };
 
   const formatLabels = () => {
     const validLabels = labels.filter(l => l.key.trim());
     if (validLabels.length === 0) return '';
-    return `\n# 【科普：元数据标签】镜像标识信息，方便平台化管理\n${validLabels.map(l => `LABEL ${l.key}="${l.value}"`).join('\n')}`;
+    return `\n# 设置镜像元数据\n${validLabels.map(l => `LABEL ${l.key}="${l.value}"`).join('\n')}`;
   };
 
   const formatRunCmds = () => {
     const validRuns = runCmds.filter(Boolean);
     if (!validRuns.length) return '';
-    return `\n# 【科普：自定义环境命令】安装额外系统依赖或执行特定 Shell 操作\n${validRuns.map(cmd => {
+    return `\n# 执行环境安装/配置命令\n${validRuns.map(cmd => {
       const indentedCmd = cmd
         .split('\n')
         .map((line, idx) => (idx === 0 ? line : `    ${line.trimStart()}`))
@@ -92,43 +92,37 @@ export function useCodeGenerators() {
   const formatUser = (defaultUser?: string) => {
     const targetUser = user || defaultUser;
     if (!targetUser) return '';
-    return `\n\n# 【科普：运行用户】提权防护，不建议暴露为 root 身份运行服务\nUSER ${targetUser}`;
+    return `\n# 指定运行镜像的非特权用户\nUSER ${targetUser}`;
   };
 
-  const renderStartCommands = (defaultCmd: string) => {
+  const renderStartCommands = () => {
     let result = '';
-    
+
     if (entrypoint.trim()) {
-      result += `\n# 【科普：入口点】容器的核心执行程序\n`;
-      result += `ENTRYPOINT ${formatCmd(entrypoint, '[]', useShellWrapper)}\n`;
+      result += `\nENTRYPOINT ${formatCmd(entrypoint, '[]', useShellWrapper)}\n`;
     }
-    
+
     if (startCmd.trim()) {
-      result += `${!entrypoint.trim() ? '\n' : ''}# 【科普：启动命令】可被传入的参数或者完整的启动命令\n`;
-      result += `CMD ${formatCmd(startCmd, '[]', !entrypoint.trim() && useShellWrapper)}`;
-    } else if (!entrypoint.trim()) {
-      result += `\n# 默认启动命令\n`;
-      // 如果使用了 Shell Wrapper，需要对默认命令也进行包装。
-      // 注意：defaultCmd 传入时如果是 JSON 字符串 e.g. '["npm", "start"]'，
-      // 我们需要将其转回普通字符串再传给 formatCmd。
-      // 但其实更稳妥的做法是让 formatCmd 自动识别。
-      const rawDefault = defaultCmd.startsWith('[') ? JSON.parse(defaultCmd).join(' ') : defaultCmd;
-      result += `CMD ${formatCmd(rawDefault, defaultCmd, useShellWrapper)}`;
+      result += `${!entrypoint.trim() ? '\n' : ''}CMD ${formatCmd(startCmd, '[]', !entrypoint.trim() && useShellWrapper)}`;
     }
-    
+
     return result.trim();
   };
 
   // ================= 生成 YAML: Docker Compose =================
   const composeYamlContent = useMemo(() => {
-    let yaml = composeVersion !== 'none' ? `version: '${composeVersion}'\n\n` : ``;
-    
-    const firstSafeName = (composeServices[0]?.name || 'app').trim().replace(/[^a-zA-Z0-9_-]/g, '-');
-    const netName = `${firstSafeName}-net`;
-    yaml += `networks:\n  ${netName}:\n    driver: bridge\n\n`;
+    if (composeServices.length === 0 && !composeAddons.redis && !composeAddons.postgres && !composeAddons.mysql) {
+      return `# Docker Compose 暂无配置
+# 请在左侧添加服务以开始编排。
+# (Please add a service on the left to generate docker-compose config.)
+`;
+    }
 
+    let yaml = composeVersion !== 'none' ? `version: '${composeVersion}'\n\n` : ``;
+
+    const netName = (networkName || 'app-net').trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
     yaml += `services:\n`;
-    
+
     composeServices.forEach((svc, index) => {
       const safeName = (svc.name || `service-${index + 1}`).trim().replace(/[^a-zA-Z0-9_-]/g, '-');
       yaml += `  ${safeName}:\n`;
@@ -142,7 +136,7 @@ export function useCodeGenerators() {
         yaml += `    container_name: ${safeName}-container\n`;
       }
       yaml += `    restart: ${svc.restart}\n`;
-      
+
       const vPorts = (svc.ports || []).filter(p => p.container.trim());
       if (vPorts.length > 0) {
         yaml += `    ports:\n`;
@@ -151,7 +145,7 @@ export function useCodeGenerators() {
           yaml += `      - "${hostPart}${p.container.trim()}"\n`;
         });
       }
-      
+
       const vEnvs = svc.envs.filter(e => e.key.trim());
       if (vEnvs.length > 0) {
         yaml += `    environment:\n`;
@@ -162,17 +156,17 @@ export function useCodeGenerators() {
         yaml += `    volumes:\n`;
         vVols.forEach(v => yaml += `      - ${v.host}:${v.container}\n`);
       }
-      
+
       if (svc.useShellWrapper && svc.command.trim()) {
-         yaml += `    command: ["sh", "-ec", "${svc.command.trim().replace(/"/g, '\\"') || ''}"]\n`;
+        yaml += `    command: ["sh", "-ec", "${svc.command.trim().replace(/"/g, '\\"') || ''}"]\n`;
       } else if (svc.command.trim()) {
-         yaml += `    command: ${svc.command.trim()}\n`;
+        yaml += `    command: ${svc.command.trim()}\n`;
       }
 
       if (svc.useShellWrapper && svc.entrypoint.trim()) {
-         yaml += `    entrypoint: ["sh", "-ec", "${svc.entrypoint.trim().replace(/"/g, '\\"') || ''}"]\n`;
+        yaml += `    entrypoint: ["sh", "-ec", "${svc.entrypoint.trim().replace(/"/g, '\\"') || ''}"]\n`;
       } else if (svc.entrypoint.trim()) {
-         yaml += `    entrypoint: ${svc.entrypoint.trim()}\n`;
+        yaml += `    entrypoint: ${svc.entrypoint.trim()}\n`;
       }
       if (svc.user.trim()) yaml += `    user: "${svc.user.trim()}"\n`;
       if (svc.privileged) yaml += `    privileged: true\n`;
@@ -223,17 +217,17 @@ export function useCodeGenerators() {
       if (svc.logDriver !== "default") {
         yaml += `    logging:\n      driver: "${svc.logDriver}"\n`;
         if (svc.logDriver === 'json-file' || svc.logDriver === 'local') {
-            if (svc.logMaxSize.trim() || svc.logMaxFile.trim()) {
-              yaml += `      options:\n`;
-              if (svc.logMaxSize.trim()) yaml += `        max-size: "${svc.logMaxSize.trim()}"\n`;
-              if (svc.logMaxFile.trim()) yaml += `        max-file: "${svc.logMaxFile.trim()}"\n`;
-            }
+          if (svc.logMaxSize.trim() || svc.logMaxFile.trim()) {
+            yaml += `      options:\n`;
+            if (svc.logMaxSize.trim()) yaml += `        max-size: "${svc.logMaxSize.trim()}"\n`;
+            if (svc.logMaxFile.trim()) yaml += `        max-file: "${svc.logMaxFile.trim()}"\n`;
+          }
         }
       }
 
       if (svc.networkMode === "host" || svc.networkMode === "none") {
         yaml += `    network_mode: "${svc.networkMode}"\n`;
-      } else {
+      } else if (useSharedNetwork) {
         yaml += `    networks:\n      - ${netName}\n`;
       }
 
@@ -248,8 +242,8 @@ export function useCodeGenerators() {
           const dIdx = composeServices.findIndex(s => s.id === depId);
           const depSvc = composeServices[dIdx];
           if (depSvc) {
-             const safeDep = (depSvc.name || `service-${dIdx + 1}`).trim().replace(/[^a-zA-Z0-9_-]/g, '-');
-             dependsOn.push(safeDep);
+            const safeDep = (depSvc.name || `service-${dIdx + 1}`).trim().replace(/[^a-zA-Z0-9_-]/g, '-');
+            dependsOn.push(safeDep);
           }
         });
       }
@@ -267,17 +261,23 @@ export function useCodeGenerators() {
     });
 
     if (composeAddons.redis) {
-      yaml += `\n  redis:\n    image: redis:7-alpine\n    container_name: redis-cache\n    restart: always\n    ports:\n      - "6379:6379"\n    networks:\n      - ${netName}\n    volumes:\n      - redis_data:/data\n`;
+      yaml += `\n  redis:\n    image: redis:7-alpine\n    container_name: redis-cache\n    restart: always\n    ports:\n      - "6379:6379"\n`;
+      if (useSharedNetwork) yaml += `    networks:\n      - ${netName}\n`;
+      yaml += `    volumes:\n      - redis_data:/data\n`;
     }
 
     if (composeAddons.postgres) {
-      yaml += `\n  postgres:\n    image: postgres:15-alpine\n    container_name: postgres-db\n    restart: always\n    environment:\n      - POSTGRES_USER=myuser\n      - POSTGRES_PASSWORD=mypassword\n      - POSTGRES_DB=mydb\n    ports:\n      - "5432:5432"\n    networks:\n      - ${netName}\n    volumes:\n      - postgres_data:/var/lib/postgresql/data\n`;
+      yaml += `\n  postgres:\n    image: postgres:15-alpine\n    container_name: postgres-db\n    restart: always\n    environment:\n      - POSTGRES_USER=myuser\n      - POSTGRES_PASSWORD=mypassword\n      - POSTGRES_DB=mydb\n    ports:\n      - "5432:5432"\n`;
+      if (useSharedNetwork) yaml += `    networks:\n      - ${netName}\n`;
+      yaml += `    volumes:\n      - postgres_data:/var/lib/postgresql/data\n`;
     }
-    
+
     if (composeAddons.mysql) {
-      yaml += `\n  mysql:\n    image: mysql:8.0\n    container_name: mysql-db\n    restart: always\n    environment:\n      - MYSQL_ROOT_PASSWORD=rootpass\n      - MYSQL_DATABASE=mydb\n      - MYSQL_USER=myuser\n      - MYSQL_PASSWORD=mypassword\n    ports:\n      - "3306:3306"\n    networks:\n      - ${netName}\n    volumes:\n      - mysql_data:/var/lib/mysql\n`;
+      yaml += `\n  mysql:\n    image: mysql:8.0\n    container_name: mysql-db\n    restart: always\n    environment:\n      - MYSQL_ROOT_PASSWORD=rootpass\n      - MYSQL_DATABASE=mydb\n      - MYSQL_USER=myuser\n      - MYSQL_PASSWORD=mypassword\n    ports:\n      - "3306:3306"\n`;
+      if (useSharedNetwork) yaml += `    networks:\n      - ${netName}\n`;
+      yaml += `    volumes:\n      - mysql_data:/var/lib/mysql\n`;
     }
-    
+
     if (composeAddons.redis || composeAddons.postgres || composeAddons.mysql) {
       yaml += `\nvolumes:\n`;
       if (composeAddons.redis) yaml += `  redis_data:\n`;
@@ -285,61 +285,70 @@ export function useCodeGenerators() {
       if (composeAddons.mysql) yaml += `  mysql_data:\n`;
     }
 
+    if (useSharedNetwork) {
+      yaml += `\nnetworks:\n  ${netName}:\n    driver: bridge\n`;
+    }
+
     return yaml;
-  }, [composeServices, composeAddons, composeVersion, isFullStack]);
+  }, [composeServices, composeAddons, composeVersion, networkName, useSharedNetwork, isFullStack]);
 
   // ================= 生成 Dockerfile =================
   const dockerfileContent = useMemo(() => {
+    // 1. 如果完全为空（重置后的状态），显示空白引导
+    if (!baseImage && !workdir && !port && !startCmd && envVars.length === 0 && runCmds.length === 0 && copyAddItems.length === 0) {
+      return `# Dockerfile 处于空白状态
+# 请在左侧选择基础镜像 (FROM) 开始配置...
+`;
+    }
+
+    // 2. 特殊模板: Node.js (最佳实践示例)
     if (baseImage === "node:20-alpine") {
       const targetUser = user || "node";
       const chownFlag = targetUser !== "root" ? `--chown=${targetUser}:${targetUser} ` : "";
 
       return `# =========================================
-# 【建议】根目录新建 .dockerignore 文件，排除 node_modules/ 和 .git/ 等避免体积爆增
+# 【Node.js 最佳实践】多阶段构建，极致减小体积
 # =========================================
-# 【零基础科普：多阶段构建】
+
 # 第一阶段：构建 (Builder)
-# 使用更小的 alpine 镜像作为基础，减少体积
-# =========================================
 FROM node:20-alpine AS builder
 ${formatArgs()}
-WORKDIR ${workdir}
+WORKDIR ${workdir || '/app'}
 COPY package*.json ./
-RUN npm ci
-
+RUN npm ci # 相比 npm install 更快、更稳定
 COPY . .
 RUN npm run build # 如果没有构建脚本可忽略
 
-# =========================================
 # 第二阶段：运行 (Runner)
-# =========================================
 FROM node:20-alpine AS runner
 ${formatLabels()}
-WORKDIR ${workdir}
-# 环境变量最佳实践
+WORKDIR ${workdir || '/app'}
 ${formatEnvVars()}
 ${formatRunCmds()}
-COPY ${chownFlag}--from=builder ${workdir}/package*.json ./
-COPY ${chownFlag}--from=builder ${workdir}/node_modules ./node_modules
-# 将上方生成的产物或源代码复制进最终镜像
-COPY ${chownFlag}--from=builder ${workdir}/. .${formatCopyAdd()}${formatVolumes()}
+# 仅从前一阶段拷贝生产环境必要的运行产物
+COPY ${chownFlag}--from=builder ${workdir || '/app'}/package*.json ./
+COPY ${chownFlag}--from=builder ${workdir || '/app'}/node_modules ./node_modules
+COPY ${chownFlag}--from=builder ${workdir || '/app'}/. .${formatCopyAdd()}${formatVolumes()}
 
-# 【科普：暴露端口】声明容器内监听的端口
-EXPOSE ${port}${formatHealthCheck()}${formatUser('node')}
+# 【注意】声明容器内部监听的端口
+EXPOSE ${port || '3000'}${formatHealthCheck()}
 
-${renderStartCommands('["npm", "start"]')}`;
+# 【建议】以非 root 用户运行，增强安全性
+${formatUser('node')}
 
-    } else if (baseImage === "python:3.11-slim") {
-      const targetUser = user || "myuser";
-      const userSetup = targetUser !== "root" 
-        ? `\n# 推荐创建一个普通用户运行\nRUN useradd -m ${targetUser}${formatUser(targetUser)}` 
-        : formatUser(targetUser);
+${renderStartCommands() || 'CMD ["npm", "start"]'}`;
+    }
 
-      return `FROM python:3.11-slim
+    // 3. 特殊模板: Python
+    if (baseImage === "python:3.11-slim") {
+      return `# =========================================
+# 【Python 最佳实践】
+# =========================================
+FROM python:3.11-slim
 ${formatArgs()}${formatLabels()}
-WORKDIR ${workdir}
+WORKDIR ${workdir || '/app'}
 
-# 设置环境变量，强制不生成 .pyc，且 stdout 不缓冲
+# 禁止 Python 生成 .pyc 且 stdout 不缓冲
 ENV PYTHONDONTWRITEBYTECODE=1 \\
     PYTHONUNBUFFERED=1
 
@@ -350,52 +359,61 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .${formatCopyAdd()}${formatVolumes()}
 
-# 专门暴露给外界的服务端口
-EXPOSE ${port}${formatHealthCheck()}${userSetup}
+EXPOSE ${port || '8000'}${formatHealthCheck()}${formatUser()}
 
-${renderStartCommands('["python", "app.py"]')}`;
+${renderStartCommands() || 'CMD ["python", "app.py"]'}`;
+    }
 
-    } else if (baseImage === "golang:1.22-alpine") {
-      const targetUser = user || "appuser";
-      const userSetup = targetUser !== "root"
-        ? `\n# 推荐以非 root 身份运行二进制文件\nRUN addgroup -S ${targetUser} && adduser -S ${targetUser} -G ${targetUser}${formatUser(targetUser)}`
-        : formatUser();
-
-      return `FROM golang:1.22-alpine AS builder
+    // 4. 特殊模板: Go
+    if (baseImage === "golang:1.22-alpine") {
+      return `# =========================================
+# 【Golang 最佳实践】静态编译与小体积运行环境
+# =========================================
+FROM golang:1.22-alpine AS builder
 ${formatArgs()}
-WORKDIR ${workdir}
+WORKDIR ${workdir || '/app'}
 COPY go.mod go.sum ./
 RUN go mod download
-
 COPY . .
-# 禁用 CGO 以便构建一个完全静态的二进制文件
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
+# 禁用 CGO 以便构建完全静态的二进制文件
+RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
 FROM alpine:latest  
 RUN apk --no-cache add ca-certificates
 ${formatLabels()}
-WORKDIR ${workdir}
+WORKDIR ${workdir || '/app'}
 ${formatEnvVars()}
 ${formatRunCmds()}
-COPY --from=builder ${workdir}/main .${formatCopyAdd()}${formatVolumes()}
+COPY --from=builder ${workdir || '/app'}/main .${formatCopyAdd()}${formatVolumes()}
 
-EXPOSE ${port}${formatHealthCheck()}${userSetup}
+EXPOSE ${port || '8080'}${formatHealthCheck()}${formatUser()}
 
-${renderStartCommands('["./main"]')}`;
-
+${renderStartCommands() || 'CMD ["./main"]'}`;
     }
+
+    // 5. 通用/从零开始模式 (极致纯净)
+    let dockerfile = `FROM ${baseImage || 'alpine:latest'}\n`;
+    const argsStr = formatArgs(); if (argsStr) dockerfile += argsStr + '\n';
+    const labelsStr = formatLabels(); if (labelsStr) dockerfile += labelsStr + '\n';
+    if (workdir) dockerfile += `WORKDIR ${workdir}\n`;
+    const envsStr = formatEnvVars(); if (envsStr) dockerfile += envsStr + '\n';
+    const runsStr = formatRunCmds(); if (runsStr) dockerfile += runsStr + '\n';
     
-    return `FROM ${baseImage || 'alpine:latest'}
-${formatArgs()}${formatLabels()}
-WORKDIR ${workdir}
-${formatEnvVars()}
-${formatRunCmds()}
+    const copyAddStr = formatCopyAdd(); 
+    if (copyAddStr) {
+      dockerfile += `\n# 文件同步\nCOPY . .${copyAddStr}`;
+    }
 
-COPY . .${formatCopyAdd()}${formatVolumes()}
-EXPOSE ${port}
-${formatHealthCheck()}${formatUser()}
-${renderStartCommands('')}`;
+    const volumesStr = formatVolumes(); if (volumesStr) dockerfile += `\n` + volumesStr;
 
+    if (port) dockerfile += `\nEXPOSE ${port}`;
+    const healthStr = formatHealthCheck(); if (healthStr) dockerfile += healthStr;
+    const userStr = formatUser(); if (userStr) dockerfile += userStr;
+    
+    const cmdsStr = renderStartCommands();
+    if (cmdsStr) dockerfile += `\n\n${cmdsStr}`;
+
+    return dockerfile.trim();
   }, [
     baseImage, workdir, port, startCmd, entrypoint, envVars, volumes, user,
     healthcheck, args, labels, runCmds, copyAddItems, useShellWrapper, isFullStack
@@ -403,12 +421,12 @@ ${renderStartCommands('')}`;
 
   // ================= 生成 Kubernetes YAML =================
   const kubernetesYamlContent = useMemo(() => {
-    const { 
-      workloads, services, ingresses, 
-      pvcs, configMaps, secrets, pvs, storageClasses 
+    const {
+      workloads, services, ingresses,
+      pvcs, configMaps, secrets, pvs, storageClasses
     } = k8sState;
     const sn = (txt: string) => (txt || 'unnamed').toLowerCase().replace(/[^a-z0-9-]/g, '-');
-    
+
     const workloadDocs: string[] = [];
     const serviceDocs: string[] = [];
     const ingressDocs: string[] = [];
@@ -417,7 +435,7 @@ ${renderStartCommands('')}`;
     const buildMetadata = (name: string, ns?: string, labels: any[] = [], annos: any[] = [], extraLabels: Record<string, string> = {}) => {
       let s = `metadata:\n  name: ${sn(name)}`;
       if (ns) s += `\n  namespace: ${ns}`;
-      
+
       const vLabels = labels.filter(l => l.key);
       const hasExtra = Object.keys(extraLabels).length > 0;
       if (vLabels.length || hasExtra) {
@@ -425,7 +443,7 @@ ${renderStartCommands('')}`;
         Object.entries(extraLabels).forEach(([k, v]) => { s += `\n    ${k}: ${v}`; });
         vLabels.forEach(l => { s += `\n    ${l.key}: "${l.value}"`; });
       }
-      
+
       const vAnnos = annos.filter(a => a.key);
       if (vAnnos.length) {
         s += `\n  annotations:`;
@@ -436,9 +454,9 @@ ${renderStartCommands('')}`;
 
     const buildProbe = (probe: any, ind: string) => {
       let p = '';
-      if (probe.type === 'httpGet')   p += `\n${ind}  httpGet:\n${ind}    path: ${probe.path}\n${ind}    port: ${probe.port}`;
+      if (probe.type === 'httpGet') p += `\n${ind}  httpGet:\n${ind}    path: ${probe.path}\n${ind}    port: ${probe.port}`;
       if (probe.type === 'tcpSocket') p += `\n${ind}  tcpSocket:\n${ind}    port: ${probe.port}`;
-      if (probe.type === 'grpc')      p += `\n${ind}  grpc:\n${ind}    port: ${Number(probe.port)}`;
+      if (probe.type === 'grpc') p += `\n${ind}  grpc:\n${ind}    port: ${Number(probe.port)}`;
       if (probe.type === 'exec') { p += `\n${ind}  exec:\n${ind}    command:`; probe.command.trim().split(/\s+/).forEach((c: string) => { p += `\n${ind}    - ${c}`; }); }
       p += `\n${ind}  initialDelaySeconds: ${probe.initialDelaySeconds}`;
       p += `\n${ind}  periodSeconds: ${probe.periodSeconds}`;
@@ -451,7 +469,7 @@ ${renderStartCommands('')}`;
     const buildContainer = (w: any, ind: string) => {
       let c = `${ind}- name: ${sn(w.appName)}-container\n${ind}  image: ${w.image || 'nginx:alpine'}\n${ind}  imagePullPolicy: ${w.imagePullPolicy}`;
       if (w.containerPort) c += `\n${ind}  ports:\n${ind}  - containerPort: ${w.containerPort || 80}`;
-      
+
       if (w.command?.trim()) {
         if (w.useShellWrapper) {
           c += `\n${ind}  command: ["sh", "-ec", "${w.command.trim().replace(/"/g, '\\"')}"]`;
@@ -463,11 +481,11 @@ ${renderStartCommands('')}`;
           }
         }
       }
-      
+
       if (w.args?.trim()) {
         if (w.useShellWrapper && !w.command?.trim()) {
-           // 如果没有 command 但开启了 wrapper，则在 args 处包裹 sh -ec
-           c += `\n${ind}  args: ["sh", "-ec", "${w.args.trim().replace(/"/g, '\\"')}"]`;
+          // 如果没有 command 但开启了 wrapper，则在 args 处包裹 sh -ec
+          c += `\n${ind}  args: ["sh", "-ec", "${w.args.trim().replace(/"/g, '\\"')}"]`;
         } else {
           const parts = w.args.trim().split(/\s+/).filter(Boolean);
           if (parts.length) {
@@ -476,7 +494,7 @@ ${renderStartCommands('')}`;
           }
         }
       }
-      
+
       const venvs = w.envs.filter((e: any) => e.name);
       if (venvs.length) {
         c += `\n${ind}  env:`;
@@ -521,11 +539,11 @@ ${renderStartCommands('')}`;
         if (w.readOnlyRootFilesystem) c += `\n${ind}    readOnlyRootFilesystem: true`;
         if (!w.allowPrivilegeEscalation) c += `\n${ind}    allowPrivilegeEscalation: false`;
       }
-      
+
       const pi = `${ind}  `;
-      if (w.livenessProbe.enabled)  c += `\n${pi}livenessProbe:${buildProbe(w.livenessProbe, pi)}`;
+      if (w.livenessProbe.enabled) c += `\n${pi}livenessProbe:${buildProbe(w.livenessProbe, pi)}`;
       if (w.readinessProbe.enabled) c += `\n${pi}readinessProbe:${buildProbe(w.readinessProbe, pi)}`;
-      if (w.startupProbe.enabled)   c += `\n${pi}startupProbe:${buildProbe(w.startupProbe, pi)}`;
+      if (w.startupProbe.enabled) c += `\n${pi}startupProbe:${buildProbe(w.startupProbe, pi)}`;
 
       return c;
     };
@@ -536,7 +554,7 @@ ${renderStartCommands('')}`;
       const pl = w.podLabels?.filter((l: any) => l.key) || [];
       meta += `\n${si}labels:\n${si}  app: ${sn(w.appName)}`;
       pl.forEach((l: any) => { meta += `\n${si}  ${l.key}: "${l.value}"`; });
-      
+
       const pa = w.podAnnotations?.filter((a: any) => a.key) || [];
       if (pa.length) {
         meta += `\n${si}annotations:`;
@@ -562,11 +580,11 @@ ${renderStartCommands('')}`;
         s += `\n${si}volumes:`;
         vvols.forEach((v: any) => {
           s += `\n${si}- name: ${v.name}`;
-          if (v.sourceType === 'emptyDir')  s += `\n${si}  emptyDir: {}`;
-          if (v.sourceType === 'hostPath')  s += `\n${si}  hostPath:\n${si}    path: ${v.hostPathValue || '/tmp'}`;
-          if (v.sourceType === 'pvc')       s += `\n${si}  persistentVolumeClaim:\n${si}    claimName: ${v.resourceRef}`;
+          if (v.sourceType === 'emptyDir') s += `\n${si}  emptyDir: {}`;
+          if (v.sourceType === 'hostPath') s += `\n${si}  hostPath:\n${si}    path: ${v.hostPathValue || '/tmp'}`;
+          if (v.sourceType === 'pvc') s += `\n${si}  persistentVolumeClaim:\n${si}    claimName: ${v.resourceRef}`;
           if (v.sourceType === 'configMap') s += `\n${si}  configMap:\n${si}    name: ${v.resourceRef}`;
-          if (v.sourceType === 'secret')    s += `\n${si}  secret:\n${si}    secretName: ${v.resourceRef}`;
+          if (v.sourceType === 'secret') s += `\n${si}  secret:\n${si}    secretName: ${v.resourceRef}`;
         });
       }
       return s;
@@ -606,12 +624,12 @@ ${renderStartCommands('')}`;
       if (!cm.name) return;
       const valid = cm.data.filter(d => d.key);
       let doc = `apiVersion: v1\nkind: ConfigMap\n${buildMetadata(cm.name, cm.namespace, cm.labels, cm.annotations)}`;
-      if (valid.length) { 
-        doc += `\ndata:`; 
-        valid.forEach(d => { 
+      if (valid.length) {
+        doc += `\ndata:`;
+        valid.forEach(d => {
           const val = d.value.includes('\n') ? `|-\n    ${d.value.split('\n').join('\n    ')}` : `"${d.value.replace(/"/g, '\\"')}"`;
-          doc += `\n  ${d.key}: ${val}`; 
-        }); 
+          doc += `\n  ${d.key}: ${val}`;
+        });
       }
       storageDocs.push(doc);
     });
@@ -619,12 +637,12 @@ ${renderStartCommands('')}`;
       if (!sec.name) return;
       const valid = sec.data.filter(d => d.key);
       let doc = `apiVersion: v1\nkind: Secret\n${buildMetadata(sec.name, sec.namespace, sec.labels, sec.annotations)}\ntype: ${sec.secretType || 'Opaque'}`;
-      if (valid.length) { 
-        doc += `\nstringData:`; 
-        valid.forEach(d => { 
+      if (valid.length) {
+        doc += `\nstringData:`;
+        valid.forEach(d => {
           const val = d.value.includes('\n') ? `|-\n    ${d.value.split('\n').join('\n    ')}` : `"${d.value.replace(/"/g, '\\"')}"`;
-          doc += `\n  ${d.key}: ${val}`; 
-        }); 
+          doc += `\n  ${d.key}: ${val}`;
+        });
       }
       storageDocs.push(doc);
     });
@@ -687,7 +705,7 @@ ${renderStartCommands('')}`;
       const workloadNames = new Set(workloads.map(w => sn(w.appName)));
       const associatedSvcNames = new Set(services.filter(s => workloadNames.has(sn(s.selectorApp))).map(s => sn(s.name)));
       const associatedIngs = ingresses.filter(ing => ing.rules.some(r => associatedSvcNames.has(sn(r.serviceName))));
-      
+
       const fSvcDocs = serviceDocs.filter(d => { const match = d.match(/name:\s+([^\n]+)/); return match && associatedSvcNames.has(match[1].trim()); });
       const fIngDocs = ingressDocs.filter(d => { const match = d.match(/name:\s+([^\n]+)/); return match && associatedIngs.some(ing => sn(ing.name) === match[1].trim()); });
       return [...workloadDocs, ...fSvcDocs, ...fIngDocs].join('\n---\n') || '# 暂无工作负载关联资源';
@@ -698,9 +716,9 @@ ${renderStartCommands('')}`;
     }
 
     return '# 暂无资源';
-    }, [
-    k8sState.workloads, k8sState.services, k8sState.ingresses, 
-    k8sState.pvcs, k8sState.configMaps, k8sState.secrets, 
+  }, [
+    k8sState.workloads, k8sState.services, k8sState.ingresses,
+    k8sState.pvcs, k8sState.configMaps, k8sState.secrets,
     k8sState.pvs, k8sState.storageClasses, k8sState.activeSection, isFullStack
   ]);
 
