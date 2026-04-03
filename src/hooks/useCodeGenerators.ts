@@ -5,8 +5,10 @@ import { useDockerfileStore } from '@/store/useDockerfileStore';
 import { useComposeStore } from '@/store/useComposeStore';
 import { useKubernetesStore } from '@/store/useKubernetesStore';
 import { useAppStore } from '@/store/useAppStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export function useCodeGenerators() {
+  const { t } = useTranslation();
   const {
     baseImage, workdir, port, startCmd, entrypoint, envVars, volumes, user,
     healthcheck, args, labels, runCmds, copyAddItems, useShellWrapper
@@ -31,25 +33,25 @@ export function useCodeGenerators() {
   const formatVolumes = () => {
     const validVols = volumes.filter(Boolean);
     if (validVols.length === 0) return '';
-    return `\n# 挂载数据卷(持久化目录)\nVOLUME [${validVols.map(v => `"${v}"`).join(', ')}]`;
+    return `\n# ${t.comments.volumeNotice}\nVOLUME [${validVols.map(v => `"${v}"`).join(', ')}]`;
   };
 
   const formatArgs = () => {
     const validArgs = args.filter(a => a.key.trim());
     if (validArgs.length === 0) return '';
-    return `\n# 定义构建参数(仅在 build 时有效)\n${validArgs.map(a => `ARG ${a.key}${a.value ? `=${a.value}` : ''}`).join('\n')}`;
+    return `\n# ${t.comments.argNotice}\n${validArgs.map(a => `ARG ${a.key}${a.value ? `=${a.value}` : ''}`).join('\n')}`;
   };
 
   const formatLabels = () => {
     const validLabels = labels.filter(l => l.key.trim());
     if (validLabels.length === 0) return '';
-    return `\n# 设置镜像元数据\n${validLabels.map(l => `LABEL ${l.key}="${l.value}"`).join('\n')}`;
+    return `\n# ${t.comments.labelNotice}\n${validLabels.map(l => `LABEL ${l.key}="${l.value}"`).join('\n')}`;
   };
 
   const formatRunCmds = () => {
     const validRuns = runCmds.filter(Boolean);
     if (!validRuns.length) return '';
-    return `\n# 执行环境安装/配置命令\n${validRuns.map(cmd => {
+    return `\n# ${t.comments.runNotice}\n${validRuns.map(cmd => {
       const indentedCmd = cmd
         .split('\n')
         .map((line, idx) => (idx === 0 ? line : `    ${line.trimStart()}`))
@@ -61,7 +63,7 @@ export function useCodeGenerators() {
   const formatCopyAdd = () => {
     const validItems = copyAddItems.filter(item => item.src.trim() && item.dest.trim());
     if (validItems.length === 0) return '';
-    return `\n# 【科普：文件传输】COPY 负责普通拷贝，ADD 支持解压和外部 URL 下载\n${validItems.map(item => {
+    return `\n# ${t.comments.copyAddNotice}\n${validItems.map(item => {
       let fromArg = '';
       let chownArg = '';
       if (item.type === 'COPY' && item.from && item.from.trim() !== '') {
@@ -79,7 +81,7 @@ export function useCodeGenerators() {
   const formatHealthCheck = () => {
     if (!healthcheck.trim()) return '';
     const cmdStr = healthcheck.startsWith('CMD') ? healthcheck : `CMD ${healthcheck}`;
-    return `\n\n# 【科普：健康检查】供容器服务(如K8s/Compose)确认应用是否存活\nHEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \\\n  ${cmdStr}`;
+    return `\n\n# ${t.comments.healthcheckNotice}\nHEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \\\n  ${cmdStr}`;
   };
 
   const formatEnvVars = () => {
@@ -92,7 +94,7 @@ export function useCodeGenerators() {
   const formatUser = (defaultUser?: string) => {
     const targetUser = user || defaultUser;
     if (!targetUser) return '';
-    return `\n# 指定运行镜像的非特权用户\nUSER ${targetUser}`;
+    return `\n# ${t.comments.userExplain}\nUSER ${targetUser}`;
   };
 
   const renderStartCommands = () => {
@@ -112,10 +114,7 @@ export function useCodeGenerators() {
   // ================= 生成 YAML: Docker Compose =================
   const composeYamlContent = useMemo(() => {
     if (composeServices.length === 0 && !composeAddons.redis && !composeAddons.postgres && !composeAddons.mysql) {
-      return `# Docker Compose 暂无配置
-# 请在左侧添加服务以开始编排。
-# (Please add a service on the left to generate docker-compose config.)
-`;
+      return `# ${t.comments.composeEmpty}`;
     }
 
     let yaml = composeVersion !== 'none' ? `version: '${composeVersion}'\n\n` : ``;
@@ -290,15 +289,13 @@ export function useCodeGenerators() {
     }
 
     return yaml;
-  }, [composeServices, composeAddons, composeVersion, networkName, useSharedNetwork, isFullStack]);
+  }, [composeServices, composeAddons, composeVersion, networkName, useSharedNetwork, isFullStack, t]);
 
   // ================= 生成 Dockerfile =================
   const dockerfileContent = useMemo(() => {
-    // 1. 如果完全为空（重置后的状态），显示空白引导
+    // 1. 如果完全为空（重置后的状态），显示引导
     if (!baseImage && !workdir && !port && !startCmd && envVars.length === 0 && runCmds.length === 0 && copyAddItems.length === 0) {
-      return `# Dockerfile 处于空白状态
-# 请在左侧选择基础镜像 (FROM) 开始配置...
-`;
+      return `# ${t.comments.dockerfileEmpty}`;
     }
 
     // 2. 特殊模板: Node.js (最佳实践示例)
@@ -307,33 +304,33 @@ export function useCodeGenerators() {
       const chownFlag = targetUser !== "root" ? `--chown=${targetUser}:${targetUser} ` : "";
 
       return `# =========================================
-# 【Node.js 最佳实践】多阶段构建，极致减小体积
+# ${t.comments.nodeBestPractice}
 # =========================================
 
-# 第一阶段：构建 (Builder)
+# ${t.comments.builderStage}
 FROM node:20-alpine AS builder
 ${formatArgs()}
 WORKDIR ${workdir || '/app'}
 COPY package*.json ./
-RUN npm ci # 相比 npm install 更快、更稳定
+RUN npm ci # ${t.comments.npmCi}
 COPY . .
-RUN npm run build # 如果没有构建脚本可忽略
+RUN npm run build # ${t.comments.npmBuild}
 
-# 第二阶段：运行 (Runner)
+# ${t.comments.runnerStage}
 FROM node:20-alpine AS runner
 ${formatLabels()}
 WORKDIR ${workdir || '/app'}
 ${formatEnvVars()}
 ${formatRunCmds()}
-# 仅从前一阶段拷贝生产环境必要的运行产物
+# ${t.comments.copyProduction}
 COPY ${chownFlag}--from=builder ${workdir || '/app'}/package*.json ./
 COPY ${chownFlag}--from=builder ${workdir || '/app'}/node_modules ./node_modules
 COPY ${chownFlag}--from=builder ${workdir || '/app'}/. .${formatCopyAdd()}${formatVolumes()}
 
-# 【注意】声明容器内部监听的端口
+# ${t.comments.portNotice}
 EXPOSE ${port || '3000'}${formatHealthCheck()}
 
-# 【建议】以非 root 用户运行，增强安全性
+# ${t.comments.userNotice}
 ${formatUser('node')}
 
 ${renderStartCommands() || 'CMD ["npm", "start"]'}`;
@@ -342,13 +339,13 @@ ${renderStartCommands() || 'CMD ["npm", "start"]'}`;
     // 3. 特殊模板: Python
     if (baseImage === "python:3.11-slim") {
       return `# =========================================
-# 【Python 最佳实践】
+# ${t.comments.pythonBestPractice}
 # =========================================
 FROM python:3.11-slim
 ${formatArgs()}${formatLabels()}
 WORKDIR ${workdir || '/app'}
 
-# 禁止 Python 生成 .pyc 且 stdout 不缓冲
+# ${t.comments.pythonNoPyc}
 ENV PYTHONDONTWRITEBYTECODE=1 \\
     PYTHONUNBUFFERED=1
 
@@ -367,7 +364,7 @@ ${renderStartCommands() || 'CMD ["python", "app.py"]'}`;
     // 4. 特殊模板: Go
     if (baseImage === "golang:1.22-alpine") {
       return `# =========================================
-# 【Golang 最佳实践】静态编译与小体积运行环境
+# ${t.comments.goBestPractice}
 # =========================================
 FROM golang:1.22-alpine AS builder
 ${formatArgs()}
@@ -375,7 +372,7 @@ WORKDIR ${workdir || '/app'}
 COPY go.mod go.sum ./
 RUN go mod download
 COPY . .
-# 禁用 CGO 以便构建完全静态的二进制文件
+# ${t.comments.goStatic}
 RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
 FROM alpine:latest  
@@ -401,7 +398,7 @@ ${renderStartCommands() || 'CMD ["./main"]'}`;
     
     const copyAddStr = formatCopyAdd(); 
     if (copyAddStr) {
-      dockerfile += `\n# 文件同步\nCOPY . .${copyAddStr}`;
+      dockerfile += `\n# ${t.comments.fileSync}\nCOPY . .${copyAddStr}`;
     }
 
     const volumesStr = formatVolumes(); if (volumesStr) dockerfile += `\n` + volumesStr;
@@ -416,7 +413,7 @@ ${renderStartCommands() || 'CMD ["./main"]'}`;
     return dockerfile.trim();
   }, [
     baseImage, workdir, port, startCmd, entrypoint, envVars, volumes, user,
-    healthcheck, args, labels, runCmds, copyAddItems, useShellWrapper, isFullStack
+    healthcheck, args, labels, runCmds, copyAddItems, useShellWrapper, isFullStack, t
   ]);
 
   // ================= 生成 Kubernetes YAML =================
@@ -697,7 +694,7 @@ ${renderStartCommands() || 'CMD ["./main"]'}`;
     });
 
     if (isFullStack) {
-      return [...storageDocs, ...serviceDocs, ...workloadDocs, ...ingressDocs].join('\n---\n') || '# 暂无全局资源';
+      return [...storageDocs, ...serviceDocs, ...workloadDocs, ...ingressDocs].join('\n---\n') || `# ${t.comments.k8sNoGlobal}`;
     }
 
     const { activeSection } = k8sState;
@@ -708,18 +705,18 @@ ${renderStartCommands() || 'CMD ["./main"]'}`;
 
       const fSvcDocs = serviceDocs.filter(d => { const match = d.match(/name:\s+([^\n]+)/); return match && associatedSvcNames.has(match[1].trim()); });
       const fIngDocs = ingressDocs.filter(d => { const match = d.match(/name:\s+([^\n]+)/); return match && associatedIngs.some(ing => sn(ing.name) === match[1].trim()); });
-      return [...workloadDocs, ...fSvcDocs, ...fIngDocs].join('\n---\n') || '# 暂无工作负载关联资源';
+      return [...workloadDocs, ...fSvcDocs, ...fIngDocs].join('\n---\n') || `# ${t.comments.k8sNoWorkload}`;
     } else if (activeSection === 'network') {
-      return [...serviceDocs, ...ingressDocs].join('\n---\n') || '# 暂无网络资源';
+      return [...serviceDocs, ...ingressDocs].join('\n---\n') || `# ${t.comments.k8sNoNetwork}`;
     } else if (activeSection === 'storage') {
-      return storageDocs.join('\n---\n') || '# 暂无存储资源';
+      return storageDocs.join('\n---\n') || `# ${t.comments.k8sNoStorage}`;
     }
 
-    return '# 暂无资源';
+    return `# ${t.comments.k8sNoResource}`;
   }, [
     k8sState.workloads, k8sState.services, k8sState.ingresses,
     k8sState.pvcs, k8sState.configMaps, k8sState.secrets,
-    k8sState.pvs, k8sState.storageClasses, k8sState.activeSection, isFullStack
+    k8sState.pvs, k8sState.storageClasses, k8sState.activeSection, isFullStack, t
   ]);
 
   return { dockerfileContent, composeYamlContent, kubernetesYamlContent };

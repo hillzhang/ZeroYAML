@@ -3,6 +3,7 @@
 import Editor from "@monaco-editor/react";
 import { useAppStore } from '@/store/useAppStore';
 import { useCodeGenerators } from '@/hooks/useCodeGenerators';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Code2, Copy, Download, RotateCcw, CheckCircle2, RotateCw } from 'lucide-react';
 import { useTheme } from "next-themes";
 import { useComposeStore } from '@/store/useComposeStore';
@@ -11,6 +12,7 @@ import { useKubernetesStore } from '@/store/useKubernetesStore';
 import { useEffect, useState } from "react";
 
 export function CodeViewer() {
+  const { t } = useTranslation();
   const { activeTab, isFullStack, setIsFullStack, overrides, setOverrideEnabled, setOverrideEditing, setOverrideCode, resetOverride } = useAppStore();
   const { dockerfileContent, composeYamlContent, kubernetesYamlContent } = useCodeGenerators();
   const composeReset = useComposeStore(s => s.reset);
@@ -49,12 +51,12 @@ export function CodeViewer() {
 
   const handleGlobalReset = () => {
     const msg = activeTab === 'dockerfile' 
-      ? '确定要清空 Dockerfile 配置并重置吗？' 
+      ? t.editor.confirmResetDockerfile
       : activeTab === 'compose' 
-        ? '确定要清空 Docker Compose 配置并新建吗？' 
-        : '确定要清空 Kubernetes 所有资源并重置吗？';
+        ? t.editor.confirmResetCompose 
+        : t.editor.confirmResetKubernetes;
     
-    if (window.confirm(`${msg}\n(This will clear all current configurations for this module.)`)) {
+    if (window.confirm(`${msg}\n${t.editor.resetWarning}`)) {
       if (activeTab === 'dockerfile') dockerfileReset();
       else if (activeTab === 'compose') composeReset();
       else if (activeTab === 'kubernetes') kubernetesReset();
@@ -114,10 +116,10 @@ export function CodeViewer() {
               <span className="text-[11px] font-black uppercase tracking-widest text-gray-900 dark:text-gray-100 leading-none">{currentTitle}</span>
               {currentOverride.isEnabled && (
                 <div className="flex items-center gap-2 mt-1.5 h-3">
-                  <span className="text-[8px] font-black text-white px-1.5 py-0.5 rounded bg-orange-500 uppercase tracking-tighter shadow-sm">OVERRIDE ACTIVE</span>
+                  <span className="text-[8px] font-black text-white px-1.5 py-0.5 rounded bg-orange-500 uppercase tracking-tighter shadow-sm">{t.common.overrideActive}</span>
                   {saveStatus && (
                     <span className={`text-[7px] font-bold px-1.5 py-0.5 rounded uppercase flex items-center gap-1 transition-opacity duration-300 ${saveStatus === 'saving' ? 'bg-blue-100 text-blue-600 animate-pulse' : 'bg-emerald-100 text-emerald-600'}`}>
-                      {saveStatus === 'saving' ? 'Saving...' : 'Saved'}
+                      {saveStatus === 'saving' ? t.common.saving : t.common.saved}
                     </span>
                   )}
                 </div>
@@ -150,31 +152,31 @@ export function CodeViewer() {
             <button
               onClick={handleRestoreAuto}
               className="flex items-center gap-2 px-4 h-10 transition-all rounded-xl border border-blue-200/50 dark:border-blue-900/30 bg-blue-50/50 dark:bg-blue-900/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 active:scale-95 group"
-              title="恢复与表单动态同步"
+              title={t.common.restoreAuto}
             >
               <RotateCcw className="w-3.5 h-3.5 group-hover:rotate-[-90deg] transition-transform" />
-              <span className="text-[10px] font-black uppercase tracking-widest">恢复自动同步</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">{t.common.restoreAuto}</span>
             </button>
           )}
 
           <button
             onClick={currentOverride.isEditing ? handleStopEdit : handleStartEdit}
             className={`flex items-center gap-2 px-5 h-10 transition-all rounded-2xl ${currentOverride.isEditing ? 'bg-blue-600 text-white shadow-lg border-blue-500' : 'bg-white dark:bg-[#1C2128] text-gray-500 hover:text-gray-900 dark:hover:text-gray-100 border border-gray-200 dark:border-gray-800 shadow-sm'}`}
-            title="手动编辑生成的代码"
+            title={currentOverride.isEditing ? t.common.finishEdit : t.common.manualEdit}
           >
             <Code2 className={`w-3.5 h-3.5 ${currentOverride.isEditing ? 'animate-pulse' : ''}`} />
             <span className="text-[10px] font-black uppercase tracking-widest leading-none">
-              {currentOverride.isEditing ? '完成编辑' : '直接修改'}
+              {currentOverride.isEditing ? t.common.finishEdit : t.common.manualEdit}
             </span>
           </button>
 
           <button
             onClick={handleGlobalReset}
             className="flex items-center gap-2 px-4 h-10 bg-white dark:bg-[#1C2128] text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm transition-all active:scale-95 group"
-            title="清空当前模块的所有配置 (Reset)"
+            title={t.common.newClear}
           >
             <RotateCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />
-            <span className="text-[10px] font-black uppercase tracking-widest leading-none">新建/清空</span>
+            <span className="text-[10px] font-black uppercase tracking-widest leading-none">{t.common.newClear}</span>
           </button>
 
           <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-800 self-center mx-1" />
@@ -185,7 +187,7 @@ export function CodeViewer() {
           >
             {isCopied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
             <span className="text-[10px] font-black uppercase tracking-widest leading-none">
-              {isCopied ? '已复制' : '复制内容'}
+              {isCopied ? t.common.copied : t.common.copyContent}
             </span>
           </button>
 
@@ -194,7 +196,7 @@ export function CodeViewer() {
             className="flex items-center gap-2 px-6 h-10 bg-gray-900 dark:bg-blue-600 hover:bg-black dark:hover:bg-blue-500 transition-all rounded-2xl text-white shadow-xl shadow-blue-500/10 border-gray-800 dark:border-blue-500"
           >
             <Download className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-black uppercase tracking-widest leading-none">导出</span>
+            <span className="text-[10px] font-black uppercase tracking-widest leading-none">{t.common.export}</span>
           </button>
         </div>
       </div>

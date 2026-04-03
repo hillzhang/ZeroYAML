@@ -11,6 +11,7 @@ import {
   HardDrive, Link, Check, ShieldCheck, UserCheck, Settings2, Zap,
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // ── Shared styles ────────────────────────────────────────────────────────────
 const inp = "w-full bg-white dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-xl py-2 px-4 text-sm focus:outline-none focus:border-blue-500 focus:ring-4 ring-blue-500/5 transition-all text-gray-900 dark:text-gray-100 placeholder:text-gray-400 shadow-sm hover:border-gray-300 dark:hover:border-gray-700 h-[42px]";
@@ -40,6 +41,7 @@ function Section({ title, icon, children, defaultOpen = false }: { title: string
 
 // ── Probe editor ─────────────────────────────────────────────────────────────
 function ProbeEditor({ label, probe, onChange }: { label: string; probe: K8sProbe; onChange: (f: keyof K8sProbe, v: any) => void }) {
+  const { t } = useTranslation();
   return (
     <div className={`p-3 border rounded-xl ${probe.enabled ? 'border-blue-200 dark:border-blue-800 bg-blue-50/20 dark:bg-blue-900/10' : 'border-gray-200 dark:border-gray-800'}`}>
       <Checkbox checked={probe.enabled} onChange={v => onChange('enabled', v)} label={label.toUpperCase()} className="tracking-wide" />
@@ -50,12 +52,18 @@ function ProbeEditor({ label, probe, onChange }: { label: string; probe: K8sProb
               <button key={t} onClick={() => onChange('type', t)} className={`px-2 py-0.5 text-xs rounded border font-mono transition ${probe.type === t ? 'bg-blue-500 border-blue-500 text-white' : 'border-gray-300 dark:border-gray-700 text-gray-600 dark:border-gray-400'}`}>{t}</button>
             ))}
           </div>
-          {probe.type === 'httpGet' && <div className="flex gap-2"><div className="flex-1"><p className="text-xs text-gray-400 mb-0.5">路径</p><input type="text" value={probe.path} onChange={e => onChange('path', e.target.value)} className={inpSm} /></div><div className="w-20"><p className="text-xs text-gray-400 mb-0.5">端口</p><input type="text" value={probe.port} onChange={e => onChange('port', e.target.value)} className={inpSm} /></div></div>}
-          {probe.type === 'tcpSocket' && <div className="w-24"><p className="text-xs text-gray-400 mb-0.5">端口</p><input type="text" value={probe.port} onChange={e => onChange('port', e.target.value)} className={inpSm} /></div>}
-          {probe.type === 'exec' && <div><p className="text-xs text-gray-400 mb-0.5">命令</p><input type="text" value={probe.command} onChange={e => onChange('command', e.target.value)} className={`${inpSm} font-mono`} /></div>}
-          {probe.type === 'grpc' && <div className="w-24"><p className="text-xs text-gray-400 mb-0.5">端口</p><input type="text" value={probe.port} onChange={e => onChange('port', e.target.value)} className={inpSm} /></div>}
+          {probe.type === 'httpGet' && <div className="flex gap-2"><div className="flex-1"><p className="text-xs text-gray-400 mb-0.5">Path</p><input type="text" value={probe.path} onChange={e => onChange('path', e.target.value)} className={inpSm} /></div><div className="w-20"><p className="text-xs text-gray-400 mb-0.5">Port</p><input type="text" value={probe.port} onChange={e => onChange('port', e.target.value)} className={inpSm} /></div></div>}
+          {probe.type === 'tcpSocket' && <div className="w-24"><p className="text-xs text-gray-400 mb-0.5">Port</p><input type="text" value={probe.port} onChange={e => onChange('port', e.target.value)} className={inpSm} /></div>}
+          {probe.type === 'exec' && <div><p className="text-xs text-gray-400 mb-0.5">Command</p><input type="text" value={probe.command} onChange={e => onChange('command', e.target.value)} className={`${inpSm} font-mono`} /></div>}
+          {probe.type === 'grpc' && <div className="w-24"><p className="text-xs text-gray-400 mb-0.5">Port</p><input type="text" value={probe.port} onChange={e => onChange('port', e.target.value)} className={inpSm} /></div>}
           <div className="grid grid-cols-3 gap-2">
-            {[['initialDelaySeconds', '初始延迟(s)'], ['periodSeconds', '间隔(s)'], ['timeoutSeconds', '超时(s)'], ['failureThreshold', '失败阈值'], ['successThreshold', '成功阈值']].map(([k, l]) => (
+            {[
+              ['initialDelaySeconds', t.k8s.initialDelay],
+              ['periodSeconds', t.k8s.period],
+              ['timeoutSeconds', t.k8s.timeout],
+              ['failureThreshold', t.k8s.failureThreshold],
+              ['successThreshold', t.k8s.successThreshold]
+            ].map(([k, l]) => (
               <div key={k}><p className="text-xs text-gray-400 mb-0.5">{l}</p><input type="number" min="1" value={(probe as any)[k]} onChange={e => onChange(k as keyof K8sProbe, parseInt(e.target.value) || 1)} className={inpSm} /></div>
             ))}
           </div>
@@ -67,11 +75,12 @@ function ProbeEditor({ label, probe, onChange }: { label: string; probe: K8sProb
 
 // ── Resource Selector (Select + Manual Input Toggle) ─────────────────────────
 function ResourceSelector({
-  label, value, onChange, options, placeholder = "-- 请选择 --", manualPlaceholder = "输入已有资源名称...", className = "", inputClassName = inpSm
+  label, value, onChange, options, placeholder, manualPlaceholder, className = "", inputClassName = inpSm
 }: {
   label: string; value: string; onChange: (v: string) => void; options: { id: string; name: string; info?: string }[];
   placeholder?: string; manualPlaceholder?: string; className?: string; inputClassName?: string;
 }) {
+  const { t } = useTranslation();
   const [isManual, setIsManual] = useState(() => {
     if (!value) return false;
     return !options.some(o => o.name === value);
@@ -87,14 +96,14 @@ function ResourceSelector({
           className="text-[9px] text-blue-500 hover:text-blue-400 font-medium flex items-center gap-0.5 transition-colors"
         >
           {isManual ? <ListTree className="w-2.5 h-2.5" /> : <FileText className="w-2.5 h-2.5" />}
-          {isManual ? '列表选择' : '手动输入'}
+          {isManual ? t.k8s.listSelect : t.k8s.manualInput}
         </button>
       </div>
       {isManual ? (
-        <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={manualPlaceholder} className={inputClassName} />
+        <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={manualPlaceholder || t.k8s.manualPlaceholder} className={inputClassName} />
       ) : (
         <select value={value} onChange={e => onChange(e.target.value)} className={inputClassName}>
-          <option value="">{placeholder}</option>
+          <option value="">{placeholder || t.common.selectPlaceholder}</option>
           {options.map(o => <option key={o.id} value={o.name}>{o.name}{o.info ? ` (${o.info})` : ''}</option>)}
         </select>
       )}
@@ -119,6 +128,7 @@ function MetadataEditorContent({
   podLabels, podAnnotations, onUpdatePodLabels, onUpdatePodAnnotations,
   theme = 'blue'
 }: MetadataEditorProps & { theme?: string }) {
+  const { t } = useTranslation();
   const Group = ({ title, items, onAdd, onUpdate, onRemove, colorTheme = "blue", labelPrefix = "Label", icon: Icon }: any) => {
     const themeConfigs: Record<string, string> = {
       blue: "text-blue-600 dark:text-blue-400 border-blue-200 dark:border-blue-800 bg-blue-50/50 dark:bg-blue-900/10 border-l-blue-500",
@@ -167,7 +177,7 @@ function MetadataEditorContent({
                 colorTheme === 'teal' ? 'border-teal-100 dark:border-teal-900/50 text-teal-500 hover:bg-teal-50/50' :
                   colorTheme === 'indigo' ? 'border-indigo-100 dark:border-indigo-900/50 text-indigo-500 hover:bg-indigo-50/50' :
                     'border-purple-100 dark:border-purple-900/50 text-purple-500 hover:bg-purple-50/50'}`}>
-            <Plus className="w-3.5 h-3.5" /> ADD NEW {labelPrefix}
+            <Plus className="w-3.5 h-3.5" /> {t.common.add} {labelPrefix}
           </button>
         </div>
       </div>
@@ -177,15 +187,15 @@ function MetadataEditorContent({
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Group title="资源 Labels (选择器)" items={labels} onAdd={onUpdateLabels} onUpdate={onUpdateLabels} onRemove={onUpdateLabels} colorTheme="blue" labelPrefix="Label" icon={Tag} />
-        <Group title="资源 Annotations (元数据)" items={annotations} onAdd={onUpdateAnnotations} onUpdate={onUpdateAnnotations} onRemove={onUpdateAnnotations} colorTheme="teal" labelPrefix="Annotation" icon={FileText} />
+        <Group title={`${t.k8s.label} (${t.common.metadata})`} items={labels} onAdd={onUpdateLabels} onUpdate={onUpdateLabels} onRemove={onUpdateLabels} colorTheme="blue" labelPrefix={t.k8s.label} icon={Tag} />
+        <Group title={`${t.k8s.annotation} (${t.common.metadata})`} items={annotations} onAdd={onUpdateAnnotations} onUpdate={onUpdateAnnotations} onRemove={onUpdateAnnotations} colorTheme="teal" labelPrefix={t.k8s.annotation} icon={FileText} />
       </div>
 
       {(onUpdatePodLabels || onUpdatePodAnnotations) && (
         <div className="pt-6 border-t border-gray-100 dark:border-gray-800 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Group title="Pod 级 Labels (模板)" items={podLabels || []} onAdd={onUpdatePodLabels} onUpdate={onUpdatePodLabels} onRemove={onUpdatePodLabels} colorTheme="indigo" labelPrefix="Pod Label" icon={Activity} />
-            <Group title="Pod 级 Annotations (模板)" items={podAnnotations || []} onAdd={onUpdatePodAnnotations} onUpdate={onUpdatePodAnnotations} onRemove={onUpdatePodAnnotations} colorTheme="purple" labelPrefix="Pod Annotation" icon={Globe} />
+            <Group title={`${t.k8s.podLabel} (${t.common.edit})`} items={podLabels || []} onAdd={onUpdatePodLabels} onUpdate={onUpdatePodLabels} onRemove={onUpdatePodLabels} colorTheme="indigo" labelPrefix={t.k8s.podLabel} icon={Activity} />
+            <Group title={`${t.k8s.podAnnotation} (${t.common.edit})`} items={podAnnotations || []} onAdd={onUpdatePodAnnotations} onUpdate={onUpdatePodAnnotations} onRemove={onUpdatePodAnnotations} colorTheme="purple" labelPrefix={t.k8s.podAnnotation} icon={Globe} />
           </div>
         </div>
       )}
@@ -196,7 +206,7 @@ function MetadataEditorContent({
 function MetadataEditor(props: MetadataEditorProps & { theme?: string }) {
   const [open, setOpen] = useState(false);
   const { theme = 'blue' } = props;
-
+  const { t } = useTranslation();
   const themes: Record<string, { bg: string, border: string, text: string, dot: string, icon: string, activeBg: string }> = {
     blue: { bg: 'bg-blue-50/50 dark:bg-blue-900/10', border: 'border-blue-100 dark:border-blue-800', text: 'text-blue-700 dark:text-blue-400', dot: 'bg-blue-500', icon: 'text-blue-500', activeBg: 'bg-blue-100 dark:bg-blue-800/40' },
     green: { bg: 'bg-green-50/50 dark:bg-green-900/10', border: 'border-green-100 dark:border-green-800', text: 'text-green-700 dark:text-green-400', dot: 'bg-green-500', icon: 'text-green-500', activeBg: 'bg-green-100 dark:bg-green-800/40' },
@@ -208,25 +218,25 @@ function MetadataEditor(props: MetadataEditorProps & { theme?: string }) {
     slate: { bg: 'bg-slate-50/50 dark:bg-slate-900/10', border: 'border-slate-100 dark:border-slate-800', text: 'text-slate-700 dark:text-slate-300', dot: 'bg-slate-500', icon: 'text-slate-500', activeBg: 'bg-slate-100 dark:bg-slate-800/40' },
   };
 
-  const t = themes[theme] || themes.blue;
+  const th = themes[theme] || themes.blue;
   const itemCount = (props.labels?.length || 0) + (props.annotations?.length || 0) + (props.podLabels?.length || 0) + (props.podAnnotations?.length || 0);
 
   return (
     <div className="mb-4">
       <button
         onClick={() => setOpen(!open)}
-        className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl border transition-all duration-300 shadow-sm hover:shadow-md ${open ? `${t.activeBg} ${t.border} scale-[1.01]` : `${t.bg} border-transparent hover:border-gray-200 dark:hover:border-gray-700`
+        className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl border transition-all duration-300 shadow-sm hover:shadow-md ${open ? `${th.activeBg} ${th.border} scale-[1.01]` : `${th.bg} border-transparent hover:border-gray-200 dark:hover:border-gray-700`
           }`}
       >
         <div className="flex items-center gap-3">
           <div className={`p-1.5 rounded-lg bg-white dark:bg-gray-900 shadow-sm ${open ? 'animate-bounce-subtle' : ''}`}>
-            <Tag className={`w-4 h-4 ${t.icon}`} />
+            <Tag className={`w-4 h-4 ${th.icon}`} />
           </div>
-          <span className={`text-xs font-black uppercase tracking-widest ${open ? t.text : 'text-gray-600 dark:text-gray-400'}`}>
-            元数据管理 (METADATA)
+          <span className={`text-xs font-black uppercase tracking-widest ${open ? th.text : 'text-gray-600 dark:text-gray-400'}`}>
+            {t.common.metadata.toUpperCase()}
           </span>
           {itemCount > 0 && (
-            <span className={`${t.dot} text-white text-[10px] px-2 py-0.5 rounded-full font-black shadow-sm`}>
+            <span className={`${th.dot} text-white text-[10px] px-2 py-0.5 rounded-full font-black shadow-sm`}>
               {itemCount}
             </span>
           )}
@@ -256,6 +266,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
     addWorkloadTol, removeWorkloadTol, updateWorkloadTol,
     services, updateService, ingresses,
   } = useKubernetesStore();
+  const { t } = useTranslation();
   const up = (patch: Partial<K8sWorkload>) => updateWorkload(wl.id, patch);
   const isCronJob = wl.workloadType === 'CronJob';
   const isDaemon = wl.workloadType === 'DaemonSet';
@@ -272,7 +283,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
       <div className="border-2 border-blue-100 dark:border-blue-900/30 rounded-2xl p-5 space-y-6 bg-white dark:bg-[#0E1117] shadow-xl shadow-blue-500/5 transition-all animate-in fade-in slide-in-from-top-4 duration-500">
         <div className="flex items-center justify-between pb-2 border-b border-blue-50 dark:border-blue-900/20">
           <p className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-2">
-            <Settings2 className="w-4 h-4 ml-1" /> 编辑工作负载: {wl.appName || '(未命名)'}
+            <Settings2 className="w-4 h-4 ml-1" /> {t.k8s.workload}: {wl.appName || `(${t.tabs.preview.toUpperCase()})`}
           </p>
           <div className="flex gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
@@ -291,37 +302,37 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
         </div>
 
         {/* Basic */}
-        <Section title="基础配置" icon={<Box className="w-4 h-4 text-blue-500" />}>
+        <Section title={t.k8s.basic} icon={<Box className="w-4 h-4 text-blue-500" />}>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-xs text-gray-500 mb-1">应用名称 (遵循 K8s 规范)</p>
+              <p className="text-xs text-gray-500 mb-1">{t.k8s.appName}</p>
               <input type="text" value={wl.appName}
                 onChange={e => up({ appName: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
                 className={inp} placeholder="my-app" />
             </div>
-            <div><p className="text-xs text-gray-500 mb-1">命名空间</p><input type="text" value={wl.namespace} onChange={e => up({ namespace: e.target.value })} className={inp} /></div>
-            <div className="col-span-2"><p className="text-xs text-gray-500 mb-1">镜像 (Image)</p><input type="text" value={wl.image} onChange={e => up({ image: e.target.value })} className={inp} /></div>
+            <div><p className="text-xs text-gray-500 mb-1">{t.k8s.namespace}</p><input type="text" value={wl.namespace} onChange={e => up({ namespace: e.target.value })} className={inp} /></div>
+            <div className="col-span-2"><p className="text-xs text-gray-500 mb-1">{t.k8s.image.toUpperCase()}</p><input type="text" value={wl.image} onChange={e => up({ image: e.target.value })} className={inp} /></div>
             {!isDaemon && !isCronJob && (
               <div className="grid grid-cols-2 gap-3 col-span-2">
-                <div><p className="text-xs text-gray-500 mb-1 pl-1">副本数 (REPLICAS)</p><input type="number" min="1" value={wl.replicas} onChange={e => up({ replicas: parseInt(e.target.value) || 1 })} className={inp} /></div>
+                <div><p className="text-xs text-gray-500 mb-1 pl-1">{t.k8s.replicas}</p><input type="number" min="1" value={wl.replicas} onChange={e => up({ replicas: parseInt(e.target.value) || 1 })} className={inp} /></div>
                 <div>
                   <ResourceSelector
-                    label="镜像拉取密钥 (IMAGEPULLSECRETS)"
+                    label={t.k8s.imagePullSecrets.toUpperCase()}
                     value={wl.imagePullSecrets?.[0]?.name || ''}
                     inputClassName={inp}
                     onChange={val => up({ imagePullSecrets: val ? [{ name: val }] : [] })}
                     options={[
-                      ...secrets.filter(s => s.secretType === 'kubernetes.io/dockerconfigjson').map(s => ({ id: s.id, name: s.name, info: '私有镜像仓库密钥' })),
+                      ...secrets.filter(s => s.secretType === 'kubernetes.io/dockerconfigjson').map(s => ({ id: s.id, name: s.name, info: 'Repository Auth' })),
                       ...secrets.filter(s => s.secretType !== 'kubernetes.io/dockerconfigjson').map(s => ({ id: s.id, name: s.name }))
                     ]}
-                    placeholder="-- 无 / 不使用密钥 --"
-                    manualPlaceholder="输入 Secret 名称"
+                    placeholder={`-- ${t.storage.secret.toUpperCase()} --`}
+                    manualPlaceholder={t.k8s.secret}
                   />
                 </div>
               </div>
             )}
-            <div><p className="text-xs text-gray-500 mb-1">容器端口</p><input type="text" value={wl.containerPort} onChange={e => up({ containerPort: e.target.value })} className={inp} /></div>
-            <div><p className="text-xs text-gray-500 mb-1">拉取策略</p><select value={wl.imagePullPolicy} onChange={e => up({ imagePullPolicy: e.target.value as any })} className={inp}><option value="IfNotPresent">IfNotPresent (推荐)</option><option value="Always">Always</option><option value="Never">Never</option></select></div>
+            <div><p className="text-xs text-gray-500 mb-1">{t.k8s.containerPort.toUpperCase()}</p><input type="text" value={wl.containerPort} onChange={e => up({ containerPort: e.target.value })} className={inp} /></div>
+            <div><p className="text-xs text-gray-500 mb-1">{t.k8s.pullPolicy.toUpperCase()}</p><select value={wl.imagePullPolicy} onChange={e => up({ imagePullPolicy: e.target.value as any })} className={inp}><option value="IfNotPresent">{t.k8s.ifNotPresent}</option><option value="Always">{t.k8s.always}</option><option value="Never">{t.k8s.never}</option></select></div>
           </div>
 
           <div className="mt-4 p-3 bg-blue-50/30 dark:bg-blue-900/10 rounded-xl border border-blue-100/50 dark:border-blue-900/30">
@@ -329,7 +340,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-2">
                   <Terminal className="w-4 h-4 text-blue-500" />
-                  <span className="text-xs font-black text-blue-700 dark:text-blue-400 uppercase tracking-wider">执行配置</span>
+                  <span className="text-xs font-black text-blue-700 dark:text-blue-400 uppercase tracking-wider">{t.k8s.exec}</span>
                 </div>
 
                 <label className="flex items-center gap-2 px-2 py-1 bg-yellow-50/50 dark:bg-yellow-900/10 border border-yellow-200/50 dark:border-yellow-800/30 rounded-full cursor-pointer hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors group">
@@ -340,7 +351,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                     {wl.useShellWrapper && <Check className="w-2 h-2 text-white stroke-[4]" />}
                   </div>
                   <span className="text-[9px] font-bold text-yellow-700 dark:text-yellow-400 flex items-center gap-1">
-                    <Zap className="w-2.5 h-2.5 fill-yellow-500" /> 安全 Shell 模式 (sh -ec)
+                    <Zap className="w-2.5 h-2.5 fill-yellow-500" /> {t.k8s.shellMode}
                   </span>
                 </label>
               </div>
@@ -362,49 +373,49 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                 <div className="flex items-center justify-between mb-1.5 px-1">
                   <div className="flex items-center gap-1.5">
                     <Shield className="w-3.5 h-3.5 text-blue-500" />
-                    <span className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-tight">入口指令 (command)</span>
+                    <span className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-tight">{t.k8s.command}</span>
                   </div>
-                  <span className="text-[9px] font-black text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">固定执行体</span>
+                  <span className="text-[9px] font-black text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">{t.k8s.entrypoint}</span>
                 </div>
                 <input
                   type="text"
                   value={wl.command}
                   onChange={e => up({ command: e.target.value })}
-                  placeholder="如: /usr/bin/python3"
+                  placeholder="e.g. /usr/bin/python3"
                   className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-blue-200 dark:border-blue-800"}
                 />
-                <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5 pl-1 italic font-medium">对应 Docker Entrypoint</p>
+                <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5 pl-1 italic font-medium">{t.k8s.mapToEntrypoint}</p>
               </div>
 
               <div className="space-y-1">
                 <div className="flex items-center justify-between mb-1.5 px-1">
                   <div className="flex items-center gap-1.5">
                     <Activity className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-tight">运行参数 (args)</span>
+                    <span className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-tight">{t.k8s.args}</span>
                   </div>
-                  <span className="text-[9px] font-black text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">默认参数集</span>
+                  <span className="text-[9px] font-black text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">{t.k8s.cmd}</span>
                 </div>
                 <input
                   type="text"
                   value={wl.args}
                   onChange={e => up({ args: e.target.value })}
-                  placeholder="如: app.py --port 80"
+                  placeholder="e.g. app.py --port 80"
                   className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-emerald-200 dark:border-emerald-800"}
                 />
-                <p className="text-[9px] text-emerald-600 dark:text-emerald-400 mt-0.5 pl-1 italic font-medium">对应 Docker CMD</p>
+                <p className="text-[9px] text-emerald-600 dark:text-emerald-400 mt-0.5 pl-1 italic font-medium">{t.k8s.mapToCmd}</p>
               </div>
             </div>
           </div>
 
           {isSts && (
-            <div className="mt-2"><p className="text-xs text-gray-500 mb-1">Headless Service 名称</p><input type="text" value={wl.serviceName} onChange={e => up({ serviceName: e.target.value })} className={inp} /></div>
+            <div className="mt-2"><p className="text-xs text-gray-500 mb-1">{t.k8s.headlessService.toUpperCase()}</p><input type="text" value={wl.serviceName} onChange={e => up({ serviceName: e.target.value })} className={inp} /></div>
           )}
           {isCronJob && (
             <div className="space-y-2 mt-2">
-              <div><p className="text-xs text-gray-500 mb-1">调度表达式</p><input type="text" value={wl.schedule} onChange={e => up({ schedule: e.target.value })} className={`${inp} font-mono`} /></div>
+              <div><p className="text-xs text-gray-500 mb-1">{t.k8s.schedule.toUpperCase()}</p><input type="text" value={wl.schedule} onChange={e => up({ schedule: e.target.value })} className={`${inp} font-mono`} /></div>
               <div className="grid grid-cols-2 gap-2">
-                <div><p className="text-xs text-gray-500 mb-1">并发策略</p><select value={wl.concurrencyPolicy} onChange={e => up({ concurrencyPolicy: e.target.value as any })} className={inp}><option value="Forbid">Forbid</option><option value="Allow">Allow</option><option value="Replace">Replace</option></select></div>
-                <div><p className="text-xs text-gray-500 mb-1">重启策略</p><select value={wl.restartPolicy} onChange={e => up({ restartPolicy: e.target.value as any })} className={inp}><option value="OnFailure">OnFailure</option><option value="Never">Never</option></select></div>
+                <div><p className="text-xs text-gray-500 mb-1">{t.k8s.concurrency.toUpperCase()}</p><select value={wl.concurrencyPolicy} onChange={e => up({ concurrencyPolicy: e.target.value as any })} className={inp}><option value="Forbid">Forbid</option><option value="Allow">Allow</option><option value="Replace">Replace</option></select></div>
+                <div><p className="text-xs text-gray-500 mb-1">{t.k8s.restartPolicy.toUpperCase()}</p><select value={wl.restartPolicy} onChange={e => up({ restartPolicy: e.target.value as any })} className={inp}><option value="OnFailure">OnFailure</option><option value="Never">Never</option></select></div>
               </div>
             </div>
           )}
@@ -422,13 +433,13 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
         />
 
         {/* Resources */}
-        <Section title="资源限制" icon={<Cpu className="w-4 h-4 text-yellow-500" />} defaultOpen={false}>
+        <Section title={t.k8s.resources} icon={<Cpu className="w-4 h-4 text-yellow-500" />} defaultOpen={false}>
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: 'CPU Request', val: wl.cpuReq, key: 'cpuReq', hints: ['100m', '500m', '1'] },
-              { label: 'CPU Limit', val: wl.cpuLimit, key: 'cpuLimit', hints: ['500m', '1', '2'] },
-              { label: 'Mem Request', val: wl.memReq, key: 'memReq', hints: ['128Mi', '512Mi', '1Gi'] },
-              { label: 'Mem Limit', val: wl.memLimit, key: 'memLimit', hints: ['512Mi', '1Gi', '2Gi'] },
+              { label: t.k8s.cpuReq, val: wl.cpuReq, key: 'cpuReq', hints: ['100m', '500m', '1'] },
+              { label: t.k8s.cpuLim, val: wl.cpuLimit, key: 'cpuLimit', hints: ['500m', '1', '2'] },
+              { label: t.k8s.memReq, val: wl.memReq, key: 'memReq', hints: ['128Mi', '512Mi', '1Gi'] },
+              { label: t.k8s.memLim, val: wl.memLimit, key: 'memLimit', hints: ['512Mi', '1Gi', '2Gi'] },
             ].map(field => (
               <div key={field.key}>
                 <p className="text-xs text-gray-500 mb-1">{field.label}</p>
@@ -447,7 +458,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
         </Section>
 
         {/* Env Vars */}
-        <Section title="环境变量" icon={<Tag className="w-4 h-4 text-teal-500" />} defaultOpen={true}>
+        <Section title={t.common.env} icon={<Tag className="w-4 h-4 text-teal-500" />} defaultOpen={true}>
           <div className="space-y-2">
             {wl.envs.map((e, i) => {
               const upE = (patch: Partial<typeof e>) => updateWorkloadEnv(wl.id, i, patch);
@@ -464,7 +475,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                       className={`${inpSm} font-mono !bg-white dark:!bg-[#161B22] flex-1`} />
                     <select value={e.type} onChange={ev => upE({ type: ev.target.value as any, value: '', refName: '', refKey: '' })}
                       className={`${inpSm} shrink-0 w-36 !bg-white dark:!bg-[#161B22]`}>
-                      <option value="value">直接值</option>
+                      <option value="value">Static Value</option>
                       <option value="configMapKeyRef">ConfigMap Key</option>
                       <option value="secretKeyRef">Secret Key</option>
                     </select>
@@ -477,7 +488,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                   ) : (
                     <div className="flex gap-1.5 flex-wrap">
                       <select value={e.refName} onChange={ev => upE({ refName: ev.target.value, refKey: '' })} className={`flex-1 min-w-28 ${inpSm}`}>
-                        <option value="">-- 选择{e.type === 'configMapKeyRef' ? 'ConfigMap' : 'Secret'} --</option>
+                        <option value="">-- {t.common.add} {e.type === 'configMapKeyRef' ? 'ConfigMap' : 'Secret'} --</option>
                         {(e.type === 'configMapKeyRef' ? configMaps : secrets).map(r => (
                           <option key={r.id} value={r.name}>{r.name}</option>
                         ))}
@@ -490,7 +501,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                         if (keys.length > 0) {
                           return (
                             <select value={e.refKey} onChange={ev => upE({ refKey: ev.target.value })} className={`w-36 ${inpSm} font-mono`}>
-                              <option value="">-- 选择 Key --</option>
+                              <option value="">-- Select Key --</option>
                               {keys.map(k => <option key={k} value={k}>{k}</option>)}
                             </select>
                           );
@@ -508,10 +519,10 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               );
             })}
           </div>
-          <button onClick={() => addWorkloadEnv(wl.id)} className="text-xs text-teal-600 hover:text-teal-500 font-medium my-2">+ 添加环境变量</button>
+          <button onClick={() => addWorkloadEnv(wl.id)} className="text-xs text-teal-600 hover:text-teal-500 font-medium my-2">+ {t.common.add} {t.common.env}</button>
 
           <div className="pt-2 border-t border-gray-100 dark:border-gray-800 mt-2">
-            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 font-bold uppercase tracking-wider">envFrom（整体注入）</p>
+            <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 font-bold uppercase tracking-wider">envFrom ({t.tabs.preview.toUpperCase()})</p>
             <div className="space-y-2">
               {(wl.envFrom || []).map((ef, i) => (
                 <div key={ef.id} className="p-3 bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-lg space-y-2">
@@ -529,44 +540,44 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                     <select value={ef.name}
                       onChange={ev => updateWorkloadEnvFrom(wl.id, i, { name: ev.target.value })}
                       className={`${inpSm} flex-1 min-w-0 !bg-white dark:!bg-[#161B22]`}>
-                      <option value="">-- 选择由「存储」定义的资源 --</option>
+                      <option value="">-- {t.k8s.bindResource} --</option>
                       {(ef.type === 'configMap' ? configMaps : secrets).map(r => (
                         <option key={r.id} value={r.name}>{r.name}</option>
                       ))}
                     </select>
-                    <input type="text" placeholder="Prefix (可选)" value={ef.prefix}
+                    <input type="text" placeholder={`${t.k8s.prefix} (${t.k8s.optional})`} value={ef.prefix}
                       onChange={ev => updateWorkloadEnvFrom(wl.id, i, { prefix: ev.target.value })}
                       className={`${inpSm} w-32 shrink-0 !bg-white dark:!bg-[#161B22]`} />
                   </div>
                 </div>
               ))}
             </div>
-            <button onClick={() => addWorkloadEnvFrom(wl.id)} className="text-xs text-indigo-500 hover:text-indigo-400 font-medium py-1 mt-1 font-bold">+ envFrom 注入</button>
+            <button onClick={() => addWorkloadEnvFrom(wl.id)} className="text-xs text-indigo-500 hover:text-indigo-400 font-medium py-1 mt-1 font-bold">+ {t.common.add} envFrom</button>
           </div>
         </Section>
 
         {/* Volumes */}
-        <Section title="数据卷挂载" icon={<Database className="w-4 h-4 text-indigo-500" />} defaultOpen={false}>
+        <Section title={t.common.volumes} icon={<Database className="w-4 h-4 text-indigo-500" />} defaultOpen={false}>
           <div className="space-y-3">
             {wl.volumeMounts.map(v => (
               <div key={v.id} className="p-3 bg-gray-50 dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-lg space-y-3">
                 <div className="flex justify-between items-center text-xs font-semibold text-gray-400 uppercase">
-                  <div className="flex items-center gap-1.5"><Box className="w-3.5 h-3.5" />挂载配置 (Volume Mount)</div>
+                  <div className="flex items-center gap-1.5"><Box className="w-3.5 h-3.5" />VOLUME MOUNT</div>
                   <button onClick={() => removeWorkloadVol(wl.id, v.id)} className="text-gray-400 hover:text-red-400"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <p className="text-[10px] text-gray-500 mb-1 ml-1 font-medium">卷名称 (Volume Name)</p>
+                    <p className="text-[10px] text-gray-500 mb-1 ml-1 font-medium">{t.storage.volumeName.toUpperCase()}</p>
                     <input type="text" placeholder="data-vol" value={v.name} onChange={e => updateWorkloadVol(wl.id, v.id, { name: e.target.value })} className={inpSm} />
                   </div>
                   <div>
-                    <p className="text-[10px] text-gray-500 mb-1 ml-1 font-medium">挂载路径 (Mount Path)</p>
+                    <p className="text-[10px] text-gray-500 mb-1 ml-1 font-medium">{t.storage.mountPath.toUpperCase()}</p>
                     <input type="text" placeholder="/data" value={v.mountPath} onChange={e => updateWorkloadVol(wl.id, v.id, { mountPath: e.target.value })} className={inpSm} />
                   </div>
 
                   <div>
-                    <p className="text-[10px] text-gray-500 mb-1 ml-1 font-medium">存储后端 (Storage Source)</p>
+                    <p className="text-[10px] text-gray-500 mb-1 ml-1 font-medium">{t.storage.storageSource.toUpperCase()}</p>
                     <select value={v.sourceType}
                       onChange={e => updateWorkloadVol(wl.id, v.id, { sourceType: e.target.value as any, resourceRef: '' })}
                       className={inpSm}>
@@ -574,25 +585,25 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                       <option value="configMap">ConfigMap</option>
                       <option value="secret">Secret</option>
                       <option value="hostPath">HostPath</option>
-                      <option value="emptyDir">EmptyDir (临时占位)</option>
+                      <option value="emptyDir">EmptyDir (Temp Storage)</option>
                     </select>
                   </div>
 
                   <div>
                     {['pvc', 'configMap', 'secret'].includes(v.sourceType) ? (
                       <ResourceSelector
-                        label="选择资源 (Select Resource)"
+                        label={t.k8s.bindResource.toUpperCase()}
                         value={v.resourceRef}
                         onChange={val => updateWorkloadVol(wl.id, v.id, { resourceRef: val })}
                         options={(v.sourceType === 'pvc' ? pvcs : v.sourceType === 'configMap' ? configMaps : secrets).map(r => ({ id: r.id, name: r.name }))}
-                        placeholder="-- 选择在此处创建的资源 --"
-                        manualPlaceholder={`输入已有 ${v.sourceType} 名称`}
+                        placeholder={t.k8s.bindResource}
+                        manualPlaceholder={`Enter existing ${v.sourceType} name`}
                       />
                     ) : (
                       <>
-                        <p className="text-[10px] text-gray-500 mb-1 ml-1 font-medium">资源路径 (Path)</p>
+                        <p className="text-[10px] text-gray-500 mb-1 ml-1 font-medium">{t.k8s.path.toUpperCase()}</p>
                         <input type="text"
-                          placeholder={v.sourceType === 'hostPath' ? "宿主机绝对路径 (如 /var/data)" : "无需配置资源引用"}
+                          placeholder={v.sourceType === 'hostPath' ? "Absolute host path (e.g. /var/data)" : "No resource required"}
                           disabled={v.sourceType === 'emptyDir'}
                           value={v.hostPathValue || ''}
                           onChange={e => updateWorkloadVol(wl.id, v.id, { hostPathValue: e.target.value })}
@@ -603,7 +614,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                 </div>
 
                 <div className="flex items-center gap-4 pt-2 border-t border-gray-200 dark:border-gray-800">
-                  <Checkbox checked={v.readOnly} onChange={val => updateWorkloadVol(wl.id, v.id, { readOnly: val })} label="只读 (ReadOnly)" className="shrink-0" />
+                  <Checkbox checked={v.readOnly} onChange={val => updateWorkloadVol(wl.id, v.id, { readOnly: val })} label="ReadOnly" className="shrink-0" />
 
                   {(v.sourceType === 'configMap' || v.sourceType === 'secret') && (
                     <div className="flex-1 flex items-center gap-2 pl-4 border-l border-gray-200 dark:border-gray-800 overflow-hidden">
@@ -615,12 +626,12 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                           return (
                             <select value={v.subPath} onChange={e => updateWorkloadVol(wl.id, v.id, { subPath: e.target.value })}
                               className="flex-1 min-w-0 bg-transparent text-xs py-0.5 border-b border-dashed border-gray-400 dark:border-gray-600 focus:outline-none focus:border-blue-400 h-6">
-                              <option value="">-- 全部挂载 (默认) --</option>
+                              <option value="">-- Mount All (Default) --</option>
                               {keys.map(k => <option key={k} value={k}>{k}</option>)}
                             </select>
                           );
                         }
-                        return <input type="text" placeholder="指定 Key 挂载为文件 (可选)" value={v.subPath}
+                        return <input type="text" placeholder="Specify key to mount as file (optional)" value={v.subPath}
                           onChange={e => updateWorkloadVol(wl.id, v.id, { subPath: e.target.value })}
                           className="flex-1 border-b border-gray-200 dark:border-gray-700 bg-transparent text-xs py-0.5 px-1 focus:outline-none focus:border-blue-400" />;
                       })()}
@@ -630,18 +641,18 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               </div>
             ))}
           </div>
-          <button onClick={() => addWorkloadVol(wl.id)} className="text-xs text-indigo-500 hover:text-indigo-400 font-bold py-1 mt-2">+ 添加挂载卷</button>
+          <button onClick={() => addWorkloadVol(wl.id)} className="text-xs text-indigo-500 hover:text-indigo-400 font-bold py-1 mt-2">+ {t.common.add} Volume</button>
         </Section>
 
         {/* Probes */}
-        <Section title="健康检查 (Probes)" icon={<Activity className="w-4 h-4 text-rose-500" />} defaultOpen={false}>
-          <ProbeEditor label="存活探针 (Liveness)" probe={wl.livenessProbe} onChange={(f, v) => updateWorkloadProbe(wl.id, 'livenessProbe', f, v)} />
-          <ProbeEditor label="就绪探针 (Readiness)" probe={wl.readinessProbe} onChange={(f, v) => updateWorkloadProbe(wl.id, 'readinessProbe', f, v)} />
-          <ProbeEditor label="启动检查 (startupProbe)" probe={wl.startupProbe} onChange={(f, v) => updateWorkloadProbe(wl.id, 'startupProbe', f, v)} />
+        <Section title={`Health Checks (Probes)`} icon={<Activity className="w-4 h-4 text-rose-500" />} defaultOpen={false}>
+          <ProbeEditor label="Liveness" probe={wl.livenessProbe} onChange={(f, v) => updateWorkloadProbe(wl.id, 'livenessProbe', f, v)} />
+          <ProbeEditor label="Readiness" probe={wl.readinessProbe} onChange={(f, v) => updateWorkloadProbe(wl.id, 'readinessProbe', f, v)} />
+          <ProbeEditor label="Startup" probe={wl.startupProbe} onChange={(f, v) => updateWorkloadProbe(wl.id, 'startupProbe', f, v)} />
         </Section>
 
         {/* Security */}
-        <Section title="安全上下文" icon={<Shield className="w-4 h-4 text-amber-500" />} defaultOpen={false}>
+        <Section title={t.k8s.security} icon={<Shield className="w-4 h-4 text-amber-500" />} defaultOpen={false}>
           <div className="grid grid-cols-3 gap-2">
             <div><p className="text-xs text-gray-500 mb-0.5">runAsUser</p><input type="number" placeholder="1000" value={wl.runAsUser} onChange={e => up({ runAsUser: e.target.value })} className={inpSm} /></div>
             <div><p className="text-xs text-gray-500 mb-0.5">runAsGroup</p><input type="number" placeholder="3000" value={wl.runAsGroup} onChange={e => up({ runAsGroup: e.target.value })} className={inpSm} /></div>
@@ -656,9 +667,9 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
 
         {/* Update Strategy */}
         {!isDaemon && !isCronJob && (
-          <Section title="更新策略" icon={<RefreshCw className="w-4 h-4 text-cyan-500" />} defaultOpen={false}>
+          <Section title={t.k8s.updating} icon={<RefreshCw className="w-4 h-4 text-cyan-500" />} defaultOpen={false}>
             <div className="flex gap-3">
-              <div className="flex-1"><p className="text-xs text-gray-500 mb-1">策略</p>
+              <div className="flex-1"><p className="text-xs text-gray-500 mb-1">STRATEGY</p>
                 <select value={wl.updateStrategy} onChange={e => up({ updateStrategy: e.target.value as any })} className={inp}>
                   <option value="RollingUpdate">RollingUpdate</option><option value="Recreate">Recreate</option>
                 </select></div>
@@ -671,26 +682,26 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
         )}
 
         {/* Node Scheduling */}
-        <Section title="节点调度" icon={<Globe className="w-4 h-4 text-slate-500" />} defaultOpen={false}>
+        <Section title={t.k8s.scheduling} icon={<Globe className="w-4 h-4 text-slate-500" />} defaultOpen={false}>
           <div className="space-y-4">
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" />Node Selector (节点选择器)</p>
+              <p className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" />{t.k8s.nodeSelector}</p>
               <div className="space-y-2">
                 {wl.nodeSelector.map((ns, i) => (
                   <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
-                    <input type="text" placeholder="key (如 disktype)" value={ns.key} onChange={e => updateWorkloadNS(wl.id, i, 'key', e.target.value)} className={inpSm} />
-                    <input type="text" placeholder="value (如 ssd)" value={ns.value} onChange={e => updateWorkloadNS(wl.id, i, 'value', e.target.value)} className={inpSm} />
+                    <input type="text" placeholder="key (e.g. disktype)" value={ns.key} onChange={e => updateWorkloadNS(wl.id, i, 'key', e.target.value)} className={inpSm} />
+                    <input type="text" placeholder="value (e.g. ssd)" value={ns.value} onChange={e => updateWorkloadNS(wl.id, i, 'value', e.target.value)} className={inpSm} />
                     <button onClick={() => removeWorkloadNS(wl.id, i)} className="p-1 text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 ))}
                 <button onClick={() => addWorkloadNS(wl.id)} className="text-[10px] text-blue-500 hover:text-blue-400 font-bold flex items-center gap-1 mt-1">
-                  <Plus className="w-3 h-3" />添加标签选择
+                  <Plus className="w-3 h-3" />{t.common.add} Selector
                 </button>
               </div>
             </div>
 
             <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
-              <p className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" />Tolerations (污点容忍)</p>
+              <p className="text-xs font-bold text-gray-400 uppercase mb-3 flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" />{t.k8s.tolerations} (Tolerations)</p>
               <div className="space-y-3">
                 {wl.tolerations.map((t, i) => (
                   <div key={i} className="p-2.5 bg-gray-50/50 dark:bg-gray-800/20 border border-gray-100 dark:border-gray-800 rounded-lg relative group">
@@ -717,7 +728,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                       <div>
                         <p className="text-[10px] text-gray-400 mb-1 ml-0.5">Effect</p>
                         <select value={t.effect} onChange={e => updateWorkloadTol(wl.id, i, { effect: e.target.value as any })} className={inpSm}>
-                          <option value="">(任意)</option>
+                          <option value="">(ANY)</option>
                           <option>NoSchedule</option>
                           <option>PreferNoSchedule</option>
                           <option>NoExecute</option>
@@ -727,15 +738,15 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                   </div>
                 ))}
                 <button onClick={() => addWorkloadTol(wl.id)} className="text-[10px] text-blue-500 hover:text-blue-400 font-bold flex items-center gap-1 mt-1">
-                  <Plus className="w-3 h-3" />添加容忍策略
+                  <Plus className="w-3 h-3" />{t.common.add} Toleration
                 </button>
               </div>
             </div>
 
             <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex flex-wrap gap-x-6 gap-y-3">
-              <Checkbox checked={wl.hostNetwork} onChange={v => up({ hostNetwork: v })} label="使用宿主机网络 (hostNetwork)" />
+              <Checkbox checked={wl.hostNetwork} onChange={v => up({ hostNetwork: v })} label="hostNetwork" />
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-gray-500 font-bold uppercase">dnsPolicy:</span>
+                <span className="text-[10px] text-gray-500 font-bold uppercase">{t.k8s.dnsPolicy}:</span>
                 <select value={wl.dnsPolicy} onChange={e => up({ dnsPolicy: e.target.value })} className="bg-transparent text-xs border-b border-gray-300 dark:border-gray-700 focus:outline-none focus:border-blue-400 pb-0.5">
                   <option value="ClusterFirst">ClusterFirst</option>
                   <option value="ClusterFirstWithHostNet">ClusterFirstWithHostNet</option>
@@ -746,12 +757,12 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
             </div>
           </div>
         </Section>
-        <Section title="网络暴露 (关联 Service & Ingress)" icon={<Network className="w-4 h-4 text-green-500" />} defaultOpen={true}>
+        <Section title={t.k8s.ingress} icon={<Network className="w-4 h-4 text-green-500" />} defaultOpen={true}>
           <div className="space-y-6">
             {/* 1. Services Section */}
             <div className="space-y-2">
-              <p className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1"><Layers className="w-3 h-3" />关联 Service</p>
-              {services.length === 0 && <p className="text-xs text-gray-400 italic">暂无可选 Service，请在「网络」标签页创建</p>}
+              <p className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1"><Layers className="w-3 h-3" />{t.network.service}</p>
+              {services.length === 0 && <p className="text-xs text-gray-400 italic">{t.network.noService}</p>}
               <div className="space-y-2">
                 {services.map(s => {
                   const isBound = s.selectorApp === wl.appName;
@@ -764,7 +775,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                           <p className="text-[9px] text-gray-400">Port {s.port} → {s.targetPort}</p>
                         </div>
                       </div>
-                      {isBound && <span className="text-[9px] font-bold text-green-600 bg-green-100 dark:bg-green-900/30 px-1 rounded">已挂载</span>}
+                      {isBound && <span className="text-[9px] font-bold text-green-600 bg-green-100 dark:bg-green-900/30 px-1 rounded">{t.network.bound}</span>}
                     </div>
                   );
                 })}
@@ -773,8 +784,8 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
 
             {/* 2. Ingress Section */}
             <div className="space-y-2 pt-2 border-t border-gray-100 dark:border-gray-800">
-              <p className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1"><Globe className="w-3 h-3" />流量入口 (Ingress)</p>
-              {ingresses.length === 0 && <p className="text-xs text-gray-400 italic">暂无 Ingress</p>}
+              <p className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1"><Globe className="w-3 h-3" />{t.network.ingress}</p>
+              {ingresses.length === 0 && <p className="text-xs text-gray-400 italic">{t.network.noIngress}</p>}
               <div className="space-y-2">
                 {ingresses.map(ing => {
                   const mySvcs = services.filter(s => s.selectorApp === wl.appName).map(s => s.name);
@@ -788,8 +799,8 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                           <p className="text-[9px] text-gray-500 font-medium">Class: {ing.ingressClassName || 'default'}</p>
                         </div>
                         {isPointing ?
-                          <span className="text-[9px] font-black text-white bg-purple-600 px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1 animate-pulse-subtle">指向此应用 <Activity className="w-2.5 h-2.5" /></span> :
-                          <span className="text-[9px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">未关联</span>
+                          <span className="text-[9px] font-black text-white bg-purple-600 px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1 animate-pulse-subtle">{t.network.pointing} <Activity className="w-2.5 h-2.5" /></span> :
+                          <span className="text-[9px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">{t.network.unbound}</span>
                         }
                       </div>
 
@@ -801,7 +812,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                               <span className="truncate mr-2 font-mono flex-1">
                                 <span className="text-gray-400">{r.host || '*'}{r.path}</span>
                                 <span className="mx-1 text-gray-300">→</span>
-                                <span className={pointsToMe ? 'font-bold' : 'text-gray-400'}>{r.serviceName || '(未指定)'}</span>
+                                <span className={pointsToMe ? 'font-bold' : 'text-gray-400'}>{r.serviceName || '(None)'}</span>
                               </span>
                               {pointsToMe ? (
                                 <button
@@ -810,7 +821,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                                     updateIngressRule(ing.id, r.id, { serviceName: '' });
                                   }}
                                   className="flex items-center gap-1 px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700 transition-all font-bold shadow-sm whitespace-nowrap">
-                                  <Trash2 className="w-2.5 h-2.5" />取消
+                                  <Trash2 className="w-2.5 h-2.5" />{t.common.cancel}
                                 </button>
                               ) : (
                                 mySvcs.length > 0 && (
@@ -820,7 +831,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                                       updateIngressRule(ing.id, r.id, { serviceName: mySvcs[0] });
                                     }}
                                     className="flex items-center gap-1 px-2 py-1 rounded bg-blue-700 text-white hover:bg-blue-800 transition-all font-bold shadow-sm whitespace-nowrap">
-                                    <Link className="w-2.5 h-2.5" />关联到此
+                                    <Link className="w-2.5 h-2.5" />{t.network.bound}
                                   </button>
                                 )
                               )}
@@ -872,6 +883,7 @@ function ResRow({ label, sub, active, onClick, onDelete, theme = "blue" }: { lab
 
 // ── Network Section ──────────────────────────────────────────────────────────
 function NetworkSection() {
+  const { t } = useTranslation();
   const { services, ingresses, workloads, activeServiceId, activeIngressId, setActiveServiceId, setActiveIngressId, addService, removeService, updateService, addIngress, removeIngress, updateIngress, addIngressRule, removeIngressRule, updateIngressRule } = useKubernetesStore();
   const svc = services.find(s => s.id === activeServiceId);
   const ing = ingresses.find(i => i.id === activeIngressId);
@@ -882,16 +894,16 @@ function NetworkSection() {
       <div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5"><Network className="w-4 h-4 text-green-500" />Service</p>
-          <button onClick={addService} className={`${btnSm} border-green-300 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20`}><Plus className="w-3 h-3" />新建</button>
+          <button onClick={addService} className={`${btnSm} border-green-300 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20`}><Plus className="w-3 h-3" />{t.network.new}</button>
         </div>
-        {services.length === 0 && <p className="text-xs text-gray-400 italic px-1">暂无 Service，点击「新建」添加</p>}
+        {services.length === 0 && <p className="text-xs text-gray-400 italic px-1">{t.network.noService}</p>}
         {services.map(s => <ResRow key={s.id} label={s.name} sub={`${s.type} · ${s.port}→${s.targetPort}`} theme="green" active={s.id === activeServiceId} onClick={() => { setActiveServiceId(s.id); setActiveIngressId(null); }} onDelete={() => removeService(s.id)} />)}
       </div>
 
       {svc && (
         <div className="border-2 border-green-100 dark:border-green-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] shadow-xl shadow-green-500/5 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-black text-green-600 dark:text-green-400 uppercase tracking-widest">编辑 Service</p>
+            <p className="text-xs font-black text-green-600 dark:text-green-400 uppercase tracking-widest">{t.k8s.edit} Service</p>
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
               <div className="w-1.5 h-1.5 rounded-full bg-green-500/50"></div>
@@ -899,8 +911,8 @@ function NetworkSection() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2 space-y-3">
-              <div><p className="text-xs text-gray-500 mb-1">Service 名称</p><input type="text" value={svc.name} onChange={e => updateService(svc.id, { name: e.target.value })} className={inp} /></div>
-              <div><p className="text-xs text-gray-500 mb-1">命名空间</p><input type="text" value={svc.namespace} onChange={e => updateService(svc.id, { namespace: e.target.value })} className={inp} /></div>
+              <div><p className="text-xs text-gray-500 mb-1">NAME</p><input type="text" value={svc.name} onChange={e => updateService(svc.id, { name: e.target.value })} className={inp} /></div>
+              <div><p className="text-xs text-gray-500 mb-1">{t.k8s.namespace}</p><input type="text" value={svc.namespace} onChange={e => updateService(svc.id, { namespace: e.target.value })} className={inp} /></div>
             </div>
 
             <div className="col-span-2 mt-1">
@@ -912,7 +924,7 @@ function NetworkSection() {
               />
             </div>
             <div>
-              <p className="text-xs text-gray-500 mb-1">类型</p>
+              <p className="text-xs text-gray-500 mb-1">{t.common.type}</p>
               <select value={svc.type} onChange={e => updateService(svc.id, { type: e.target.value as any })} className={inp}>
                 <option value="ClusterIP">ClusterIP</option>
                 <option value="NodePort">NodePort</option>
@@ -922,11 +934,11 @@ function NetworkSection() {
             </div>
             <div>
               <ResourceSelector
-                label="选择关联工作负载"
+                label={t.network.service}
                 value={svc.selectorApp}
                 onChange={v => updateService(svc.id, { selectorApp: v })}
                 options={workloads.map(w => ({ id: w.id, name: w.appName }))}
-                placeholder="-- 默认无 --"
+                placeholder="-- None --"
               />
             </div>
             <div className="grid grid-cols-3 col-span-2 gap-2">
@@ -944,23 +956,23 @@ function NetworkSection() {
       <div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5"><Globe className="w-4 h-4 text-purple-500" />Ingress</p>
-          <button onClick={addIngress} className={`${btnSm} border-purple-300 dark:border-purple-700 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20`}><Plus className="w-3 h-3" />新建</button>
+          <button onClick={addIngress} className={`${btnSm} border-purple-300 dark:border-purple-700 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20`}><Plus className="w-3 h-3" />{t.network.new}</button>
         </div>
-        {ingresses.length === 0 && <p className="text-xs text-gray-400 italic px-1">暂无 Ingress，点击「新建」添加</p>}
-        {ingresses.map(i => <ResRow key={i.id} label={i.name} sub={`${i.rules.length} 条路由规则`} theme="purple" active={i.id === activeIngressId} onClick={() => { setActiveIngressId(i.id); setActiveServiceId(null); }} onDelete={() => removeIngress(i.id)} />)}
+        {ingresses.length === 0 && <p className="text-xs text-gray-400 italic px-1">{t.network.noIngress}</p>}
+        {ingresses.map(i => <ResRow key={i.id} label={i.name} sub={`${i.rules.length} ${t.network.rule}`} theme="purple" active={i.id === activeIngressId} onClick={() => { setActiveIngressId(i.id); setActiveServiceId(null); }} onDelete={() => removeIngress(i.id)} />)}
       </div>
 
       {ing && (
         <div className="border-2 border-purple-100 dark:border-purple-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] shadow-xl shadow-purple-500/5 duration-300 animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider">编辑 Ingress</p>
+            <p className="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider">{t.k8s.edit} Ingress</p>
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></div>
               <div className="w-1.5 h-1.5 rounded-full bg-purple-500/50"></div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div><p className="text-xs text-gray-500 mb-1">名称</p><input type="text" value={ing.name} onChange={e => updateIngress(ing.id, { name: e.target.value })} className={inp} /></div>
+            <div><p className="text-xs text-gray-500 mb-1">NAME</p><input type="text" value={ing.name} onChange={e => updateIngress(ing.id, { name: e.target.value })} className={inp} /></div>
             <div><p className="text-xs text-gray-500 mb-1">ingressClassName</p><input type="text" value={ing.ingressClassName} onChange={e => updateIngress(ing.id, { ingressClassName: e.target.value })} className={inp} /></div>
             <div className="col-span-2">
               <MetadataEditor
@@ -971,16 +983,16 @@ function NetworkSection() {
               />
             </div>
           </div>
-          <Checkbox checked={ing.tls} onChange={v => updateIngress(ing.id, { tls: v })} label="启用 TLS (HTTPS)" />
-          {ing.tls && <div><p className="text-xs text-gray-500 mb-1">TLS Secret 名称</p><input type="text" value={ing.tlsSecret} onChange={e => updateIngress(ing.id, { tlsSecret: e.target.value })} className={inp} /></div>}
-          <p className="text-xs font-medium text-gray-600 dark:text-gray-400">路由规则</p>
+          <Checkbox checked={ing.tls} onChange={v => updateIngress(ing.id, { tls: v })} label={t.network.tls} />
+          {ing.tls && <div><p className="text-xs text-gray-500 mb-1">{t.network.tlsSecret}</p><input type="text" value={ing.tlsSecret} onChange={e => updateIngress(ing.id, { tlsSecret: e.target.value })} className={inp} /></div>}
+          <p className="text-xs font-medium text-gray-600 dark:text-gray-400">{t.network.rule}</p>
           {ing.rules.map(r => (
             <div key={r.id} className="flex gap-2 flex-wrap items-end p-2 bg-gray-50 dark:bg-[#161B22] rounded-lg">
-              <div className="flex-1 min-w-28"><p className="text-xs text-gray-400 mb-0.5">域名</p><input type="text" placeholder="example.com" value={r.host} onChange={e => updateIngressRule(ing.id, r.id, { host: e.target.value })} className={inpSm} /></div>
-              <div className="w-16"><p className="text-xs text-gray-400 mb-0.5">路径</p><input type="text" value={r.path} onChange={e => updateIngressRule(ing.id, r.id, { path: e.target.value })} className={inpSm} /></div>
+              <div className="flex-1 min-w-28"><p className="text-xs text-gray-400 mb-0.5">{t.network.host}</p><input type="text" placeholder="example.com" value={r.host} onChange={e => updateIngressRule(ing.id, r.id, { host: e.target.value })} className={inpSm} /></div>
+              <div className="w-16"><p className="text-xs text-gray-400 mb-0.5">{t.network.path}</p><input type="text" value={r.path} onChange={e => updateIngressRule(ing.id, r.id, { path: e.target.value })} className={inpSm} /></div>
               <div className="flex-1 min-w-44">
                 <ResourceSelector
-                  label="关联 Service"
+                  label={t.network.service}
                   value={r.serviceName}
                   onChange={val => {
                     const targetSvc = services.find(s => s.name === val);
@@ -989,15 +1001,15 @@ function NetworkSection() {
                     updateIngressRule(ing.id, r.id, patch);
                   }}
                   options={services.map(s => ({ id: s.id, name: s.name }))}
-                  placeholder="-- 选择 Service --"
-                  manualPlaceholder="输入 Service 名称"
+                  placeholder="-- Service --"
+                  manualPlaceholder="Service NAME"
                 />
               </div>
-              <div className="w-16"><p className="text-xs text-gray-400 mb-0.5">端口</p><input type="text" placeholder="80" value={r.servicePort} onChange={e => updateIngressRule(ing.id, r.id, { servicePort: e.target.value })} className={inpSm} /></div>
+              <div className="w-16"><p className="text-xs text-gray-400 mb-0.5">{t.network.port}</p><input type="text" placeholder="80" value={r.servicePort} onChange={e => updateIngressRule(ing.id, r.id, { servicePort: e.target.value })} className={inpSm} /></div>
               <button onClick={() => removeIngressRule(ing.id, r.id)} className="text-gray-400 hover:text-red-400 pb-0.5 text-sm">×</button>
             </div>
           ))}
-          <button onClick={() => addIngressRule(ing.id)} className="text-xs text-purple-500 font-medium">+ 添加路由规则</button>
+          <button onClick={() => addIngressRule(ing.id)} className="text-xs text-purple-500 font-medium">+ {t.common.add} {t.network.rule}</button>
 
 
         </div>
@@ -1008,6 +1020,7 @@ function NetworkSection() {
 
 // ── Storage Section ──────────────────────────────────────────────────────────
 function StorageSection() {
+  const { t } = useTranslation();
   const {
     pvcs, configMaps, secrets, pvs,
     activePvcId, activeConfigMapId, activeSecretId, activePvId,
@@ -1031,9 +1044,9 @@ function StorageSection() {
       <div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5"><Box className="w-4 h-4 text-orange-500" />StorageClass</p>
-          <button onClick={addStorageClass} className={`${btnSm} border-orange-300 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20`}><Plus className="w-3 h-3" />新建</button>
+          <button onClick={addStorageClass} className={`${btnSm} border-orange-300 dark:border-orange-700 text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-900/20`}><Plus className="w-3 h-3" />{t.network.new}</button>
         </div>
-        {storageClasses.length === 0 && <p className="text-xs text-gray-400 italic px-1">暂无 StorageClass</p>}
+        {storageClasses.length === 0 && <p className="text-xs text-gray-400 italic px-1">{t.storage.noSc}</p>}
         {storageClasses.map(item => (
           <ResRow
             key={item.id}
@@ -1052,14 +1065,14 @@ function StorageSection() {
       {sc && (
         <div className="border-2 border-orange-100 dark:border-orange-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] shadow-xl shadow-orange-500/5 duration-300 animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-black text-orange-600 dark:text-orange-400 uppercase tracking-wider">编辑 StorageClass</p>
+            <p className="text-xs font-black text-orange-600 dark:text-orange-400 uppercase tracking-wider">{t.k8s.edit} StorageClass</p>
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></div>
               <div className="w-1.5 h-1.5 rounded-full bg-orange-500/50"></div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2"><p className="text-xs text-gray-500 mb-1">SC 名称</p><input type="text" value={sc.name} onChange={e => updateStorageClass(sc.id, { name: e.target.value })} className={inp} /></div>
+            <div className="col-span-2"><p className="text-xs text-gray-500 mb-1">{t.common.name}</p><input type="text" value={sc.name} onChange={e => updateStorageClass(sc.id, { name: e.target.value })} className={inp} /></div>
 
             <div className="col-span-2 mb-2">
               <MetadataEditor
@@ -1070,10 +1083,10 @@ function StorageSection() {
               />
             </div>
 
-            <div className="col-span-2"><p className="text-xs text-gray-500 mb-1">Provisioner (供应者)</p><input type="text" placeholder="kubernetes.io/aws-ebs" value={sc.provisioner} onChange={e => updateStorageClass(sc.id, { provisioner: e.target.value })} className={inp} /></div>
-            <div><p className="text-xs text-gray-500 mb-1">回收策略</p><select value={sc.reclaimPolicy} onChange={e => updateStorageClass(sc.id, { reclaimPolicy: e.target.value as any })} className={inp}><option value="Delete">Delete</option><option value="Retain">Retain</option></select></div>
-            <div><p className="text-xs text-gray-500 mb-1">绑定模式</p><select value={sc.volumeBindingMode} onChange={e => updateStorageClass(sc.id, { volumeBindingMode: e.target.value as any })} className={inp}><option value="Immediate">Immediate</option><option value="WaitForFirstConsumer">WaitForFirstConsumer</option></select></div>
-            <div className="col-span-2"><Checkbox checked={sc.allowVolumeExpansion} onChange={v => updateStorageClass(sc.id, { allowVolumeExpansion: v })} label="允许卷扩容 (allowVolumeExpansion)" /></div>
+            <div className="col-span-2"><p className="text-xs text-gray-500 mb-1">Provisioner</p><input type="text" placeholder="kubernetes.io/aws-ebs" value={sc.provisioner} onChange={e => updateStorageClass(sc.id, { provisioner: e.target.value })} className={inp} /></div>
+            <div><p className="text-xs text-gray-500 mb-1">{t.k8s.restartPolicy}</p><select value={sc.reclaimPolicy} onChange={e => updateStorageClass(sc.id, { reclaimPolicy: e.target.value as any })} className={inp}><option value="Delete">Delete</option><option value="Retain">Retain</option></select></div>
+            <div><p className="text-xs text-gray-500 mb-1">Binding Mode</p><select value={sc.volumeBindingMode} onChange={e => updateStorageClass(sc.id, { volumeBindingMode: e.target.value as any })} className={inp}><option value="Immediate">Immediate</option><option value="WaitForFirstConsumer">WaitForFirstConsumer</option></select></div>
+            <div className="col-span-2"><Checkbox checked={sc.allowVolumeExpansion} onChange={v => updateStorageClass(sc.id, { allowVolumeExpansion: v })} label="Allow Volume Expansion" /></div>
           </div>
 
           <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
@@ -1086,7 +1099,7 @@ function StorageSection() {
                   <button onClick={() => removeStorageClassParam(sc.id, i)} className="text-gray-300 hover:text-red-400 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
               ))}
-              <button onClick={() => addStorageClassParam(sc.id)} className="text-[10px] text-blue-500 hover:text-blue-400 font-bold">+ 添加参数</button>
+              <button onClick={() => addStorageClassParam(sc.id)} className="text-[10px] text-blue-500 hover:text-blue-400 font-bold">+ {t.common.add} Parameter</button>
             </div>
           </div>
 
@@ -1096,23 +1109,23 @@ function StorageSection() {
       {/* PVs (Cluster-wide) */}
       <div>
         <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5"><HardDrive className="w-4 h-4 text-slate-500" />PersistentVolume (集群级)</p>
-          <button onClick={addPv} className={`${btnSm} border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400`}><Plus className="w-3 h-3" />新建</button>
+          <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5"><HardDrive className="w-4 h-4 text-slate-500" />PersistentVolume</p>
+          <button onClick={addPv} className={`${btnSm} border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400`}><Plus className="w-3 h-3" />{t.network.new}</button>
         </div>
-        {pvs.length === 0 && <p className="text-xs text-gray-400 italic px-1">暂无 PV</p>}
+        {pvs.length === 0 && <p className="text-xs text-gray-400 italic px-1">-- No Volumes --</p>}
         {pvs.map(p => <ResRow key={p.id} label={p.name} sub={`${p.capacity} · ${p.accessMode}`} theme="slate" active={p.id === activePvId} onClick={() => { setActivePvId(p.id); setActivePvcId(null); setActiveConfigMapId(null); setActiveSecretId(null); setActiveStorageClassId(null); }} onDelete={() => removePv(p.id)} />)}
       </div>
       {pv && (
         <div className="border-2 border-slate-100 dark:border-slate-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] duration-300 animate-in fade-in slide-in-from-top-2 shadow-xl shadow-slate-500/5">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">编辑 PersistentVolume</p>
+            <p className="text-xs font-black text-slate-600 dark:text-slate-400 uppercase tracking-wider">{t.k8s.edit} PersistentVolume</p>
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-pulse"></div>
               <div className="w-1.5 h-1.5 rounded-full bg-slate-500/50"></div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2"><p className="text-xs text-gray-500 mb-1">PV 名称</p><input type="text" value={pv.name} onChange={e => updatePv(pv.id, { name: e.target.value })} className={inp} /></div>
+            <div className="col-span-2"><p className="text-xs text-gray-500 mb-1">{t.common.name.toUpperCase()}</p><input type="text" value={pv.name} onChange={e => updatePv(pv.id, { name: e.target.value })} className={inp} /></div>
             <div className="col-span-2">
               <MetadataEditor
                 labels={pv.labels} annotations={pv.annotations}
@@ -1121,13 +1134,13 @@ function StorageSection() {
                 theme="slate"
               />
             </div>
-            <div><p className="text-xs text-gray-500 mb-1">容量</p><input type="text" placeholder="10Gi" value={pv.capacity} onChange={e => updatePv(pv.id, { capacity: e.target.value })} className={inp} /></div>
+            <div><p className="text-xs text-gray-500 mb-1">{t.storage.pvc.toUpperCase()} (Capacity)</p><input type="text" placeholder="10Gi" value={pv.capacity} onChange={e => updatePv(pv.id, { capacity: e.target.value })} className={inp} /></div>
             <div><p className="text-xs text-gray-500 mb-1">AccessMode</p><select value={pv.accessMode} onChange={e => updatePv(pv.id, { accessMode: e.target.value as any })} className={inp}><option value="ReadWriteOnce">ReadWriteOnce</option><option value="ReadWriteMany">ReadWriteMany</option><option value="ReadOnlyMany">ReadOnlyMany</option></select></div>
-            <div><p className="text-xs text-gray-500 mb-1">回收策略</p><select value={pv.reclaimPolicy} onChange={e => updatePv(pv.id, { reclaimPolicy: e.target.value as any })} className={inp}><option value="Retain">Retain</option><option value="Delete">Delete</option><option value="Recycle">Recycle</option></select></div>
+            <div><p className="text-xs text-gray-500 mb-1">{t.k8s.restartPolicy}</p><select value={pv.reclaimPolicy} onChange={e => updatePv(pv.id, { reclaimPolicy: e.target.value as any })} className={inp}><option value="Retain">Retain</option><option value="Delete">Delete</option><option value="Recycle">Recycle</option></select></div>
             <div>
-              <p className="text-xs text-gray-500 mb-1">StorageClass</p>
+              <p className="text-xs text-gray-500 mb-1">{t.storage.sc}</p>
               <select value={pv.storageClass} onChange={e => updatePv(pv.id, { storageClass: e.target.value })} className={inp}>
-                <option value="">-- 无 (标准模式) --</option>
+                <option value="">-- Standard (None) --</option>
                 {storageClasses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
               </select>
             </div>
@@ -1136,7 +1149,7 @@ function StorageSection() {
 
 
           <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-            <p className="text-xs font-semibold text-gray-500 mb-2">存储后端配置</p>
+            <p className="text-xs font-semibold text-gray-500 mb-2">{t.storage.storageSource}</p>
             <div className="space-y-3">
               <div className="flex gap-2">
                 <select value={pv.sourceType} onChange={e => updatePv(pv.id, { sourceType: e.target.value as any })} className={`w-32 shrink-0 ${inpSm}`}>
@@ -1145,18 +1158,18 @@ function StorageSection() {
                   <option value="local">Local</option>
                   <option value="csi">CSI</option>
                 </select>
-                {pv.sourceType === 'hostPath' && <input type="text" placeholder="路径 (如 /mnt/data)" value={pv.hostPath} onChange={e => updatePv(pv.id, { hostPath: e.target.value })} className={inpSm} />}
-                {pv.sourceType === 'local' && <input type="text" placeholder="本地磁盘路径" value={pv.hostPath} onChange={e => updatePv(pv.id, { hostPath: e.target.value })} className={inpSm} />}
+                {pv.sourceType === 'hostPath' && <input type="text" placeholder={t.storage.pathPlaceholder} value={pv.hostPath} onChange={e => updatePv(pv.id, { hostPath: e.target.value })} className={inpSm} />}
+                {pv.sourceType === 'local' && <input type="text" placeholder={t.storage.localPathPlaceholder} value={pv.hostPath} onChange={e => updatePv(pv.id, { hostPath: e.target.value })} className={inpSm} />}
                 {pv.sourceType === 'nfs' && (
                   <div className="flex-1 flex gap-2">
-                    <input type="text" placeholder="NFS 服务器" value={pv.nfsServer} onChange={e => updatePv(pv.id, { nfsServer: e.target.value })} className={inpSm} />
-                    <input type="text" placeholder="共享路径" value={pv.nfsPath} onChange={e => updatePv(pv.id, { nfsPath: e.target.value })} className={inpSm} />
+                    <input type="text" placeholder={t.storage.nfsServerPlaceholder} value={pv.nfsServer} onChange={e => updatePv(pv.id, { nfsServer: e.target.value })} className={inpSm} />
+                    <input type="text" placeholder={t.storage.nfsPathPlaceholder} value={pv.nfsPath} onChange={e => updatePv(pv.id, { nfsPath: e.target.value })} className={inpSm} />
                   </div>
                 )}
                 {pv.sourceType === 'csi' && (
                   <div className="flex-1 flex gap-2">
-                    <input type="text" placeholder="Driver (如 hostpath.csi.k8s.io)" value={pv.csiDriver} onChange={e => updatePv(pv.id, { csiDriver: e.target.value })} className={inpSm} />
-                    <input type="text" placeholder="VolumeHandle" value={pv.csiHandle} onChange={e => updatePv(pv.id, { csiHandle: e.target.value })} className={inpSm} />
+                    <input type="text" placeholder={t.storage.csiDriverPlaceholder} value={pv.csiDriver} onChange={e => updatePv(pv.id, { csiDriver: e.target.value })} className={inpSm} />
+                    <input type="text" placeholder={t.storage.vHandlePlaceholder} value={pv.csiHandle} onChange={e => updatePv(pv.id, { csiHandle: e.target.value })} className={inpSm} />
                   </div>
                 )}
               </div>
@@ -1169,23 +1182,23 @@ function StorageSection() {
       <div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5"><Database className="w-4 h-4 text-indigo-500" />PersistentVolumeClaim</p>
-          <button onClick={addPvc} className={`${btnSm} border-indigo-300 dark:border-indigo-700 text-indigo-600 dark:text-indigo-400`}><Plus className="w-3 h-3" />新建</button>
+          <button onClick={addPvc} className={`${btnSm} border-indigo-300 dark:border-indigo-700 text-indigo-600 dark:text-indigo-400`}><Plus className="w-3 h-3" />{t.network.new}</button>
         </div>
-        {pvcs.length === 0 && <p className="text-xs text-gray-400 italic px-1">暂无 PVC</p>}
+        {pvcs.length === 0 && <p className="text-xs text-gray-400 italic px-1">{t.storage.noPvc}</p>}
         {pvcs.map(p => <ResRow key={p.id} label={p.name} sub={`${p.storage} · ${p.accessMode}`} theme="indigo" active={p.id === activePvcId} onClick={() => { setActivePvcId(p.id); setActiveConfigMapId(null); setActiveSecretId(null); setActiveStorageClassId(null); }} onDelete={() => removePvc(p.id)} />)}
       </div>
       {pvc && (
         <div className="border-2 border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] duration-300 animate-in fade-in slide-in-from-top-2 shadow-xl shadow-indigo-500/5">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">编辑 PVC</p>
+            <p className="text-xs font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">{t.k8s.edit} PVC</p>
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-500/50"></div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div><p className="text-xs text-gray-500 mb-1">名称</p><input type="text" value={pvc.name} onChange={e => updatePvc(pvc.id, { name: e.target.value })} className={inp} /></div>
-            <div><p className="text-xs text-gray-500 mb-1">命名空间</p><input type="text" value={pvc.namespace} onChange={e => updatePvc(pvc.id, { namespace: e.target.value })} className={inp} /></div>
+            <div><p className="text-xs text-gray-500 mb-1">{t.common.name}</p><input type="text" value={pvc.name} onChange={e => updatePvc(pvc.id, { name: e.target.value })} className={inp} /></div>
+            <div><p className="text-xs text-gray-500 mb-1">{t.k8s.namespace}</p><input type="text" value={pvc.namespace} onChange={e => updatePvc(pvc.id, { namespace: e.target.value })} className={inp} /></div>
             <div className="col-span-2">
               <MetadataEditor
                 labels={pvc.labels} annotations={pvc.annotations}
@@ -1194,18 +1207,18 @@ function StorageSection() {
                 theme="indigo"
               />
             </div>
-            <div><p className="text-xs text-gray-500 mb-1">存储大小</p><input type="text" placeholder="1Gi" value={pvc.storage} onChange={e => updatePvc(pvc.id, { storage: e.target.value })} className={inp} /></div>
+            <div><p className="text-xs text-gray-500 mb-1">{t.storage.storageSize}</p><input type="text" placeholder="1Gi" value={pvc.storage} onChange={e => updatePvc(pvc.id, { storage: e.target.value })} className={inp} /></div>
             <div><p className="text-xs text-gray-500 mb-1">AccessMode</p><select value={pvc.accessMode} onChange={e => updatePvc(pvc.id, { accessMode: e.target.value as any })} className={inp}><option value="ReadWriteOnce">ReadWriteOnce</option><option value="ReadWriteMany">ReadWriteMany</option><option value="ReadOnlyMany">ReadOnlyMany</option></select></div>
             <div className="">
-              <p className="text-xs text-gray-500 mb-1">StorageClass</p>
+              <p className="text-xs text-gray-500 mb-1">{t.storage.sc}</p>
               <select value={pvc.storageClass} onChange={e => updatePvc(pvc.id, { storageClass: e.target.value })} className={inp}>
-                <option value="">-- 集群默认 SC --</option>
+                <option value="">-- Cluster Default --</option>
                 {storageClasses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
               </select>
             </div>
             <div className="">
               <ResourceSelector
-                label="绑定指定 PV (可选)"
+                label="Selector PV (Optional)"
                 value={pvc.volumeName}
                 onChange={val => {
                   const selectedPv = pvs.find(p => p.name === val);
@@ -1216,8 +1229,8 @@ function StorageSection() {
                   }
                 }}
                 options={pvs.map(p => ({ id: p.id, name: p.name, info: p.capacity }))}
-                placeholder="-- 动态制备 (不指定) --"
-                manualPlaceholder="输入 PV 名称"
+                placeholder="-- Dynamic Provisioning --"
+                manualPlaceholder="PV NAME"
               />
             </div>
           </div>
@@ -1229,23 +1242,23 @@ function StorageSection() {
       <div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5"><Tag className="w-4 h-4 text-teal-500" />ConfigMap</p>
-          <button onClick={addConfigMap} className={`${btnSm} border-teal-300 dark:border-teal-700 text-teal-600 dark:text-teal-400`}><Plus className="w-3 h-3" />新建</button>
+          <button onClick={addConfigMap} className={`${btnSm} border-teal-300 dark:border-teal-700 text-teal-600 dark:text-teal-400`}><Plus className="w-3 h-3" />{t.network.new}</button>
         </div>
-        {configMaps.length === 0 && <p className="text-xs text-gray-400 italic px-1">暂无 ConfigMap</p>}
-        {configMaps.map(c => <ResRow key={c.id} label={c.name} sub={`data: ${c.data.length} 项`} theme="teal" active={c.id === activeConfigMapId} onClick={() => { setActiveConfigMapId(c.id); setActivePvcId(null); setActiveSecretId(null); setActiveStorageClassId(null); }} onDelete={() => removeConfigMap(c.id)} />)}
+        {configMaps.length === 0 && <p className="text-xs text-gray-400 italic px-1">No ConfigMaps</p>}
+        {configMaps.map(c => <ResRow key={c.id} label={c.name} sub={`data: ${c.data.length} ${t.common.itemUnit}`} theme="teal" active={c.id === activeConfigMapId} onClick={() => { setActiveConfigMapId(c.id); setActivePvcId(null); setActiveSecretId(null); setActiveStorageClassId(null); }} onDelete={() => removeConfigMap(c.id)} />)}
       </div>
       {cm && (
         <div className="border-2 border-teal-100 dark:border-teal-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] duration-300 animate-in fade-in slide-in-from-top-2 shadow-xl shadow-teal-500/5">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-black text-teal-600 dark:text-teal-400 uppercase tracking-wider">编辑 ConfigMap</p>
+            <p className="text-xs font-black text-teal-600 dark:text-teal-400 uppercase tracking-wider">{t.common.edit} ConfigMap</p>
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></div>
               <div className="w-1.5 h-1.5 rounded-full bg-teal-500/50"></div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div><p className="text-xs text-gray-500 mb-1">名称</p><input type="text" value={cm.name} onChange={e => updateConfigMap(cm.id, { name: e.target.value })} className={inp} /></div>
-            <div><p className="text-xs text-gray-500 mb-1">命名空间</p><input type="text" value={cm.namespace} onChange={e => updateConfigMap(cm.id, { namespace: e.target.value })} className={inp} /></div>
+            <div><p className="text-xs text-gray-500 mb-1">{t.common.name}</p><input type="text" value={cm.name} onChange={e => updateConfigMap(cm.id, { name: e.target.value })} className={inp} /></div>
+            <div><p className="text-xs text-gray-500 mb-1">{t.k8s.namespace}</p><input type="text" value={cm.namespace} onChange={e => updateConfigMap(cm.id, { namespace: e.target.value })} className={inp} /></div>
             <div className="col-span-2">
               <MetadataEditor
                 labels={cm.labels} annotations={cm.annotations}
@@ -1255,25 +1268,25 @@ function StorageSection() {
               />
             </div>
           </div>
-          <p className="text-xs text-gray-500">Data</p>
+          <p className="text-xs text-gray-500">{t.storage.cm} Data</p>
           <div className="space-y-3">
             {cm.data.map((d, i) => (
               <div key={i} className="p-3 bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-lg space-y-2">
                 <div className="flex justify-between items-center text-xs font-semibold text-gray-500 uppercase tracking-tight">
-                  <div className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" />Key / 文件名</div>
+                  <div className="flex items-center gap-1.5"><FileText className="w-3.5 h-3.5" />{t.storage.key}</div>
                   <button onClick={() => removeConfigMapData(cm.id, i)} className="text-gray-400 hover:text-red-400 p-0.5"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
                 <input type="text" placeholder="config.yaml / db_host..." value={d.key}
                   onChange={e => updateConfigMapData(cm.id, i, 'key', e.target.value)}
                   className={inpSm} />
-                <div className="text-xs font-semibold text-gray-500 uppercase tracking-tight">Content / 值</div>
-                <textarea placeholder="Paste configuration or value here..." value={d.value}
+                <div className="text-xs font-semibold text-gray-500 uppercase tracking-tight">{t.storage.value}</div>
+                <textarea placeholder={t.storage.valuePlaceholder} value={d.value}
                   onChange={e => updateConfigMapData(cm.id, i, 'value', e.target.value)}
                   className={`w-full block min-h-[100px] max-h-[400px] bg-white dark:bg-[#1C2128] border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 text-sm focus:outline-none focus:border-teal-500 font-mono transition`} />
               </div>
             ))}
           </div>
-          <button onClick={() => addConfigMapData(cm.id)} className="text-[10px] text-blue-500 font-bold">+ 添加配置项</button>
+          <button onClick={() => addConfigMapData(cm.id)} className="text-[10px] text-blue-500 font-bold">+ {t.common.add} Item</button>
         </div>
       )}
 
@@ -1281,24 +1294,24 @@ function StorageSection() {
       <div>
         <div className="flex items-center justify-between mb-2">
           <p className="text-sm font-semibold text-gray-800 dark:text-gray-200 flex items-center gap-1.5"><Shield className="w-4 h-4 text-amber-500" />Secret</p>
-          <button onClick={addSecret} className={`${btnSm} border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-400`}><Plus className="w-3 h-3" />新建</button>
+          <button onClick={addSecret} className={`${btnSm} border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-400`}><Plus className="w-3 h-3" />{t.network.new}</button>
         </div>
-        {secrets.length === 0 && <p className="text-xs text-gray-400 italic px-1">暂无 Secret</p>}
-        {secrets.map(s => <ResRow key={s.id} label={s.name} sub={`type: ${s.secretType} · ${s.data.length} 项`} active={s.id === activeSecretId} onClick={() => { setActiveSecretId(s.id); setActivePvcId(null); setActiveConfigMapId(null); }} onDelete={() => removeSecret(s.id)} />)}
+        {secrets.length === 0 && <p className="text-xs text-gray-400 italic px-1">No Secrets</p>}
+        {secrets.map(s => <ResRow key={s.id} label={s.name} sub={`type: ${s.secretType} · ${s.data.length} ${t.common.itemUnit}`} active={s.id === activeSecretId} onClick={() => { setActiveSecretId(s.id); setActivePvcId(null); setActiveConfigMapId(null); }} onDelete={() => removeSecret(s.id)} />)}
       </div>
       {sec && (
         <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3 bg-white dark:bg-[#0E1117]">
-          <p className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">编辑 Secret</p>
+          <p className="text-xs font-black text-amber-600 dark:text-amber-400 uppercase tracking-wider">{t.common.edit} Secret</p>
           <div className="grid grid-cols-2 gap-3">
-            <div><p className="text-xs text-gray-500 mb-1">名称</p><input type="text" value={sec.name} onChange={e => updateSecret(sec.id, { name: e.target.value })} className={inp} /></div>
+            <div><p className="text-xs text-gray-500 mb-1">{t.common.name.toUpperCase()}</p><input type="text" value={sec.name} onChange={e => updateSecret(sec.id, { name: e.target.value })} className={inp} /></div>
             <div>
-              <p className="text-xs text-gray-500 mb-1">Type</p>
+              <p className="text-xs text-gray-500 mb-1">{t.storage.type}</p>
               <select value={sec.secretType} onChange={e => updateSecret(sec.id, { secretType: e.target.value })} className={inp}>
-                <option value="Opaque">Opaque (自定义/通用)</option>
-                <option value="kubernetes.io/dockerconfigjson">kubernetes.io/dockerconfigjson (私有镜像仓库密钥)</option>
-                <option value="kubernetes.io/tls">kubernetes.io/tls (SSL/TLS 证书)</option>
-                <option value="kubernetes.io/basic-auth">kubernetes.io/basic-auth (基础认证)</option>
-                <option value="kubernetes.io/ssh-auth">kubernetes.io/ssh-auth (SSH 密钥)</option>
+                <option value="Opaque">Opaque (Custom/Generic)</option>
+                <option value="kubernetes.io/dockerconfigjson">kubernetes.io/dockerconfigjson (Docker Registry)</option>
+                <option value="kubernetes.io/tls">kubernetes.io/tls (SSL/TLS Certificate)</option>
+                <option value="kubernetes.io/basic-auth">kubernetes.io/basic-auth (Basic Auth)</option>
+                <option value="kubernetes.io/ssh-auth">kubernetes.io/ssh-auth (SSH Key)</option>
                 <option value="kubernetes.io/service-account-token">service-account-token</option>
               </select>
             </div>
@@ -1316,11 +1329,11 @@ function StorageSection() {
             if (sec.secretType === 'kubernetes.io/dockerconfigjson') {
               return (
                 <div className="p-4 bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl space-y-3">
-                  <p className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" />私有仓库凭据助手 (.dockerconfigjson)</p>
-                  <div><p className="text-[10px] text-gray-500 mb-0.5">仓库地址 (Registry URL)</p><input type="text" placeholder="https://index.docker.io/v1/" defaultValue="https://index.docker.io/v1/" id="docker-registry" className={inpSm} /></div>
+                  <p className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" />{t.storage.registryHelper} (.dockerconfigjson)</p>
+                  <div><p className="text-[10px] text-gray-500 mb-0.5">{t.storage.registryUrl}</p><input type="text" placeholder="https://index.docker.io/v1/" defaultValue="https://index.docker.io/v1/" id="docker-registry" className={inpSm} /></div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><p className="text-[10px] text-gray-500 mb-0.5">用户名 (Username)</p><input type="text" placeholder="admin" id="docker-user" className={inpSm} /></div>
-                    <div><p className="text-[10px] text-gray-500 mb-0.5">密码 (Password)</p><input type="password" placeholder="******" id="docker-pass" className={inpSm} /></div>
+                    <div><p className="text-[10px] text-gray-500 mb-0.5">{t.storage.username}</p><input type="text" placeholder="admin" id="docker-user" className={inpSm} /></div>
+                    <div><p className="text-[10px] text-gray-500 mb-0.5">{t.storage.password}</p><input type="password" placeholder="******" id="docker-pass" className={inpSm} /></div>
                   </div>
                   <button onClick={() => {
                     const reg = (document.getElementById('docker-registry') as HTMLInputElement).value || 'https://index.docker.io/v1/';
@@ -1330,78 +1343,77 @@ function StorageSection() {
                     const auth = btoa(`${user}:${pass}`);
                     const config = JSON.stringify({ auths: { [reg]: { auth: btoa(`${user}:${pass}`) } } }, null, 2);
                     updateSecret(sec.id, { data: [{ key: '.dockerconfigjson', value: config }] });
-                    alert('凭据已自动生成！');
-                  }} className="w-full py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all">生成并应用</button>
+                    alert(t.storage.applied);
+                  }} className="w-full py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all">{t.storage.generate}</button>
                 </div>
               );
             }
             if (sec.secretType === 'kubernetes.io/tls') {
               return (
                 <div className="p-4 bg-purple-50/50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl space-y-3">
-                  <p className="text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" />TLS 证书助手 (tls.crt / tls.key)</p>
-                  <div><p className="text-[10px] text-gray-500 mb-0.5">公钥证书内容 (tls.crt)</p><textarea id="tls-crt" className={`${inpSm} h-24 font-mono text-[10px]`} placeholder="-----BEGIN CERTIFICATE-----" /></div>
-                  <div><p className="text-[10px] text-gray-500 mb-0.5">私钥内容 (tls.key)</p><textarea id="tls-key" className={`${inpSm} h-24 font-mono text-[10px]`} placeholder="-----BEGIN PRIVATE KEY-----" /></div>
+                  <p className="text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" />{t.storage.tlsHelper} (tls.crt / tls.key)</p>
+                  <div><p className="text-[10px] text-gray-500 mb-0.5">{t.storage.tlsCrt}</p><textarea id="tls-crt" className={`${inpSm} h-24 font-mono text-[10px]`} placeholder="-----BEGIN CERTIFICATE-----" /></div>
+                  <div><p className="text-[10px] text-gray-500 mb-0.5">{t.storage.tlsKey}</p><textarea id="tls-key" className={`${inpSm} h-24 font-mono text-[10px]`} placeholder="-----BEGIN PRIVATE KEY-----" /></div>
                   <button onClick={() => {
                     const crt = (document.getElementById('tls-crt') as HTMLTextAreaElement).value;
                     const key = (document.getElementById('tls-key') as HTMLTextAreaElement).value;
                     if (!crt || !key) return;
                     updateSecret(sec.id, { data: [{ key: 'tls.crt', value: crt }, { key: 'tls.key', value: key }] });
-                    alert('TLS 证书已填充！');
-                  }} className="w-full py-1.5 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 shadow-sm transition-all">应用证书</button>
+                    alert(t.storage.applied);
+                  }} className="w-full py-1.5 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 shadow-sm transition-all">{t.storage.apply}</button>
                 </div>
               );
             }
             if (sec.secretType === 'kubernetes.io/basic-auth') {
               return (
                 <div className="p-4 bg-teal-50/50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl space-y-3">
-                  <p className="text-xs font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5" />基础认证助手 (Basic Auth)</p>
+                  <p className="text-xs font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5" />{t.storage.basicAuthHelper}</p>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><p className="text-[10px] text-gray-500 mb-0.5">Username</p><input type="text" id="ba-user" className={inpSm} placeholder="admin" /></div>
-                    <div><p className="text-[10px] text-gray-500 mb-0.5">Password</p><input type="password" id="ba-pass" className={inpSm} placeholder="******" /></div>
+                    <div><p className="text-[10px] text-gray-500 mb-0.5">{t.storage.username}</p><input type="text" id="ba-user" className={inpSm} placeholder="admin" /></div>
+                    <div><p className="text-[10px] text-gray-500 mb-0.5">{t.storage.password}</p><input type="password" id="ba-pass" className={inpSm} placeholder="******" /></div>
                   </div>
                   <button onClick={() => {
                     const user = (document.getElementById('ba-user') as HTMLInputElement).value;
                     const pass = (document.getElementById('ba-pass') as HTMLInputElement).value;
                     if (!user || !pass) return;
                     updateSecret(sec.id, { data: [{ key: 'username', value: user }, { key: 'password', value: pass }] });
-                    alert('基础认证已应用！');
-                  }} className="w-full py-1.5 bg-teal-600 text-white text-xs font-bold rounded-lg hover:bg-teal-700 shadow-sm transition-all">应用凭据</button>
+                    alert(t.storage.applied);
+                  }} className="w-full py-1.5 bg-teal-600 text-white text-xs font-bold rounded-lg hover:bg-teal-700 shadow-sm transition-all">{t.storage.apply}</button>
                 </div>
               );
             }
             if (sec.secretType === 'kubernetes.io/ssh-auth') {
               return (
                 <div className="p-4 bg-slate-50/50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
-                  <p className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5" />SSH 密钥助手 (ssh-privatekey)</p>
-                  <div><p className="text-[10px] text-gray-500 mb-0.5">SSH 私钥 (Private Key)</p><textarea id="ssh-key" className={`${inpSm} h-32 font-mono text-[10px]`} placeholder="-----BEGIN OPENSSH PRIVATE KEY-----" /></div>
+                  <p className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5" />{t.storage.sshHelper}</p>
+                  <div><p className="text-[10px] text-gray-500 mb-0.5">{t.storage.sshKey}</p><textarea id="ssh-key" className={`${inpSm} h-32 font-mono text-[10px]`} placeholder="-----BEGIN OPENSSH PRIVATE KEY-----" /></div>
                   <button onClick={() => {
                     const key = (document.getElementById('ssh-key') as HTMLTextAreaElement).value;
                     if (!key) return;
                     updateSecret(sec.id, { data: [{ key: 'ssh-privatekey', value: key }] });
-                    alert('SSH 密钥已应用！');
-                  }} className="w-full py-1.5 bg-slate-600 text-white text-xs font-bold rounded-lg hover:bg-slate-700 shadow-sm transition-all">应用 SSH 密钥</button>
+                    alert(t.storage.applied);
+                  }} className="w-full py-1.5 bg-slate-600 text-white text-xs font-bold rounded-lg hover:bg-slate-700 shadow-sm transition-all">{t.storage.apply}</button>
                 </div>
               );
             }
 
-            // Opaque or Other: Default Key-Value UI
             return (
               <>
-                <p className="text-xs text-gray-500">数据列表 (Data Items)</p>
+                <p className="text-xs text-gray-500">{t.storage.dataItems}</p>
                 <div className="space-y-3">
                   {sec.data.map((d, i) => (
                     <div key={i} className="p-3 bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-lg space-y-2">
                       <div className="flex justify-between items-center text-xs font-semibold text-gray-500 uppercase tracking-tight">
-                        <div className="flex items-center gap-1.5"><KeyRound className="w-3.5 h-3.5" />Key</div>
+                        <div className="flex items-center gap-1.5"><KeyRound className="w-3.5 h-3.5" />{t.storage.key}</div>
                         <button onClick={() => removeSecretData(sec.id, i)} className="text-gray-400 hover:text-red-400 p-0.5"><Trash2 className="w-3.5 h-3.5" /></button>
                       </div>
                       <input type="text" placeholder="key..." value={d.key} onChange={e => updateSecretData(sec.id, i, 'key', e.target.value)} className={inpSm} />
-                      <div className="text-xs font-semibold text-gray-400 uppercase tracking-tight">Value (明文)</div>
-                      <textarea placeholder="Value..." value={d.value} onChange={e => updateSecretData(sec.id, i, 'value', e.target.value)} className={`${inpSm} h-16 font-mono text-[11px]`} />
+                      <div className="text-xs font-semibold text-gray-400 uppercase tracking-tight">{t.storage.plaintextValue}</div>
+                      <textarea placeholder={t.storage.valuePlaceholder} value={d.value} onChange={e => updateSecretData(sec.id, i, 'value', e.target.value)} className={`${inpSm} h-16 font-mono text-[11px]`} />
                     </div>
                   ))}
                 </div>
-                <button onClick={() => addSecretData(sec.id)} className="text-xs text-amber-500 font-medium py-1.5 hover:underline">+ 添加数据项</button>
+                <button onClick={() => addSecretData(sec.id)} className="text-xs text-amber-500 font-medium py-1.5 hover:underline">+ {t.common.add} Item</button>
               </>
             );
           })()}
@@ -1415,6 +1427,7 @@ function StorageSection() {
 
 // ── Main Tab ─────────────────────────────────────────────────────────────────
 export function KubernetesTab() {
+  const { t } = useTranslation();
   const { resetOverride } = useAppStore();
   const {
     activeSection, setSection, workloads, activeWorkloadId, setActiveWorkloadId, addWorkload, removeWorkload,
@@ -1432,9 +1445,9 @@ export function KubernetesTab() {
   };
 
   const SECTIONS = [
-    { id: 'workload' as const, label: '工作负载', icon: <Layers className="w-4 h-4" />, color: 'text-blue-600 dark:text-blue-400 border-blue-500 bg-blue-50 dark:bg-blue-900/20' },
-    { id: 'network' as const, label: '网络', icon: <Network className="w-4 h-4" />, color: 'text-green-600 dark:text-green-400 border-green-500 bg-green-50 dark:bg-green-900/20' },
-    { id: 'storage' as const, label: '存储', icon: <Database className="w-4 h-4" />, color: 'text-indigo-600 dark:text-indigo-400 border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' },
+    { id: 'workload' as const, label: t.k8s.workloadList, icon: <Layers className="w-4 h-4" />, color: 'text-blue-600 dark:text-blue-400 border-blue-500 bg-blue-50 dark:bg-blue-900/20' },
+    { id: 'network' as const, label: t.tabs.network || 'Network', icon: <Network className="w-4 h-4" />, color: 'text-green-600 dark:text-green-400 border-green-500 bg-green-50 dark:bg-green-900/20' },
+    { id: 'storage' as const, label: t.tabs.storage || 'Storage', icon: <Database className="w-4 h-4" />, color: 'text-indigo-600 dark:text-indigo-400 border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20' },
   ];
 
   const activeWl = workloads.find(w => w.id === activeWorkloadId);
@@ -1444,20 +1457,20 @@ export function KubernetesTab() {
       {/* ── Global Header ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 p-4 bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-2xl gap-4">
         <div className="flex flex-col">
-          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 items-center flex gap-1.5"><Globe className="w-3 h-3" />全局配置</span>
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 items-center flex gap-1.5"><Globe className="w-3 h-3" />{t.k8s.globalConfig}</span>
           <div className="flex items-center gap-2">
             <input type="text" value={globalNamespace}
               onChange={e => setNamespace(e.target.value)}
-              placeholder="命名空间 (如 prod)"
+              placeholder={`${t.k8s.namespace} (e.g. prod)`}
               className="bg-white dark:bg-[#0E1117] border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 w-40" />
             <button onClick={syncAllNamespaces}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg text-[11px] font-black uppercase tracking-wider shadow-sm transition-all active:scale-95">
-              <RefreshCw className="w-3 h-3" /> 一键同步
+              <RefreshCw className="w-3 h-3" /> {t.k8s.syncAll}
             </button>
           </div>
         </div>
         <div className="text-right hidden sm:block">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">统计统计</p>
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">{t.k8s.stats}</p>
           <p className="text-xs text-gray-500 font-medium">
             {workloads.length} Wloads · {services.length + ingresses.length} Net · {pvcs.length + configMaps.length + secrets.length} Store
           </p>
@@ -1478,8 +1491,8 @@ export function KubernetesTab() {
       {activeSection === 'workload' && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">工作负载列表</p>
-            <button onClick={addWorkload} className={`${btnSm} border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20`}><Plus className="w-3 h-3" />新建工作负载</button>
+            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">{t.k8s.workloadList}</p>
+            <button onClick={addWorkload} className={`${btnSm} border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20`}><Plus className="w-3 h-3" />{t.network.newWorkload}</button>
           </div>
 
           <div className="space-y-2 mb-4">
@@ -1506,7 +1519,7 @@ export function KubernetesTab() {
 
           {activeWl && <WorkloadEditor wl={activeWl} />}
           {!activeWl && workloads.length > 0 && (
-            <div className="text-center py-10 text-gray-400 text-sm">选择一个工作负载进行编辑</div>
+            <div className="text-center py-10 text-gray-400 text-sm">{t.k8s.selectWorkload}</div>
           )}
         </div>
       )}

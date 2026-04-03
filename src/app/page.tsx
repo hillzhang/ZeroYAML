@@ -1,7 +1,8 @@
 "use client";
 
-import { Layers, Rocket, Zap, Search, HelpCircle } from "lucide-react";
+import { Layers, Rocket, Zap } from "lucide-react";
 import { useAppStore } from '@/store/useAppStore';
+import { useTranslation } from '@/hooks/useTranslation';
 import { ComposeTab } from '../components/tabs/ComposeTab';
 import { DockerfileTab } from '../components/tabs/DockerfileTab';
 import { KubernetesTab } from '../components/tabs/KubernetesTab';
@@ -10,11 +11,12 @@ import { ThemeSwitch } from '../components/ThemeSwitch';
 
 export default function ZeroYAMLApp() {
   const { activeTab, setActiveTab, setActiveTooltip } = useAppStore();
+  const { t, language, setLanguage } = useTranslation();
 
   const tabs = [
-    { id: 'dockerfile', label: 'Dockerfile', icon: Rocket },
-    { id: 'compose', label: 'Docker Compose', icon: Layers },
-    { id: 'kubernetes', label: 'Kubernetes', icon: Zap },
+    { id: 'dockerfile', label: t.tabs.dockerfile, icon: Rocket },
+    { id: 'compose', label: t.tabs.compose, icon: Layers },
+    { id: 'kubernetes', label: t.tabs.kubernetes, icon: Zap },
   ];
 
   return (
@@ -61,13 +63,26 @@ export default function ZeroYAMLApp() {
           })}
         </nav>
 
-        <div className="flex items-center gap-6">
-          <div className="hidden md:flex items-center gap-4 text-gray-400 dark:text-gray-600">
-             <Search className="w-4 h-4 hover:text-blue-500 cursor-pointer transition-colors" />
-             <HelpCircle className="w-4 h-4 hover:text-blue-500 cursor-pointer transition-colors" />
+        <div className="flex items-center gap-5">
+          {/* Language Switcher */}
+          <div className="flex items-center bg-gray-100/50 dark:bg-[#0D1117] p-0.5 rounded-xl border border-gray-200/50 dark:border-gray-800">
+            <button 
+              onClick={() => setLanguage('zh')}
+              className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all ${language === 'zh' ? 'bg-white dark:bg-[#1C2128] text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              ZH
+            </button>
+            <button 
+              onClick={() => setLanguage('en')}
+              className={`px-3 py-1 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all ${language === 'en' ? 'bg-white dark:bg-[#1C2128] text-blue-600 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+            >
+              EN
+            </button>
           </div>
-          <div className="h-6 w-[1px] bg-gray-200 dark:bg-gray-800" />
-          <ThemeSwitch />
+
+          <div className="flex items-center gap-4 text-gray-400 dark:text-gray-600">
+             <ThemeSwitch />
+          </div>
         </div>
       </header>
 

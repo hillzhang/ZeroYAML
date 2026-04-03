@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useComposeStore, ComposeService } from '@/store/useComposeStore';
 import { useAppStore } from '@/store/useAppStore';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Checkbox } from '@/components/ui/Checkbox';
 import {
   Box, Layers, Info, Shield, Terminal, Activity, Zap, Check, Plus,
@@ -26,18 +27,18 @@ function Section({ title, icon, children, defaultOpen = false, theme = "blue", b
     purple: { icon: "text-purple-500", bg: "bg-purple-50/30 dark:bg-purple-900/10", border: "border-purple-500/20", badge: "bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 border-purple-200 dark:border-purple-800" },
     emerald: { icon: "text-emerald-500", bg: "bg-emerald-50/30 dark:bg-emerald-900/10", border: "border-emerald-500/20", badge: "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800" },
   };
-  const t = themes[theme] || themes.blue;
+  const th = themes[theme] || themes.blue;
 
   return (
     <div className="border border-gray-200 dark:border-gray-800 rounded-[2.5rem] overflow-hidden mb-8 shadow-sm bg-white dark:bg-[#0D1117] transition-all hover:border-gray-300 dark:hover:border-gray-700">
-      <button onClick={() => setOpen(!open)} className={`w-full flex items-center justify-between px-6 py-5 ${t.bg} hover:opacity-95 transition-all text-left select-none group border-b ${t.border}`}>
+      <button onClick={() => setOpen(!open)} className={`w-full flex items-center justify-between px-6 py-5 ${th.bg} hover:opacity-95 transition-all text-left select-none group border-b ${th.border}`}>
         <div className="flex items-center gap-5">
           <div className="p-2.5 rounded-2xl bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 shadow-sm group-hover:scale-110 transition-transform duration-500">
-            <div className={t.icon}>{icon}</div>
+            <div className={th.icon}>{icon}</div>
           </div>
           <div>
             <p className="text-sm font-black text-gray-800 dark:text-gray-100 uppercase tracking-[0.15em]">{title}</p>
-            {badge && <span className={`mt-1 inline-block px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${t.badge}`}>{badge}</span>}
+            {badge && <span className={`mt-1 inline-block px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-widest border ${th.badge}`}>{badge}</span>}
           </div>
         </div>
         <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-500 ${open ? 'rotate-180' : ''}`} />
@@ -49,16 +50,17 @@ function Section({ title, icon, children, defaultOpen = false, theme = "blue", b
 
 // ── Metadata Editor ─────────────────────────────────────────────────────────
 function MetadataEditor({ title, items, onUpdate, theme = "blue", icon: Icon }: any) {
+  const { t } = useTranslation();
   const themes: any = {
     blue: "text-blue-500 bg-blue-50/30 border-blue-200 dark:bg-blue-900/10 dark:border-blue-800",
     teal: "text-teal-500 bg-teal-50/30 border-teal-200 dark:bg-teal-900/10 dark:border-teal-800",
     orange: "text-orange-500 bg-orange-50/30 border-orange-200 dark:bg-orange-900/10 dark:border-orange-800",
     emerald: "text-emerald-500 bg-emerald-50/30 border-emerald-200 dark:bg-emerald-900/10 dark:border-emerald-800",
   };
-  const t = themes[theme] || themes.blue;
+  const th = themes[theme] || themes.blue;
 
   return (
-    <div className={`p-5 rounded-3xl border ${t} space-y-4 shadow-sm hover:shadow-md transition-all duration-300`}>
+    <div className={`p-5 rounded-3xl border ${th} space-y-4 shadow-sm hover:shadow-md transition-all duration-300`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-xl bg-white dark:bg-gray-900 shadow-sm border border-black/5">
@@ -83,7 +85,7 @@ function MetadataEditor({ title, items, onUpdate, theme = "blue", icon: Icon }: 
         ))}
         <button onClick={() => onUpdate([...(items || []), { key: '', value: '' }])}
           className="w-full py-2 border-2 border-dashed border-black/5 dark:border-white/5 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-black/5 dark:hover:bg-white/5 transition-all flex items-center justify-center gap-1.5">
-          <Plus className="w-3.5 h-3.5" /> ADD NEW {title.split(' ')[0]}
+          <Plus className="w-3.5 h-3.5" /> {t.common.add} {title.split(' ')[0]}
         </button>
       </div>
     </div>
@@ -93,6 +95,7 @@ function MetadataEditor({ title, items, onUpdate, theme = "blue", icon: Icon }: 
 export function ComposeTab() {
   const { composeServices, setComposeServices, activeSvcId, setActiveSvcId, composeAddons, setComposeAddons, composeVersion, setComposeVersion, networkName, setNetworkName, useSharedNetwork, setUseSharedNetwork } = useComposeStore();
   const { activeTooltip, setActiveTooltip } = useAppStore();
+  const { t } = useTranslation();
 
   const activeSvcIndex = composeServices.findIndex(s => s.id === activeSvcId);
   const svc = composeServices[activeSvcIndex];
@@ -111,8 +114,8 @@ export function ComposeTab() {
         <div className="p-6 rounded-[3rem] bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 shadow-xl mb-6">
           <Rocket className="w-12 h-12 text-blue-500 animate-pulse-subtle" />
         </div>
-        <h2 className="text-xl font-black text-gray-800 dark:text-gray-100 uppercase tracking-widest mb-2">当前项目为空</h2>
-        <p className="text-gray-400 text-sm mb-8 font-medium">点击下方按钮添加第一个服务以开始配置</p>
+        <h2 className="text-xl font-black text-gray-800 dark:text-gray-100 uppercase tracking-widest mb-2">PROJECT IS EMPTY</h2>
+        <p className="text-gray-400 text-sm mb-8 font-medium">Click the button below to add your first service</p>
         <button
           onClick={addSvc}
           className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl font-black uppercase tracking-widest shadow-xl shadow-blue-500/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-3"
@@ -192,7 +195,7 @@ export function ComposeTab() {
             className="px-6 py-3 text-xs font-black text-blue-500 hover:bg-white dark:hover:bg-[#0D1117] rounded-full transition-all flex items-center gap-2 group/add"
           >
             <Plus className="w-4 h-4 group-hover/add:rotate-90 transition-transform" />
-            ADD SERVICE
+            {t.common.add.toUpperCase()} SERVICE
           </button>
         </div>
 
@@ -216,21 +219,21 @@ export function ComposeTab() {
       {/* Editor Content */}
       <div className="space-y-4">
         {/* 1. Core Configuration */}
-        <Section title="1. 核心定义与镜像源" icon={<Rocket className="w-4 h-4" />} theme="blue" badge="CORE DEFINITION">
+        <Section title={`1. ${t.compose.serviceName}`} icon={<Rocket className="w-4 h-4" />} theme="blue" badge="CORE DEFINITION">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             <div className="space-y-6">
               <div className="relative group">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5 group-hover:text-blue-500 transition-colors">
-                  服务标识 (SERVICE NAME)
+                  {t.compose.serviceName}
                   <Info className="w-3.5 h-3.5 cursor-help opacity-40 hover:opacity-100" onClick={() => setActiveTooltip(activeTooltip === 'name' ? null : 'name')} />
                 </p>
-                {activeTooltip === 'name' && <div className="absolute left-0 -top-12 bg-gray-900 text-white p-2 text-[10px] rounded-xl shadow-2xl w-[200px] z-20 border border-gray-700">Compose 内部唯一的服务键名</div>}
+                {activeTooltip === 'name' && <div className="absolute left-0 -top-12 bg-gray-900 text-white p-2 text-[10px] rounded-xl shadow-2xl w-[200px] z-20 border border-gray-700">{t.compose.nameTooltip}</div>}
                 <input type="text" value={svc.name} onChange={e => updateSvc("name", e.target.value)} className={inp} placeholder="web-api" />
               </div>
 
               <div className="p-6 bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 rounded-3xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">部署来源 (DEPLOY SOURCE)</p>
+                  <p className="text-[10px] font-black text-gray-500 uppercase tracking-widest">{t.compose.deploySource}</p>
                   <div className="flex bg-white dark:bg-[#0D1117] rounded-full border border-gray-200 dark:border-gray-800 p-1.5 shadow-inner">
                     <button onClick={() => updateSvc('buildMode', 'build')}
                       className={`px-4 py-1.5 text-[9px] font-black rounded-full transition-all ${svc.buildMode === 'build' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}>BUILD</button>
@@ -261,10 +264,10 @@ export function ComposeTab() {
             <div className="space-y-6">
               <div className="relative group">
                 <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5 group-hover:text-indigo-500 transition-colors">
-                  重启策略 (RESTART POLICY)
+                  {t.compose.restartPolicy}
                   <Info className="w-3.5 h-3.5 cursor-help opacity-40" onClick={() => setActiveTooltip(activeTooltip === 'restart' ? null : 'restart')} />
                 </p>
-                {activeTooltip === 'restart' && <div className="absolute right-0 -top-12 bg-gray-900 text-white p-2 text-[10px] rounded-xl shadow-2xl w-[200px] z-20 border border-gray-700">控制进程崩溃或宿主机重启时的行为</div>}
+                {activeTooltip === 'restart' && <div className="absolute right-0 -top-12 bg-gray-900 text-white p-2 text-[10px] rounded-xl shadow-2xl w-[200px] z-20 border border-gray-700">{t.compose.restartTooltip}</div>}
                 <select value={svc.restart} onChange={e => updateSvc("restart", e.target.value)}
                   className={`${inp} cursor-pointer appearance-none bg-no-repeat bg-[right_1rem_center]`} style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")` }}>
                   <option value="no">no (Always Stop)</option>
@@ -274,8 +277,8 @@ export function ComposeTab() {
                 </select>
               </div>
 
-              <div className="p-6 bg-indigo-50/20 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/30 rounded-3xl space-y-4">
-                <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">启动依赖 (DEPENDS ON)</p>
+              <div className="p-6 bg-indigo-50/20 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/40 rounded-3xl space-y-4">
+                <p className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">{t.compose.dependsOn}</p>
                 <div className="flex flex-wrap gap-2">
                   {composeServices.filter(s => s.id !== svc.id).map(ds => {
                     const isChecked = (svc.dependsOn || []).includes(ds.id);
@@ -301,15 +304,15 @@ export function ComposeTab() {
         </Section>
 
         {/* 2. Networking */}
-        <Section title="2. 网络接口与端口映射" icon={<Globe className="w-4 h-4" />} theme="indigo" badge="NETWORKING">
+        <Section title={`2. ${t.compose.networking}`} icon={<Globe className="w-4 h-4" />} theme="indigo" badge="NETWORKING">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-start">
             
             {/* Left: Port Center */}
             <div className="p-8 bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 rounded-[2.5rem] space-y-6 relative overflow-hidden group/ports shadow-sm hover:shadow-md transition-shadow">
               <div className="flex items-start justify-between relative z-10 px-1">
                 <div className="space-y-1">
-                  <p className="text-[11px] font-black text-gray-800 dark:text-gray-200 uppercase tracking-[0.2em]">暴露端口 (PORTS)</p>
-                  <p className="text-[9px] text-gray-400 font-medium italic leading-relaxed">配置宿主机到容器的流量映射通道</p>
+                  <p className="text-[11px] font-black text-gray-800 dark:text-gray-200 uppercase tracking-[0.2em]">{t.compose.portCenter}</p>
+                  <p className="text-[9px] text-gray-400 font-medium italic leading-relaxed">Map host ports to internal container ports</p>
                 </div>
                 <button onClick={() => addArr("ports", { host: "", container: "" })} 
                   className="flex items-center gap-2 text-[10px] px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-2xl font-black uppercase tracking-widest shadow-lg shadow-indigo-500/20 transition-all active:scale-95 whitespace-nowrap">
@@ -378,8 +381,8 @@ export function ComposeTab() {
                       <Globe className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <p className="text-[11px] font-black text-blue-700 dark:text-blue-400 uppercase tracking-widest">共享网络 (SHARED NET)</p>
-                      <p className="text-[9px] text-blue-600/60 dark:text-blue-400/60 font-medium italic">定义整个项目的内部通信网</p>
+                      <p className="text-[11px] font-black text-blue-700 dark:text-blue-400 uppercase tracking-widest">{t.compose.sharedNetwork}</p>
+                      <p className="text-[9px] text-blue-600/60 dark:text-blue-400/60 font-medium italic">Internal network policy for the project</p>
                     </div>
                   </div>
                   <Checkbox checked={useSharedNetwork} onChange={setUseSharedNetwork} theme="blue" />
@@ -400,7 +403,7 @@ export function ComposeTab() {
                   </div>
                 ) : (
                   <div className="py-4 border border-dashed border-blue-200 dark:border-blue-900/50 rounded-2xl flex items-center justify-center opacity-60">
-                    <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold italic tracking-wider">已禁用自定义网络 (使用系统默认值)</p>
+                    <p className="text-[9px] text-blue-600 dark:text-blue-400 font-bold italic tracking-wider">{t.compose.networkDisabled}</p>
                   </div>
                 )}
               </div>
@@ -408,7 +411,7 @@ export function ComposeTab() {
               {/* Advanced Policy Card */}
               <div className="grid grid-cols-1 gap-6 p-1">
                 <div className="space-y-3">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">网络连通模式 (NETWORK MODE)</p>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t.compose.networkMode}</p>
                   <select value={svc.networkMode || "bridge"} onChange={e => updateSvc("networkMode", e.target.value)}
                     className={`${inp} appearance-none bg-no-repeat bg-[right_1rem_center] border-gray-100 dark:border-gray-800 focus:ring-gray-500/5`} style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")` }}>
                     <option value="bridge">bridge ({useSharedNetwork ? "Join Shared" : "Default Project"})</option>
@@ -418,7 +421,7 @@ export function ComposeTab() {
                 </div>
                 
                 <div className="space-y-3">
-                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">进程命名空间 (PID)</p>
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t.compose.pidNamespace}</p>
                   <select value={svc.pid || ""} onChange={e => updateSvc("pid", e.target.value)}
                     className={`${inp} appearance-none bg-no-repeat bg-[right_1rem_center] border-gray-100 dark:border-gray-800 focus:ring-gray-500/5`} style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")` }}>
                     <option value="">Default (Isolated Namespace)</option>
@@ -427,7 +430,7 @@ export function ComposeTab() {
                 </div>
               </div>
               <div className="md:col-span-2">
-                <MetadataEditor title="本地域名解析 (EXTRA HOSTS)" items={(svc.extraHosts || []).map(h => ({ key: h.host, value: h.ip }))}
+                <MetadataEditor title={t.compose.extraHosts} items={(svc.extraHosts || []).map(h => ({ key: h.host, value: h.ip }))}
                   onUpdate={(newItems: any) => updateSvc("extraHosts", newItems.map((it: any) => ({ host: it.key, ip: it.value })))}
                   theme="indigo" icon={Settings} />
               </div>
@@ -436,14 +439,14 @@ export function ComposeTab() {
         </Section>
 
         {/* 3. Environment & Variables */}
-        <Section title="3. 环境变量与标签" icon={<Tag className="w-4 h-4" />} theme="teal" badge="METADATA & VARS">
+        <Section title={`3. ${t.compose.envVars}`} icon={<Tag className="w-4 h-4" />} theme="teal" badge="METADATA & VARS">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <MetadataEditor title="环境变量 (ENVIRONMENT)" items={svc.envs} onUpdate={(val: any) => updateSvc("envs", val)} theme="teal" icon={Zap} />
-            <MetadataEditor title="服务标签 (LABELS)" items={svc.labels} onUpdate={(val: any) => updateSvc("labels", val)} theme="blue" icon={Tag} />
+            <MetadataEditor title={t.compose.environment} items={svc.envs} onUpdate={(val: any) => updateSvc("envs", val)} theme="teal" icon={Zap} />
+            <MetadataEditor title={t.compose.labels} items={svc.labels} onUpdate={(val: any) => updateSvc("labels", val)} theme="blue" icon={Tag} />
             <div className="md:col-span-2 p-6 bg-teal-50/20 dark:bg-teal-900/10 border border-teal-100 dark:border-teal-900/30 rounded-3xl space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-[10px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest">外部变量文件 (ENV FILE)</p>
-                <button onClick={() => addArr("envFiles", "")} className={btnSm + " !bg-white dark:!bg-[#0D1117] border-teal-200 text-teal-600"}><Plus className="w-3.5 h-3.5" /> ADD ENV_FILE</button>
+                <p className="text-[10px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest">{t.compose.envFile}</p>
+                <button onClick={() => addArr("envFiles", "")} className={btnSm + " !bg-white dark:!bg-[#0D1117] border-teal-200 text-teal-600"}><Plus className="w-3.5 h-3.5" /> {t.common.add} ENV_FILE</button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {svc.envFiles.map((f, i) => (
@@ -460,15 +463,15 @@ export function ComposeTab() {
         </Section>
 
         {/* 4. Persistence & Execution */}
-        <Section title="4. 存储卷与执行命令" icon={<HardDrive className="w-4 h-4" />} theme="orange" badge="STORAGE & EXEC">
+        <Section title={`4. ${t.common.volumes} & ${t.common.edit}`} icon={<HardDrive className="w-4 h-4" />} theme="orange" badge="STORAGE & EXEC">
           <div className="space-y-8">
             <div className="p-6 bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 rounded-3xl space-y-4">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
                   <div className="p-1.5 rounded-xl bg-orange-500 shadow-lg shadow-orange-500/20"><Database className="w-3.5 h-3.5 text-white" /></div>
-                  <p className="text-[11px] font-black text-gray-700 dark:text-gray-200 uppercase tracking-widest">目录挂载 (VOLUMES)</p>
+                  <p className="text-[11px] font-black text-gray-700 dark:text-gray-200 uppercase tracking-widest">{t.common.volumes.toUpperCase()}</p>
                 </div>
-                <button onClick={() => addArr("vols", { host: "", container: "" })} className={`${btnSm} !rounded-full border-orange-200 text-orange-600 bg-white dark:bg-[#0D1117]`}><Plus className="w-3.5 h-3.5" /> ADD VOLUME</button>
+                <button onClick={() => addArr("vols", { host: "", container: "" })} className={`${btnSm} !rounded-full border-orange-200 text-orange-600 bg-white dark:bg-[#0D1117]`}><Plus className="w-3.5 h-3.5" /> {t.common.add} {t.common.volumes.split(' ')[0].toUpperCase()}</button>
               </div>
               <div className="space-y-3">
                 {svc.vols.map((v, i) => (
@@ -494,7 +497,7 @@ export function ComposeTab() {
                     <Terminal className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest leading-none">启动执行指令</p>
+                    <p className="text-[10px] font-black text-orange-600 dark:text-orange-400 uppercase tracking-widest leading-none">{t.compose.startConfig}</p>
                     <p className="text-[8px] text-gray-400 font-bold uppercase tracking-tighter mt-1">ENTRYPOINT & COMMAND WRAPPING</p>
                   </div>
                 </div>
@@ -536,16 +539,16 @@ export function ComposeTab() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">运行用户 (USER)</p>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t.dockerfile.user}</p>
                 <input type="text" placeholder="node / 1001" value={svc.user} onChange={e => updateSvc("user", e.target.value)} className={inp} />
               </div>
               <div className="space-y-2 flex flex-col justify-end">
                 <div className="p-3 bg-gray-50 dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-2xl shadow-sm hover:bg-white transition-all">
-                  <Checkbox checked={svc.privileged} onChange={(val: boolean) => updateSvc("privileged", val)} label="特权模式 (PRIVILEGED)" theme="orange" />
+                  <Checkbox checked={svc.privileged} onChange={(val: boolean) => updateSvc("privileged", val)} label={t.compose.privileged} theme="orange" />
                 </div>
               </div>
               <div className="space-y-2">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">共享内存 (SHM_SIZE)</p>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">{t.compose.shmSize}</p>
                 <input type="text" placeholder="e.g. 2gb" value={svc.shmSize} onChange={e => updateSvc("shmSize", e.target.value)} className={inp} />
               </div>
             </div>
@@ -553,13 +556,13 @@ export function ComposeTab() {
         </Section>
 
         {/* 5. Resources & Health */}
-        <Section title="5. 资源配额与健康检查" icon={<Cpu className="w-4 h-4" />} theme="teal" badge="HEALTH & LIMITS">
+        <Section title={`5. ${t.k8s.resources} & ${t.k8s.health}`} icon={<Cpu className="w-4 h-4" />} theme="teal" badge="HEALTH & LIMITS">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
             <div className="p-8 rounded-[2.5rem] bg-gradient-to-br from-emerald-50/50 to-blue-50/30 dark:from-[#161B22] dark:to-emerald-900/10 border border-emerald-100 dark:border-emerald-900/40 space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-2xl bg-emerald-500 shadow-xl shadow-emerald-500/20"><Activity className="w-4 h-4 text-white" /></div>
-                  <p className="text-[11px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">健康探测 (HEALTHCHECK)</p>
+                  <p className="text-[11px] font-black text-emerald-700 dark:text-emerald-400 uppercase tracking-widest">{t.compose.healthcheck}</p>
                 </div>
                 <div className="flex items-center gap-3 px-3 py-1.5 bg-white/80 dark:bg-black/30 rounded-full border border-emerald-100 dark:border-emerald-990 shadow-sm">
                   <Checkbox checked={!!svc.healthcheck?.enabled} onChange={(val) => updateSvc("healthcheck", { ...(svc.healthcheck || {}), enabled: val })} label="ENABLE" theme="emerald" />
@@ -600,22 +603,22 @@ export function ComposeTab() {
               <div className="p-6 bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 rounded-3xl space-y-6">
                 <div className="flex items-center gap-2">
                   <Settings className="w-4 h-4 text-blue-500" />
-                  <p className="text-[11px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-widest">资源配额限制 (LIMITS)</p>
+                  <p className="text-[11px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-widest">{t.compose.limits} (LIMITS)</p>
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-1.5">
-                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">CPU 核心 (E.G. 0.5)</p>
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{t.compose.cpuLimit}</p>
                     <input type="text" value={svc.cpus} onChange={e => updateSvc("cpus", e.target.value)} className={inp} placeholder="0.25" />
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">内存容量 (E.G. 512M)</p>
+                    <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest">{t.compose.memoryLimit}</p>
                     <input type="text" value={svc.memLimit} onChange={e => updateSvc("memLimit", e.target.value)} className={inp} placeholder="1G" />
                   </div>
                 </div>
                 <label className="flex items-center gap-3 p-3 bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 rounded-2xl cursor-pointer hover:border-gray-400 transition-all shadow-sm">
                   <input type="checkbox" checked={svc.useGpu} onChange={e => updateSvc("useGpu", e.target.checked)} className="w-4 h-4 rounded text-blue-600" />
                   <span className="text-[10px] font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest flex items-center gap-2">
-                    请求核心级 GPU 加速 (1X NVIDIA GPU)
+                    {t.compose.gpuRequest}
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   </span>
                 </label>
@@ -623,7 +626,7 @@ export function ComposeTab() {
 
               <div className="relative group">
                 <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <MousePointer2 className="w-3.5 h-3.5" /> 专家延展配置 (CUSTOM YAML)
+                  <MousePointer2 className="w-3.5 h-3.5" /> {t.compose.customYaml}
                 </p>
                 <textarea value={svc.customYaml} onChange={e => updateSvc("customYaml", e.target.value)} rows={3} placeholder="sysctls:&#10;  - net.core.somaxconn=1024"
                   className="w-full bg-[#1E1E1E] text-orange-200 p-4 rounded-3xl text-xs font-mono focus:ring-4 ring-orange-500/10 transition-all border border-transparent focus:border-orange-500/30" />
@@ -633,12 +636,12 @@ export function ComposeTab() {
         </Section>
 
         {/* 6. Add-ons */}
-        <Section title="6. 全局附加组件库" icon={<Plus className="w-4 h-4" />} theme="purple" badge="ADD-ONS">
+        <Section title={`6. ${t.compose.addons}`} icon={<Plus className="w-4 h-4" />} theme="purple" badge="ADD-ONS">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { id: 'redis', name: 'Redis 7', desc: 'High Performance Cache', icon: <Zap className="w-5 h-5" />, color: 'orange' },
-              { id: 'postgres', name: 'PostgreSQL 15', desc: 'Advanced SQL Support', icon: <Database className="w-5 h-5" />, color: 'blue' },
-              { id: 'mysql', name: 'MySQL 8.0', desc: 'Standard Relational DB', icon: <Settings className="w-5 h-5" />, color: 'indigo' },
+              { id: 'redis', name: t.compose.addonRedis, desc: t.compose.addonRedisDesc, icon: <Zap className="w-5 h-5" />, color: 'orange' },
+              { id: 'postgres', name: t.compose.addonPostgres, desc: t.compose.addonPostgresDesc, icon: <Database className="w-5 h-5" />, color: 'blue' },
+              { id: 'mysql', name: t.compose.addonMysql, desc: t.compose.addonMysqlDesc, icon: <Settings className="w-5 h-5" />, color: 'indigo' },
             ].map(item => (
               <label key={item.id} className={`group relative p-6 rounded-[2.5rem] border-2 cursor-pointer transition-all duration-500 overflow-hidden 
                   ${composeAddons[item.id as keyof typeof composeAddons]

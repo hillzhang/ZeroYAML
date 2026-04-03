@@ -5,6 +5,7 @@ interface AppState {
   activeTooltip: string | null;
   activeMenu: string;
   isFullStack: boolean;
+  language: 'zh' | 'en';
 
   // Manual Overrides Management
   overrides: {
@@ -23,6 +24,7 @@ interface AppState {
   setOverrideEditing: (tab: 'dockerfile' | 'compose' | 'kubernetes', editing: boolean) => void;
   setOverrideCode: (tab: 'dockerfile' | 'compose' | 'kubernetes', code: string) => void;
   resetOverride: (tab: 'dockerfile' | 'compose' | 'kubernetes') => void;
+  setLanguage: (lang: 'zh' | 'en') => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -30,6 +32,7 @@ export const useAppStore = create<AppState>((set) => ({
   activeTooltip: null,
   activeMenu: 'getting-started',
   isFullStack: false,
+  language: 'zh',
   
   overrides: {
     dockerfile: { isEnabled: false, isEditing: false, code: '' },
@@ -54,4 +57,5 @@ export const useAppStore = create<AppState>((set) => ({
   resetOverride: (tab) => set((s) => ({
     overrides: { ...s.overrides, [tab]: { isEnabled: false, isEditing: false, code: '' } }
   })),
+  setLanguage: (lang: 'zh' | 'en') => set({ language: lang }),
 }));

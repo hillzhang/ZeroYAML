@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useDockerfileStore } from '@/store/useDockerfileStore';
 import { useAppStore } from '@/store/useAppStore';
+import { useTranslation } from '@/hooks/useTranslation';
 import { Checkbox } from '@/components/ui/Checkbox';
 import {
   Box, Info, Settings, Plus, Trash2, ChevronDown, Rocket,
@@ -102,6 +103,7 @@ function MetadataGroup({ title, items, onUpdate, colorTheme = "blue", icon: Icon
 }
 
 export function DockerfileTab() {
+  const { t } = useTranslation();
   const { activeTooltip, setActiveTooltip, resetOverride } = useAppStore();
   const {
     appName, setAppName, baseImage, setBaseImage, workdir, setWorkdir, port, setPort,
@@ -124,14 +126,14 @@ export function DockerfileTab() {
   return (
     <div className="animate-in fade-in duration-700 flex flex-col pb-20 pt-4">
       {/* 1. Base Config */}
-      <Section title="1. 基础配置与核心定义" icon={<Rocket className="w-4 h-4" />} theme="blue" badge="CORE DEFINITION">
+      <Section title={`1. ${t.dockerfile.coreConfig}`} icon={<Rocket className="w-4 h-4" />} theme="blue" badge="CORE DEFINITION">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="relative group">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
-              应用标识 (APP NAME) 
+              {t.dockerfile.appName}
               <Info className="w-3.5 h-3.5 cursor-help opacity-40 hover:opacity-100" onClick={() => setActiveTooltip(activeTooltip === 'appName' ? null : 'appName')} />
             </p>
-            {activeTooltip === 'appName' && <div className="absolute left-0 -top-12 bg-gray-900 text-white border border-gray-700 p-2.5 text-[10px] rounded-xl shadow-2xl w-[220px] z-20">镜像生成的仓库名。例如: my-service</div>}
+            {activeTooltip === 'appName' && <div className="absolute left-0 -top-12 bg-gray-900 text-white border border-gray-700 p-2.5 text-[10px] rounded-xl shadow-2xl w-[220px] z-20">{t.dockerfile.appNameTooltip}</div>}
             <input type="text" value={appName} onChange={(e) => setAppName(e.target.value)} className={inp} placeholder="my-awesome-app" />
             <div className="text-[9px] text-gray-400 mt-2 font-bold italic opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" /> TARGET: {appName || 'undefined'}:latest
@@ -140,10 +142,10 @@ export function DockerfileTab() {
 
           <div className="relative group">
             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
-              基础镜像 (FROM) 
+              {t.dockerfile.baseImage}
               <Info className="w-3.5 h-3.5 cursor-help opacity-40 hover:opacity-100" onClick={() => setActiveTooltip(activeTooltip === 'baseImage' ? null : 'baseImage')} />
             </p>
-            {activeTooltip === 'baseImage' && <div className="absolute right-0 -top-12 bg-gray-900 text-white border border-gray-700 p-2.5 text-[10px] rounded-xl shadow-2xl w-[220px] z-20">构建基座镜像，建议使用 alpine 系列减小体积</div>}
+            {activeTooltip === 'baseImage' && <div className="absolute right-0 -top-12 bg-gray-900 text-white border border-gray-700 p-2.5 text-[10px] rounded-xl shadow-2xl w-[220px] z-20">{t.dockerfile.baseImageTooltip}</div>}
             <input type="text" list="base-images-list" value={baseImage} onChange={(e) => setBaseImage(e.target.value)} className={inp} placeholder="node:20-alpine" />
             <datalist id="base-images-list">
               <option value="node:20-alpine" />
@@ -156,12 +158,12 @@ export function DockerfileTab() {
           </div>
 
           <div className="relative">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2"><Layout className="w-3.5 h-3.5 text-blue-400" /> 工作目录 (WORKDIR)</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2"><Layout className="w-3.5 h-3.5 text-blue-400" /> {t.dockerfile.workdir}</p>
             <input type="text" value={workdir} onChange={(e) => setWorkdir(e.target.value)} className={inp} placeholder="/app" />
           </div>
 
           <div className="relative">
-            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2"><User className="w-3.5 h-3.5 text-blue-400" /> 运行用户 (USER)</p>
+            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-2"><User className="w-3.5 h-3.5 text-blue-400" /> {t.dockerfile.user}</p>
             <input type="text" placeholder="node / www-data / 1001" value={user} onChange={(e) => setUser(e.target.value)} className={inp} />
           </div>
         </div>
@@ -175,7 +177,7 @@ export function DockerfileTab() {
                   <Terminal className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest leading-none">服务启动配置</p>
+                  <p className="text-[10px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest leading-none">{t.dockerfile.startConfig}</p>
                   <p className="text-[8px] text-gray-400 font-bold tracking-tighter uppercase mt-1">Runtime Execution Logic</p>
                 </div>
               </div>
@@ -203,43 +205,43 @@ export function DockerfileTab() {
             <div className="space-y-3 relative group">
               <div className="flex items-center justify-between px-1">
                 <p className="text-[11px] font-black text-gray-700 dark:text-gray-200 uppercase tracking-widest flex items-center gap-2">
-                  <Shield className="w-4 h-4 text-blue-500" /> 入口指令 (ENTRYPOINT)
+                  <Shield className="w-4 h-4 text-blue-500" /> {t.dockerfile.entrypoint}
                 </p>
                 <span className="text-[9px] font-black text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-800/60 px-3 py-1 rounded-full shadow-sm">FIXED</span>
               </div>
               <input type="text" placeholder="[node]" value={entrypoint} onChange={(e) => setEntrypoint(e.target.value)}
                 className={`${inp} !bg-white dark:!bg-[#0D1117] border-blue-200 dark:border-blue-800 shadow-lg focus:ring-blue-500/10 placeholder:opacity-30`} />
-              <p className="text-[10px] text-gray-400 px-2 leading-relaxed font-bold italic opacity-60">通常为镜像的强制启动二进制文件</p>
+              <p className="text-[10px] text-gray-400 px-2 leading-relaxed font-bold italic opacity-60">{t.dockerfile.entrypointDesc}</p>
             </div>
 
             <div className="space-y-3 relative group">
               <div className="flex items-center justify-between px-1">
                 <p className="text-[11px] font-black text-gray-700 dark:text-gray-200 uppercase tracking-widest flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-emerald-500" /> 默认参数 (CMD)
+                  <Activity className="w-4 h-4 text-emerald-500" /> {t.dockerfile.cmd}
                 </p>
                 <span className="text-[9px] font-black text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-800/60 px-3 py-1 rounded-full shadow-sm">ARGS</span>
               </div>
               <input type="text" placeholder="[server.js]" value={startCmd} onChange={(e) => setStartCmd(e.target.value)}
                 className={`${inp} !bg-white dark:!bg-[#0D1117] border-emerald-200 dark:border-emerald-800 shadow-lg focus:ring-emerald-500/10 placeholder:opacity-30`} />
-              <p className="text-[10px] text-emerald-600/60 px-2 leading-relaxed font-bold italic opacity-60">传递给入口指令的默认参数</p>
+              <p className="text-[10px] text-emerald-600/60 px-2 leading-relaxed font-bold italic opacity-60">{t.dockerfile.cmdDesc}</p>
             </div>
           </div>
         </div>
       </Section>
 
       {/* 2. Variables & Metadata */}
-      <Section title="2. 环境变量与元数据" icon={<Tag className="w-4 h-4" />} theme="teal" badge="METADATA & VARS">
+      <Section title={`2. ${t.dockerfile.varsMetadata}`} icon={<Tag className="w-4 h-4" />} theme="teal" badge="METADATA & VARS">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <MetadataGroup title="环境变量 (ENV)" items={envVars} onUpdate={setEnvVars} colorTheme="teal" icon={Zap} />
-          <MetadataGroup title="构建参数 (ARG)" items={args} onUpdate={setArgs} colorTheme="orange" icon={Settings} />
+          <MetadataGroup title={t.dockerfile.envVars} items={envVars} onUpdate={setEnvVars} colorTheme="teal" icon={Zap} />
+          <MetadataGroup title={t.dockerfile.buildArgs} items={args} onUpdate={setArgs} colorTheme="orange" icon={Settings} />
           <div className="md:col-span-2">
-            <MetadataGroup title="标签说明 (LABEL)" items={labels} onUpdate={setLabels} colorTheme="slate" icon={Info} />
+            <MetadataGroup title={t.dockerfile.labels} items={labels} onUpdate={setLabels} colorTheme="slate" icon={Info} />
           </div>
         </div>
       </Section>
 
       {/* 3. Build Flow */}
-      <Section title="3. 构建流程指令" icon={<Hammer className="w-4 h-4" />} theme="orange" badge="BUILD FLOW">
+      <Section title={`3. ${t.dockerfile.buildFlow}`} icon={<Hammer className="w-4 h-4" />} theme="orange" badge="BUILD FLOW">
         <div className="space-y-10">
           {/* RUN Block */}
           <div className="p-8 bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 rounded-[2.5rem] shadow-inner relative overflow-hidden group">
@@ -248,7 +250,7 @@ export function DockerfileTab() {
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-2xl bg-orange-500 shadow-xl shadow-orange-500/20"><Terminal className="w-4 h-4 text-white" /></div>
                 <div>
-                  <p className="text-[11px] font-black text-gray-800 dark:text-gray-200 uppercase tracking-[0.2em]">运行时构建指令 (RUN)</p>
+                  <p className="text-[11px] font-black text-gray-800 dark:text-gray-200 uppercase tracking-[0.2em]">{t.dockerfile.run}</p>
                   <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tight mt-1 italic">Layer Execution Scripts</p>
                 </div>
               </div>
@@ -280,7 +282,7 @@ export function DockerfileTab() {
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-2xl bg-blue-500 shadow-xl shadow-blue-500/20"><Files className="w-4 h-4 text-white" /></div>
                 <div>
-                   <p className="text-[11px] font-black text-gray-800 dark:text-gray-200 uppercase tracking-[0.2em]">文件资源传输 (COPY/ADD)</p>
+                   <p className="text-[11px] font-black text-gray-800 dark:text-gray-200 uppercase tracking-[0.2em]">{t.dockerfile.addCopy}</p>
                    <p className="text-[9px] text-gray-400 font-bold uppercase tracking-tight mt-1 italic">Source To Destination Mapping</p>
                 </div>
               </div>
@@ -331,11 +333,11 @@ export function DockerfileTab() {
               <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-3xl rounded-full" />
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2.5 rounded-2xl bg-indigo-500 shadow-xl shadow-indigo-500/20"><Globe className="w-4 h-4 text-white" /></div>
-                <p className="text-[11px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em]">对外暴露端口 (EXPOSE)</p>
+                <p className="text-[11px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em]">{t.dockerfile.expose}</p>
               </div>
               <div className="relative group">
                 <input type="number" value={port} onChange={(e) => setPort(e.target.value)} className={`${inp} !bg-white dark:!bg-[#0D1117] !font-mono !text-lg !py-4 shadow-lg`} placeholder="8080" />
-                <p className="text-[9px] text-gray-400 mt-3 font-bold italic opacity-60">暴露运行时监听的 TCP/UDP 端口</p>
+                <p className="text-[9px] text-gray-400 mt-3 font-bold italic opacity-60">{t.dockerfile.exposeDesc || 'Declare internal container ports'}</p>
               </div>
             </div>
 
@@ -343,7 +345,7 @@ export function DockerfileTab() {
                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-3xl rounded-full" />
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2.5 rounded-2xl bg-emerald-500 shadow-xl shadow-emerald-500/20"><Activity className="w-4 h-4 text-white" /></div>
-                <p className="text-[11px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em]">健康巡检 (HEALTHCHECK)</p>
+                <p className="text-[11px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em]">{t.dockerfile.healthcheck}</p>
               </div>
               <div className="space-y-6">
                 <div>
@@ -367,7 +369,7 @@ export function DockerfileTab() {
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-2xl bg-gray-600 shadow-xl shadow-black/20"><Database className="w-4 h-4 text-white" /></div>
-                  <p className="text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-[0.2em]">声明持久化卷 (VOLUME)</p>
+                  <p className="text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-[0.2em]">{t.dockerfile.volume}</p>
                 </div>
                 <button onClick={() => setVolumes([...volumes, ""])} className={`${btnSm} !bg-white dark:!bg-[#0D1117] border-gray-200 text-gray-500 hover:border-gray-900 transition-all shadow-md active:translate-y-0.5`}><Plus className="w-4 h-4" /> ADD VOLUME</button>
               </div>
@@ -389,14 +391,14 @@ export function DockerfileTab() {
       {/* 4. Templates */}
       <h2 className="text-[12px] font-black text-gray-400 dark:text-gray-500 mb-10 mt-16 flex items-center justify-center gap-8 uppercase tracking-[0.6em]">
         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 to-gray-400 dark:via-gray-800 dark:to-gray-700" />
-        生产级镜像模板库
+        {t.dockerfile.templates}
         <div className="h-px flex-1 bg-gradient-to-l from-transparent via-gray-200 to-gray-400 dark:via-gray-800 dark:to-gray-700" />
       </h2>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
         {[
           {
-            title: "Next.js Static Build", icon: <Layout className="w-6 h-6" />, desc: "多阶段构建的最佳实践，彻底分离编译环境与运行层", color: "blue",
+            title: "Next.js Static Build", icon: <Layout className="w-6 h-6" />, desc: t.templates.nextDescription, color: "blue",
             action: () => {
               setAppName('next-app'); setBaseImage('node:20-alpine'); setPort('3000'); setWorkdir('/app');
               setCopyAddItems([{ type: 'COPY', chown: '', src: 'package.json package-lock.json', dest: './', from: '' }, { type: 'COPY', chown: '', src: '.', dest: '.', from: '' }]);
@@ -404,7 +406,7 @@ export function DockerfileTab() {
             }
           },
           {
-            title: "Python FastAPI", icon: <Zap className="w-6 h-6" />, desc: "包含依赖安装与 uvicorn web 服务启动的极简生产层", color: "teal",
+            title: "Python FastAPI", icon: <Zap className="w-6 h-6" />, desc: t.templates.pythonDescription, color: "teal",
             action: () => {
               setAppName('python-api'); setBaseImage('python:3.11-slim'); setPort('8000'); setWorkdir('/app');
               setCopyAddItems([{ type: 'COPY', chown: '', src: 'requirements.txt', dest: '.', from: '' }, { type: 'COPY', chown: '', src: '.', dest: '.', from: '' }]);
@@ -412,7 +414,7 @@ export function DockerfileTab() {
             }
           },
           {
-            title: "Golang Static", icon: <Hammer className="w-6 h-6" />, desc: "Alpine 环境下静态编译与拉取依赖的最佳实践架构", color: "indigo",
+            title: "Golang Static", icon: <Hammer className="w-6 h-6" />, desc: t.templates.goDescription, color: "indigo",
             action: () => {
               setAppName('go-server'); setBaseImage('golang:1.22-alpine'); setPort('8080'); setWorkdir('/app');
               setCopyAddItems([{ type: 'COPY', chown: '', src: 'go.mod go.sum', dest: './', from: '' }, { type: 'COPY', chown: '', src: '.', dest: '.', from: '' }]);
@@ -420,14 +422,14 @@ export function DockerfileTab() {
             }
           },
           {
-            title: "Static Nginx", icon: <Globe className="w-6 h-6" />, desc: "极致精简，将本地前端构建产物直接推送到 Nginx 服务", color: "purple",
+            title: "Static Nginx", icon: <Globe className="w-6 h-6" />, desc: t.templates.nginxDescription, color: "purple",
             action: () => {
               setAppName('static-web'); setBaseImage('nginx:alpine'); setPort('80'); setWorkdir('/usr/share/nginx/html');
               setCopyAddItems([{ type: 'COPY', chown: '', src: './dist', dest: '.', from: '' }]); setStartCmd('');
             }
           },
           {
-            title: "Spring Boot JAR", icon: <Database className="w-6 h-6" />, desc: "使用 OpenJDK 运行 JAR 的标准模板，内置时区与启动优化", color: "orange",
+            title: "Spring Boot JAR", icon: <Database className="w-6 h-6" />, desc: t.templates.springDescription, color: "orange",
             action: () => {
               setAppName('spring-boot-app'); setBaseImage('openjdk:21-jdk-slim'); setPort('8080'); setWorkdir('/app');
               setCopyAddItems([{ type: 'COPY', chown: '', src: 'target/*.jar', dest: 'app.jar', from: '' }]); setStartCmd('-jar app.jar'); setEntrypoint('java');
