@@ -731,17 +731,16 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               />
             ))}
           </div>
-          <button onClick={() => addWorkloadEnv(wl.id)} className="w-full mt-4 py-3 border-2 border-dashed border-teal-100 dark:border-teal-900/40 text-teal-600 dark:text-teal-400 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-teal-50/50 hover:border-teal-300 transition-all flex items-center justify-center gap-2">
+          <button onClick={() => addWorkloadEnv(wl.id)} className="w-full mt-4 py-3 border-2 border-dashed border-teal-100 dark:border-teal-900/40 text-teal-600 dark:text-teal-400 rounded-2xl text-xs font-black tracking-wider hover:bg-teal-50/50 hover:border-teal-300 transition-all flex items-center justify-center gap-2">
             <Plus className="w-4 h-4" /> {t.common.add} {t.common.env}
           </button>
 
           <div className="pt-6 border-t border-gray-100 dark:border-gray-800 mt-6 md:p-6 transition-all duration-300">
-            <div className="flex items-center justify-between mb-4 px-1">
-              <p className="text-[10px] font-black text-gray-500 dark:text-gray-400 uppercase tracking-widest flex items-center gap-2">
+              <p className="text-[10px] font-black text-gray-500 dark:text-gray-400 tracking-wider flex items-center gap-2">
                 <ListTree className="w-3.5 h-3.5 text-blue-500" />
-                envFrom ({t.tabs.preview.toUpperCase()})
+                envFrom ({t.tabs.preview})
               </p>
-            </div>
+
             <div className="space-y-3">
               {(wl.envFrom || []).map((ef, i) => (
                 <EnvFromItem
@@ -759,7 +758,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               ))}
             </div>
             <button onClick={() => addWorkloadEnvFrom(wl.id)}
-              className="w-full mt-4 py-3 border-2 border-dashed border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-blue-50/10 dark:hover:bg-blue-900/10 transition-all flex items-center justify-center gap-2">
+              className="w-full mt-4 py-3 border-2 border-dashed border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 rounded-2xl text-xs font-black tracking-wider hover:bg-blue-50/10 dark:hover:bg-blue-900/10 transition-all flex items-center justify-center gap-2">
               <Plus className="w-4 h-4" /> {t.common.add} envFrom
             </button>
           </div>

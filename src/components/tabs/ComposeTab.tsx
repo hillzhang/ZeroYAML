@@ -638,15 +638,15 @@ export function ComposeTab() {
               <div className="p-6 bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 rounded-3xl space-y-6">
                 <div className="flex items-center gap-2">
                   <Settings className="w-4 h-4 text-blue-500" />
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em]">{t.compose.limits} (LIMITS)</p>
+                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-wider transition-colors">{t.compose.limits} (Limits)</p>
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                   <div className="space-y-1.5">
-                    <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.compose.cpuLimit}</p>
+                    <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-wider mb-2.5 ml-1 transition-colors">{t.compose.cpuLimit}</p>
                     <input type="text" value={svc.cpus} onChange={e => updateSvc("cpus", e.target.value)} className={inp} placeholder="0.25" />
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.compose.memoryLimit}</p>
+                    <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-wider mb-2.5 ml-1 transition-colors">{t.compose.memoryLimit}</p>
                     <input type="text" value={svc.memLimit} onChange={e => updateSvc("memLimit", e.target.value)} className={inp} placeholder="1G" />
                   </div>
                 </div>
@@ -690,7 +690,7 @@ export function ComposeTab() {
                   <div className={composeAddons[item.id as keyof typeof composeAddons] ? 'text-white' : `text-${item.color}-500`}>{item.icon}</div>
                 </div>
 
-                <p className="text-sm font-black uppercase tracking-tight">{item.name}</p>
+                <p className="text-sm font-black tracking-tight">{item.name}</p>
                 <p className={`text-xs mt-1 font-bold ${composeAddons[item.id as keyof typeof composeAddons] ? 'text-purple-100' : 'text-gray-500 dark:text-gray-400'}`}>{item.desc}</p>
 
                 {composeAddons[item.id as keyof typeof composeAddons] && (
