@@ -4,7 +4,7 @@ import Editor from "@monaco-editor/react";
 import { useAppStore } from '@/store/useAppStore';
 import { useCodeGenerators } from '@/hooks/useCodeGenerators';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Code2, Copy, Download, RotateCcw, CheckCircle2, RotateCw } from 'lucide-react';
+import { Code2, Copy, Download, RotateCcw, CheckCircle2, RotateCw, AlertTriangle } from 'lucide-react';
 import { useTheme } from "next-themes";
 import { useComposeStore } from '@/store/useComposeStore';
 import { useDockerfileStore } from '@/store/useDockerfileStore';
@@ -12,7 +12,7 @@ import { useKubernetesStore } from '@/store/useKubernetesStore';
 import { useEffect, useState } from "react";
 
 export function CodeViewer() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const { activeTab, isFullStack, setIsFullStack, overrides, setOverrideEnabled, setOverrideEditing, setOverrideCode, resetOverride } = useAppStore();
   const { dockerfileContent, composeYamlContent, kubernetesYamlContent } = useCodeGenerators();
   const composeReset = useComposeStore(s => s.reset);
@@ -45,8 +45,14 @@ export function CodeViewer() {
   };
 
   const handleRestoreAuto = () => {
-    setOverrideEnabled(activeTab, false);
-    setOverrideEditing(activeTab, false);
+    const confirmMsg = language === 'zh' 
+      ? "确定要恢复自动同步吗？您手动修改的所有内容将会被覆盖消失。" 
+      : "Are you sure you want to restore auto-sync? All your manual modifications will be overwritten.";
+    
+    if (window.confirm(confirmMsg)) {
+      setOverrideEnabled(activeTab, false);
+      setOverrideEditing(activeTab, false);
+    }
   };
 
   const handleGlobalReset = () => {
@@ -113,12 +119,16 @@ export function CodeViewer() {
           <div className="flex items-center gap-3">
             <div className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${currentOverride.isEnabled ? 'bg-orange-500 animate-pulse ring-4 ring-orange-500/10' : 'bg-blue-500 ring-4 ring-blue-500/10'}`} />
             <div className="flex flex-col">
-              <span className="text-[11px] font-black uppercase tracking-widest text-gray-900 dark:text-gray-100 leading-none">{currentTitle}</span>
+              <span className="text-[12px] font-black uppercase tracking-[0.2em] text-gray-900 dark:text-gray-100 leading-none">{currentTitle}</span>
               {currentOverride.isEnabled && (
-                <div className="flex items-center gap-2 mt-1.5 h-3">
-                  <span className="text-[8px] font-black text-white px-1.5 py-0.5 rounded bg-orange-500 uppercase tracking-tighter shadow-sm">{t.common.overrideActive}</span>
+                <div className="flex items-center gap-2 mt-2 h-4">
+                  <span className="text-[12px] font-black text-white px-2 py-0.5 rounded-lg bg-orange-600 uppercase tracking-[0.2em] shadow-sm whitespace-nowrap">{t.common.overrideActive}</span>
+                  <span className="text-[12px] font-black text-white px-2.5 py-0.5 rounded-lg bg-red-600 uppercase tracking-[0.2em] shadow-xl flex items-center gap-2 animate-pulse whitespace-nowrap border border-red-500/50">
+                    <AlertTriangle className="w-3 h-3 text-red-100" />
+                    {language === 'zh' ? "恢复即清空手动修改" : "RESTORE WIPES CHANGES"}
+                  </span>
                   {saveStatus && (
-                    <span className={`text-[7px] font-bold px-1.5 py-0.5 rounded uppercase flex items-center gap-1 transition-opacity duration-300 ${saveStatus === 'saving' ? 'bg-blue-100 text-blue-600 animate-pulse' : 'bg-emerald-100 text-emerald-600'}`}>
+                    <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded uppercase flex items-center gap-1 transition-opacity duration-300 ${saveStatus === 'saving' ? 'bg-blue-100 text-blue-600 animate-pulse' : 'bg-emerald-100 text-emerald-600'}`}>
                       {saveStatus === 'saving' ? t.common.saving : t.common.saved}
                     </span>
                   )}
@@ -133,7 +143,7 @@ export function CodeViewer() {
             <div className="flex items-center gap-1 bg-gray-100/50 dark:bg-[#0D1117] p-1 rounded-xl border border-gray-200/50 dark:border-gray-800 shadow-inner">
               <button
                 onClick={() => setIsFullStack(false)}
-                className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all ${!isFullStack ? 'bg-white dark:bg-[#1C2128] text-blue-600 dark:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                className={`px-4 py-1.5 text-[12px] font-black uppercase tracking-[0.2em] rounded-lg transition-all ${!isFullStack ? 'bg-white dark:bg-[#1C2128] text-blue-600 dark:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
               >
                 Current
               </button>
@@ -155,7 +165,7 @@ export function CodeViewer() {
               title={t.common.restoreAuto}
             >
               <RotateCcw className="w-3.5 h-3.5 group-hover:rotate-[-90deg] transition-transform" />
-              <span className="text-[10px] font-black uppercase tracking-widest">{t.common.restoreAuto}</span>
+              <span className="text-[12px] font-black uppercase tracking-[0.2em]">{t.common.restoreAuto}</span>
             </button>
           )}
 
@@ -165,7 +175,7 @@ export function CodeViewer() {
             title={currentOverride.isEditing ? t.common.finishEdit : t.common.manualEdit}
           >
             <Code2 className={`w-3.5 h-3.5 ${currentOverride.isEditing ? 'animate-pulse' : ''}`} />
-            <span className="text-[10px] font-black uppercase tracking-widest leading-none">
+            <span className="text-[12px] font-black uppercase tracking-[0.2em] leading-none">
               {currentOverride.isEditing ? t.common.finishEdit : t.common.manualEdit}
             </span>
           </button>
@@ -176,7 +186,7 @@ export function CodeViewer() {
             title={t.common.newClear}
           >
             <RotateCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />
-            <span className="text-[10px] font-black uppercase tracking-widest leading-none">{t.common.newClear}</span>
+            <span className="text-[12px] font-black uppercase tracking-[0.2em] leading-none">{t.common.newClear}</span>
           </button>
 
           <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-800 self-center mx-1" />
@@ -186,7 +196,7 @@ export function CodeViewer() {
             className={`flex items-center gap-2 px-6 h-10 transition-all rounded-2xl border ${isCopied ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-white dark:bg-[#1C2128] hover:bg-gray-50 dark:hover:bg-[#252A31] text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-800 shadow-sm'}`}
           >
             {isCopied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            <span className="text-[10px] font-black uppercase tracking-widest leading-none">
+            <span className="text-[12px] font-black uppercase tracking-[0.2em] leading-none">
               {isCopied ? t.common.copied : t.common.copyContent}
             </span>
           </button>
@@ -196,7 +206,7 @@ export function CodeViewer() {
             className="flex items-center gap-2 px-6 h-10 bg-gray-900 dark:bg-blue-600 hover:bg-black dark:hover:bg-blue-500 transition-all rounded-2xl text-white shadow-xl shadow-blue-500/10 border-gray-800 dark:border-blue-500"
           >
             <Download className="w-3.5 h-3.5" />
-            <span className="text-[10px] font-black uppercase tracking-widest leading-none">{t.common.export}</span>
+            <span className="text-[12px] font-black uppercase tracking-[0.2em] leading-none">{t.common.export}</span>
           </button>
         </div>
       </div>

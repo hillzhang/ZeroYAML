@@ -302,6 +302,7 @@ export function useCodeGenerators() {
     if (baseImage === "node:20-alpine") {
       const targetUser = user || "node";
       const chownFlag = targetUser !== "root" ? `--chown=${targetUser}:${targetUser} ` : "";
+      const copyPart = formatCopyAdd(); // For Node multi-stage, don't force a default COPY . . in runner as builder handles it.
 
       return `# =========================================
 # ${t.comments.nodeBestPractice}
@@ -325,7 +326,7 @@ ${formatRunCmds()}
 # ${t.comments.copyProduction}
 COPY ${chownFlag}--from=builder ${workdir || '/app'}/package*.json ./
 COPY ${chownFlag}--from=builder ${workdir || '/app'}/node_modules ./node_modules
-COPY ${chownFlag}--from=builder ${workdir || '/app'}/. .${formatCopyAdd()}${formatVolumes()}
+COPY ${chownFlag}--from=builder ${workdir || '/app'}/. .${copyPart}${formatVolumes()}
 
 # ${t.comments.portNotice}
 EXPOSE ${port || '3000'}${formatHealthCheck()}
@@ -354,7 +355,7 @@ ${formatRunCmds()}
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .${formatCopyAdd()}${formatVolumes()}
+${formatCopyAdd()}${formatVolumes()}
 
 EXPOSE ${port || '8000'}${formatHealthCheck()}${formatUser()}
 
@@ -398,7 +399,7 @@ ${renderStartCommands() || 'CMD ["./main"]'}`;
     
     const copyAddStr = formatCopyAdd(); 
     if (copyAddStr) {
-      dockerfile += `\n# ${t.comments.fileSync}\nCOPY . .${copyAddStr}`;
+      dockerfile += copyAddStr;
     }
 
     const volumesStr = formatVolumes(); if (volumesStr) dockerfile += `\n` + volumesStr;
