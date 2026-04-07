@@ -352,20 +352,20 @@ export function DockerfileTab() {
               <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-3xl rounded-full" />
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2.5 rounded-2xl bg-emerald-500 shadow-xl shadow-emerald-500/20"><Activity className="w-4 h-4 text-white" /></div>
-                <p className="text-[12px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em]">{t.dockerfile.healthcheck}</p>
+                <p className="text-[12px] font-black text-emerald-600 dark:text-emerald-400 tracking-wider transition-colors">{t.dockerfile.healthcheck}</p>
               </div>
               <div className="space-y-6">
                 <div className="space-y-1.5">
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.dockerfile.healthcheckCmd}</p>
+                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-wider mb-2.5 ml-1">{t.dockerfile.healthcheckCmd}</p>
                   <input type="text" placeholder="curl -f http://localhost:8080/ || exit 1" value={healthcheck} onChange={(e) => setHealthcheck(e.target.value)} className={`${inp} !bg-white dark:!bg-[#0D1117] shadow-lg font-mono focus:ring-emerald-500/10`} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.dockerfile.interval}</p>
+                    <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-wider mb-2.5 ml-1">{t.dockerfile.interval}</p>
                     <input type="text" placeholder="30s" className={`${inpSm} !py-2.5 !bg-white dark:!bg-[#0D1117] text-center font-black shadow-md`} />
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.dockerfile.timeout}</p>
+                    <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-wider mb-2.5 ml-1">{t.dockerfile.timeout}</p>
                     <input type="text" placeholder="5s" className={`${inpSm} !py-2.5 !bg-white dark:!bg-[#0D1117] text-center font-black shadow-md`} />
                   </div>
                 </div>
@@ -376,9 +376,9 @@ export function DockerfileTab() {
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-2xl bg-gray-600 shadow-xl shadow-black/20"><Database className="w-4 h-4 text-white" /></div>
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.dockerfile.volume}</p>
+                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-wider mb-2.5 ml-1">{t.dockerfile.volume}</p>
                 </div>
-                <button onClick={() => setVolumes([...volumes, ""])} className={`${btnSm} !bg-white dark:!bg-[#0D1117] border-gray-200 text-gray-500 hover:border-gray-900 transition-all shadow-md active:translate-y-0.5`}><Plus className="w-4 h-4" /> {t.dockerfile.addVolume.toUpperCase()}</button>
+                <button onClick={() => setVolumes([...volumes, ""])} className={`${btnSm} !bg-white dark:!bg-[#0D1117] border-gray-200 text-gray-500 hover:border-gray-900 transition-all shadow-md active:translate-y-0.5`}><Plus className="w-4 h-4" /> {t.dockerfile.addVolume}</button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {volumes.map((vol, i) => (
@@ -388,7 +388,7 @@ export function DockerfileTab() {
                     <button onClick={() => setVolumes(volumes.filter((_, idx) => idx !== i))} className="p-3 text-gray-300 hover:text-red-500 opacity-0 group-hover/vol:opacity-100 transition-all hover:bg-red-50 dark:hover:bg-red-900/10 rounded-2xl"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 ))}
-                {volumes.length === 0 && <div className="md:col-span-2 py-8 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-[2rem] flex flex-col items-center justify-center opacity-40 italic text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em]">{t.dockerfile.noVolumesDefined}</div>}
+                {volumes.length === 0 && <div className="md:col-span-2 py-8 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-[2rem] flex flex-col items-center justify-center opacity-40 italic text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-wider">{t.dockerfile.noVolumesDefined}</div>}
               </div>
             </div>
           </div>
@@ -396,7 +396,7 @@ export function DockerfileTab() {
       </Section>
 
       {/* 4. Templates */}
-      <h2 className="text-[12px] font-black text-gray-400 dark:text-gray-500 mb-10 mt-16 flex items-center justify-center gap-8 uppercase tracking-[0.6em]">
+      <h2 className="text-[13px] font-black text-gray-400 dark:text-gray-500 mb-10 mt-16 flex items-center justify-center gap-8 tracking-widest transition-colors">
         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 to-gray-400 dark:via-gray-800 dark:to-gray-700" />
         {t.dockerfile.templates}
         <div className="h-px flex-1 bg-gradient-to-l from-transparent via-gray-200 to-gray-400 dark:via-gray-800 dark:to-gray-700" />
@@ -453,10 +453,10 @@ export function DockerfileTab() {
                       'bg-orange-500 text-white shadow-orange-500/20'}`}>
               {tpl.icon}
             </div>
-            <h3 className="text-sm font-black text-gray-900 dark:text-gray-100 mb-3 truncate pr-6 uppercase tracking-tight">{tpl.title}</h3>
-            <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{tpl.desc}</p>
-            <div className="mt-8 flex items-center gap-2 text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
-              {t.dockerfile.appTemplate.toUpperCase()} <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+            <h3 className="text-sm font-black text-gray-900 dark:text-gray-100 mb-3 truncate pr-6 tracking-tight transition-colors">{tpl.title}</h3>
+            <p className="text-[12px] font-medium text-gray-500 dark:text-gray-400 leading-relaxed mb-2.5 ml-1 transition-colors">{tpl.desc}</p>
+            <div className="mt-8 flex items-center gap-2 text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-wider opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+              {t.dockerfile.appTemplate} <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
             </div>
             {/* Aesthetic flourish */}
             <div className={`absolute -right-4 -bottom-4 w-24 h-24 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity 
