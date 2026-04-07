@@ -138,7 +138,7 @@ export function DockerfileTab() {
             <div className="text-[11px] text-gray-400 mt-2 font-bold italic opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" /> TARGET: {appName || 'undefined'}:latest
             </div>
-          </div>中间
+          </div>
 
           <div className="relative group">
             <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
