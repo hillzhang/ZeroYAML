@@ -1,11 +1,16 @@
-# ZeroYAML 🚀
-
-**Zero-effort Configuration for Modern DevOps.**
+# 🚀 ZeroYAML: Zero-effort Configuration for Modern DevOps.
 
 ZeroYAML is an intuitive, visual configurator for your container-native infrastructure. Generate production-ready **Dockerfiles**, **Docker Compose** files, and **Kubernetes manifests** through a sleek, modernized interface—without writing a single line of YAML from scratch.
 
 <p align="center">
-  <img src="public/logo.png" height="80" alt="ZeroYAML Logo" />
+  <img src="https://img.shields.io/badge/License-MIT-blue.svg?style=flat-square" />
+  <img src="https://img.shields.io/badge/Next.js-15+-000000.svg?style=flat-square&logo=next.js" />
+  <img src="https://img.shields.io/badge/Kubernetes-Ready-326ce5.svg?style=flat-square&logo=kubernetes" />
+  <img src="https://img.shields.io/badge/PRs-Welcome-brightgreen.svg?style=flat-square" />
+</p>
+
+<p align="center">
+  <img src="public/logo.png" height="40" alt="ZeroYAML Logo" />
 </p>
 
 ## ✨ Key Features
