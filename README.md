@@ -10,9 +10,9 @@ ZeroYAML is an intuitive, visual configurator for your container-native infrastr
 </p>
 
 <p align="center">
-  <img src="public/logo.png" height="40" alt="ZeroYAML Logo" />
+  <img src="public/banner.png" width="600" alt="ZeroYAML Banner" />
 </p>
-
+   
 ## ✨ Key Features
 
 - **🚀 Triple-Stack Generation**: Seamlessly toggle between Dockerfile, Docker Compose, and Kubernetes manifests.
