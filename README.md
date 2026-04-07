@@ -10,7 +10,7 @@ ZeroYAML is an intuitive, visual configurator for your container-native infrastr
 </p>
 
 <p align="center">
-  <img src="public/banner.png" width="600" height="300" alt="ZeroYAML Banner" />
+  <img src="public/banner.png" width="640" height="360" alt="ZeroYAML Banner" />
 </p>
    
 ## ✨ Key Features
