@@ -4,7 +4,7 @@
 
 ZeroYAML is an intuitive, visual configurator for your container-native infrastructure. Generate production-ready **Dockerfiles**, **Docker Compose** files, and **Kubernetes manifests** through a sleek, modernized interface—without writing a single line of YAML from scratch.
 
-![Banner Placeholder](https://via.placeholder.com/1200x600/0D1117/FFFFFF?text=ZeroYAML+Unified+DevOps+Visualizer)
+![ZeroYAML Banner](public/banner.png)
 
 ## ✨ Key Features
 
