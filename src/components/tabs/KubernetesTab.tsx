@@ -6,7 +6,7 @@ import { Checkbox } from '@/components/ui/Checkbox';
 import {
   Layers, Server, RefreshCw, Clock, Database, Network, Box, Terminal,
   ChevronDown, Plus, Trash2, Globe, Shield, Cpu, Tag, Activity, KeyRound, FileText, ListTree,
-  HardDrive, Link, Check, ShieldCheck, UserCheck, Settings2, Zap, ArrowRightLeft, Rocket, X,
+  HardDrive, Link, Check, ShieldCheck, UserCheck, Settings2, Zap, ArrowRightLeft, Rocket, X, Star,
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -479,7 +479,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
   const { t } = useTranslation();
   const {
     pvcs, configMaps, secrets,
-    updateWorkload, 
+    updateWorkload,
     updateContainer, updateContainerProbe,
     addContainer, removeContainer,
     addContainerEnv, removeContainerEnv, updateContainerEnv,
@@ -537,7 +537,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
           <div className="space-y-1.5">
             <p className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 tracking-normal ml-1 flex items-center gap-1.5"><Layers className="w-3.5 h-3.5" />{isInitMode ? 'Init ' : ''}{t.k8s.workload}</p>
             <div className="relative group">
-              <select value={wl.workloadType} onChange={(e: any) => up({ workloadType: e.target.value })} 
+              <select value={wl.workloadType} onChange={(e: any) => up({ workloadType: e.target.value })}
                 className={inp + " appearance-none !bg-indigo-50 dark:!bg-indigo-900/20 !text-indigo-700 dark:!text-indigo-300 font-extrabold !border-indigo-200 dark:!border-indigo-800 shadow-sm hover:!border-indigo-400 dark:hover:!border-indigo-600 transition-all cursor-pointer pr-10"}>
                 {['Deployment', 'StatefulSet', 'DaemonSet', 'CronJob', 'Job'].map(type => (
                   <option key={type} value={type} className="text-black dark:text-gray-200 bg-white dark:bg-gray-800">{type}</option>
@@ -554,25 +554,25 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
           </div>
           <div className="space-y-1.5">
             <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-normal ml-1 flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" />{t.k8s.namespace}</p>
-            <input type="text" value={wl.namespace} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ namespace: e.target.value })} 
+            <input type="text" value={wl.namespace} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ namespace: e.target.value })}
               className={inp + " !bg-white dark:!bg-[#0D1117]"} placeholder="default" />
           </div>
           {isCronJob ? (
             <div className="space-y-1.5">
               <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 tracking-normal ml-1 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />Schedule</p>
-              <input type="text" value={wl.schedule} onChange={(e: any) => up({ schedule: e.target.value })} 
+              <input type="text" value={wl.schedule} onChange={(e: any) => up({ schedule: e.target.value })}
                 className={inp + " !bg-white dark:!bg-[#0D1117] font-mono"} placeholder="0 * * * *" />
             </div>
           ) : isJob ? (
             <div className="space-y-1.5">
               <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 tracking-normal ml-1 flex items-center gap-1.5"><Activity className="w-3.5 h-3.5" />Successful Limit</p>
-              <input type="number" value={wl.successfulJobsHistoryLimit} onChange={(e: any) => up({ successfulJobsHistoryLimit: parseInt(e.target.value) || 3 })} 
+              <input type="number" value={wl.successfulJobsHistoryLimit} onChange={(e: any) => up({ successfulJobsHistoryLimit: parseInt(e.target.value) || 3 })}
                 className={inp + " !bg-white dark:!bg-[#0D1117]"} />
             </div>
           ) : !isDaemon ? (
             <div className="space-y-1.5">
               <p className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 tracking-normal ml-1 flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5" />{t.k8s.replicas}</p>
-              <input type="number" min="1" value={wl.replicas} onChange={(e: any) => up({ replicas: parseInt(e.target.value) || 1 })} 
+              <input type="number" min="1" value={wl.replicas} onChange={(e: any) => up({ replicas: parseInt(e.target.value) || 1 })}
                 className={inp + " !bg-white dark:!bg-[#0D1117]"} />
             </div>
           ) : (
@@ -586,34 +586,34 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
         <div className="bg-gray-50/50 dark:bg-black/20 p-4 rounded-xl border border-gray-100 dark:border-gray-800/50">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2 bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm">
-              <button 
+              <button
                 onClick={() => setIsInitMode(false)}
                 className={`text-[10px] font-bold px-3 py-1.5 rounded-md transition-all ${!isInitMode ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
                 CONTAINERS
               </button>
-              <button 
+              <button
                 onClick={() => setIsInitMode(true)}
                 className={`text-[10px] font-bold px-3 py-1.5 rounded-md transition-all ${isInitMode ? 'bg-orange-600 text-white shadow-md shadow-orange-600/20' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
                 INIT CONTAINERS
               </button>
             </div>
-            <button 
+            <button
               onClick={() => addContainer(wl.id, isInitMode)}
               className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200/50 dark:border-blue-800/50 transition-all hover:scale-105 active:scale-95 hover:bg-blue-100 dark:hover:bg-blue-900/40 shadow-sm">
               <Plus className="w-4 h-4" /> ADD {isInitMode ? 'INIT' : ''} CONTAINER
             </button>
           </div>
-          
+
           <div className="flex flex-wrap gap-2">
             {(isInitMode ? wl.initContainers : wl.containers).map((c) => (
-              <div 
-                key={c.id} 
+              <div
+                key={c.id}
                 onClick={() => setSelectedContainerId(c.id)}
                 className={`group flex items-center gap-2.5 px-3.5 py-2 rounded-[1rem] cursor-pointer transition-all border-2 ${selectedContainerId === c.id ? 'bg-white dark:bg-gray-800 border-indigo-400 dark:border-indigo-600 shadow-md text-indigo-600 dark:text-indigo-400' : 'bg-white/50 dark:bg-gray-900/50 border-gray-100 dark:border-gray-800 text-gray-500 hover:border-gray-300 dark:hover:border-gray-700'}`}>
                 <div className={`w-2 h-2 rounded-full ${selectedContainerId === c.id ? 'bg-indigo-500 animate-pulse' : 'bg-gray-300 dark:bg-gray-600'}`} />
                 <span className="text-[11px] font-bold truncate max-w-[120px]">{c.name}</span>
                 {((!isInitMode && wl.containers.length > 1) || isInitMode) && (
-                  <button 
+                  <button
                     onClick={(e) => { e.stopPropagation(); removeContainer(wl.id, c.id, isInitMode); }}
                     className={`ml-1 opacity-40 group-hover:opacity-100 p-1 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg text-gray-400 hover:text-red-500 transition-all`}>
                     <X className="w-3 h-3" />
@@ -637,8 +637,8 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-1.5">
                   <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-normal ml-1 flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" />{isInitMode ? 'Init ' : ''}Name</p>
-                  <input type="text" value={selectedContainer.name || ''} 
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => upC({ name: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })} 
+                  <input type="text" value={selectedContainer.name || ''}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => upC({ name: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
                     className={inp + " font-bold"} placeholder="main" />
                 </div>
                 <div className="space-y-1.5">
@@ -661,7 +661,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                   <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-normal ml-1 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" />{t.k8s.image}</p>
                   <input type="text" value={selectedContainer.image || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => upC({ image: e.target.value })} className={inp} placeholder="nginx:alpine" />
                 </div>
-                
+
                 <div className="space-y-1.5">
                   <ResourceSelector
                     label={t.k8s.imagePullSecrets}
@@ -685,10 +685,10 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               <div className="col-span-2 grid grid-cols-2 gap-x-6 pt-1 border-t border-blue-50 dark:border-blue-900/20">
                 {isCronJob && (
                   <div className="space-y-1.5">
-                     <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">Concurrency Policy</p>
-                     <select value={wl.concurrencyPolicy} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => up({ concurrencyPolicy: e.target.value as any })} className={inp}>
-                       <option value="Allow">Allow</option><option value="Forbid">Forbid</option><option value="Replace">Replace</option>
-                     </select>
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">Concurrency Policy</p>
+                    <select value={wl.concurrencyPolicy} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => up({ concurrencyPolicy: e.target.value as any })} className={inp}>
+                      <option value="Allow">Allow</option><option value="Forbid">Forbid</option><option value="Replace">Replace</option>
+                    </select>
                   </div>
                 )}
                 <div className="space-y-1.5">
@@ -728,41 +728,48 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
             </div>
 
             <div className="col-span-2 grid grid-cols-[1fr_40px_1fr] items-start gap-y-1.5 mt-2 p-4 bg-gray-50/20 dark:bg-black/10 rounded-2xl border border-gray-100 dark:border-gray-800">
-               <div className="flex items-center justify-between px-1">
-                 <div className="flex items-center gap-1.5">
-                   <Shield className="w-3.5 h-3.5 text-blue-500" />
-                   <span className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">{t.k8s.command}</span>
-                 </div>
-                 <span className="text-[9px] font-bold text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">{t.k8s.entrypoint}</span>
-               </div>
-               <div />
-               <div className="flex items-center justify-between px-1">
-                 <div className="flex items-center gap-1.5">
-                   <Activity className="w-3.5 h-3.5 text-emerald-500" />
-                   <span className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">{t.k8s.args}</span>
-                 </div>
-                 <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">{t.k8s.cmd}</span>
-               </div>
-               <input type="text" value={selectedContainer?.command || ''} onChange={(e: any) => upC({ command: e.target.value })}
-                 placeholder="e.g. /usr/bin/python3"
-                 className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-blue-200 dark:border-blue-800"} />
-               <div className="h-[42px] flex items-center justify-center">
-                 <div className="w-6 h-6 rounded-full bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800 shadow-md flex items-center justify-center ring-4 ring-blue-500/5 transition-transform hover:scale-110">
-                   <Plus className="w-3 h-3 text-blue-500 font-bold" />
-                 </div>
-               </div>
-               <input type="text" value={selectedContainer?.args || ''} onChange={(e: any) => upC({ args: e.target.value })}
-                 placeholder="e.g. app.py --port 80"
-                 className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-emerald-200 dark:border-emerald-800"} />
-               <p className="text-[9px] text-gray-400 dark:text-gray-500 pl-1 italic font-medium">{t.k8s.mapToEntrypoint}</p>
-               <div />
-               <p className="text-[9px] text-emerald-600 dark:text-emerald-400 pl-1 italic font-medium">{t.k8s.mapToCmd}</p>
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-blue-500" />
+                  <span className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">{t.k8s.command}</span>
+                </div>
+                <span className="text-[9px] font-bold text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">{t.k8s.entrypoint}</span>
+              </div>
+              <div />
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">{t.k8s.args}</span>
+                </div>
+                <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">{t.k8s.cmd}</span>
+              </div>
+              <input type="text" value={selectedContainer?.command || ''} onChange={(e: any) => upC({ command: e.target.value })}
+                placeholder="e.g. /usr/bin/python3"
+                className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-blue-200 dark:border-blue-800"} />
+              <div className="h-[42px] flex items-center justify-center">
+                <div className="w-6 h-6 rounded-full bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800 shadow-md flex items-center justify-center ring-4 ring-blue-500/5 transition-transform hover:scale-110">
+                  <Plus className="w-3 h-3 text-blue-500 font-bold" />
+                </div>
+              </div>
+              <input type="text" value={selectedContainer?.args || ''} onChange={(e: any) => upC({ args: e.target.value })}
+                placeholder="e.g. app.py --port 80"
+                className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-emerald-200 dark:border-emerald-800"} />
+              <p className="text-[9px] text-gray-400 dark:text-gray-500 pl-1 italic font-medium">{t.k8s.mapToEntrypoint}</p>
+              <div />
+              <p className="text-[9px] text-emerald-600 dark:text-emerald-400 pl-1 italic font-medium">{t.k8s.mapToCmd}</p>
             </div>
           </div>
           {isSts && (
-            <div className="mt-3 px-1">
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.k8s.headlessService}</p>
-              <input type="text" value={wl.serviceName} onChange={(e: any) => up({ serviceName: e.target.value })} className={inp} />
+            <div className="mt-4 px-1">
+              <ResourceSelector
+                label={t.k8s.headlessService}
+                value={wl.serviceName}
+                onChange={(val: string) => up({ serviceName: val })}
+                options={services.filter(s => s.type === 'Headless' || s.name === wl.serviceName).map(s => ({ id: s.id, name: s.name, info: 'Headless' }))}
+                placeholder={`-- ${t.k8s.headlessService} --`}
+                manualPlaceholder="Headless Service Name"
+                inputClassName={inp}
+              />
             </div>
           )}
         </Section>
@@ -973,35 +980,108 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
           </div>
         </Section>
 
-        {/* Security */}
+        {/* Security & Runtime */}
         <Section title={t.k8s.security} icon={<Shield className="w-4 h-4" />} theme="purple" badge={t.k8s.badges.security} defaultOpen={false}>
-          <div className="grid grid-cols-3 gap-2">
-            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">runAsUser</p><input type="number" placeholder="1000" value={selectedContainer.runAsUser || ''} onChange={e => upC({ runAsUser: e.target.value })} className={inpSm} /></div>
-            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">runAsGroup</p><input type="number" placeholder="3000" value={selectedContainer.runAsGroup || ''} onChange={e => upC({ runAsGroup: e.target.value })} className={inpSm} /></div>
-            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">fsGroup (Pod)</p><input type="number" placeholder="2000" value={wl.fsGroup || ''} onChange={e => up({ fsGroup: e.target.value })} className={inpSm} /></div>
-          </div>
-          <div className="flex flex-wrap gap-4 mt-3">
-            <Checkbox checked={selectedContainer.runAsNonRoot} onChange={v => upC({ runAsNonRoot: v })} label="runAsNonRoot" />
-            <Checkbox checked={selectedContainer.readOnlyRootFilesystem} onChange={v => upC({ readOnlyRootFilesystem: v })} label="readOnlyRootFilesystem" />
-            <Checkbox checked={selectedContainer.allowPrivilegeEscalation} onChange={v => upC({ allowPrivilegeEscalation: v })} label="allowPrivilegeEscalation" />
+          <div className="space-y-4">
+            {/* Pod Network Settings (Moved here) */}
+            <div className="bg-purple-50/20 dark:bg-purple-900/5 rounded-2xl border border-purple-100 dark:border-purple-800/50 p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-1.5 rounded-lg bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{t.k8s.podRuntimeNet}</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-900/60 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm transition-all hover:border-purple-200 dark:hover:border-purple-900/30">
+                  <div className="flex flex-col">
+                    <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300">{t.k8s.hostNetwork}</span>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">{t.k8s.bypassClusterNet}</span>
+                  </div>
+                  <Checkbox checked={wl.hostNetwork} onChange={v => up({ hostNetwork: v })} label="" />
+                </div>
+
+                <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-900/60 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm transition-all hover:border-purple-200 dark:hover:border-purple-900/30">
+                  <div className="flex flex-col">
+                    <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300">{t.k8s.dnsPolicy}</span>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">{t.k8s.dnsPolicyHint}</span>
+                  </div>
+                  <div className="relative min-w-[140px]">
+                    <select 
+                      value={wl.dnsPolicy} 
+                      onChange={e => up({ dnsPolicy: e.target.value })} 
+                      className="w-full bg-purple-50/50 dark:bg-purple-900/20 text-xs font-bold text-purple-700 dark:text-purple-300 border-none rounded-lg px-3 py-1.5 appearance-none cursor-pointer focus:ring-2 focus:ring-purple-500/20">
+                      <option value="ClusterFirst">ClusterFirst</option>
+                      <option value="ClusterFirstWithHostNet">ClusterFirstWithHostNet</option>
+                      <option value="Default">Default</option>
+                      <option value="None">None</option>
+                    </select>
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-purple-500/50">
+                      <ChevronDown className="w-3.5 h-3.5" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-purple-50/20 dark:bg-purple-900/10 rounded-2xl border border-purple-100 dark:border-purple-800 p-5">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-black text-purple-600/70 dark:text-purple-400/70 ml-1">Run As User</p>
+                  <input type="number" placeholder="1000" value={selectedContainer.runAsUser || ''} onChange={e => upC({ runAsUser: e.target.value })} className={`${inpSm} focus:border-purple-500 ring-purple-500/5`} />
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-black text-purple-600/70 dark:text-purple-400/70 ml-1">Run As Group</p>
+                  <input type="number" placeholder="3000" value={selectedContainer.runAsGroup || ''} onChange={e => upC({ runAsGroup: e.target.value })} className={`${inpSm} focus:border-purple-500 ring-purple-500/5`} />
+                </div>
+                <div className="space-y-1.5">
+                  <p className="text-[11px] font-black text-purple-600/70 dark:text-purple-400/70 ml-1">FS Group (Pod)</p>
+                  <input type="number" placeholder="2000" value={wl.fsGroup || ''} onChange={e => up({ fsGroup: e.target.value })} className={`${inpSm} focus:border-purple-500 ring-purple-500/5`} />
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {[
+                  { label: "runAsNonRoot", checked: selectedContainer.runAsNonRoot, onChange: (v: boolean) => upC({ runAsNonRoot: v }) },
+                  { label: "readOnlyRootFS", checked: selectedContainer.readOnlyRootFilesystem, onChange: (v: boolean) => upC({ readOnlyRootFilesystem: v }) },
+                  { label: "allowPrivilegeEscalation", checked: selectedContainer.allowPrivilegeEscalation, onChange: (v: boolean) => upC({ allowPrivilegeEscalation: v }) }
+                ].map((opt, idx) => (
+                  <div key={idx} className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-gray-900/60 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-purple-200 transition-all shadow-sm">
+                    <Checkbox checked={opt.checked} onChange={opt.onChange} label={opt.label} />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </Section>
 
         {/* Update Strategy */}
-        {!isDaemon && !isCronJob && (
-          <Section title={t.k8s.updating} icon={<RefreshCw className="w-4 h-4" />} theme="cyan" badge={t.k8s.badges.strategy} defaultOpen={false}>
-            <div className="flex gap-3">
-              <div className="flex-1"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">STRATEGY</p>
-                <select value={wl.updateStrategy} onChange={e => up({ updateStrategy: e.target.value as any })} className={inp}>
-                  <option value="RollingUpdate">RollingUpdate</option><option value="Recreate">Recreate</option>
-                </select></div>
-              {wl.updateStrategy === 'RollingUpdate' && <>
-                <div className="flex-1"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">maxSurge</p><input type="text" value={wl.maxSurge} onChange={e => up({ maxSurge: e.target.value })} className={inp} /></div>
-                <div className="flex-1"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">maxUnavailable</p><input type="text" value={wl.maxUnavailable} onChange={e => up({ maxUnavailable: e.target.value })} className={inp} /></div>
-              </>}
+        <Section title={t.k8s.updating} icon={<RefreshCw className="w-4 h-4" />} theme="cyan" badge={t.k8s.badges.strategy} defaultOpen={false}>
+          <div className="bg-cyan-50/20 dark:bg-cyan-900/10 rounded-2xl border border-cyan-100 dark:border-cyan-800 p-5">
+            <div className="flex flex-col lg:flex-row gap-6">
+              <div className="lg:w-1/3 space-y-2">
+                <p className="text-[11px] font-black text-cyan-600 dark:text-cyan-400 ml-1">Update Strategy</p>
+                <select value={wl.updateStrategy} onChange={e => up({ updateStrategy: e.target.value as any })} className={`${inp} border-cyan-200 dark:border-cyan-900/50`}>
+                  <option value="RollingUpdate">RollingUpdate</option>
+                  <option value="Recreate">Recreate</option>
+                </select>
+              </div>
+
+              {wl.updateStrategy === 'RollingUpdate' && (
+                <div className="lg:flex-1 grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-black text-gray-400 ml-1">Max Surge</p>
+                    <input type="text" value={wl.maxSurge} onChange={e => up({ maxSurge: e.target.value })} className={inp} placeholder="e.g. 25%" />
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[11px] font-black text-gray-400 ml-1">Max Unavailable</p>
+                    <input type="text" value={wl.maxUnavailable} onChange={e => up({ maxUnavailable: e.target.value })} className={inp} placeholder="e.g. 1" />
+                  </div>
+                </div>
+              )}
             </div>
-          </Section>
-        )}
+          </div>
+        </Section>
 
         {/* Node Scheduling */}
         <Section title={t.k8s.scheduling} icon={<Globe className="w-4 h-4" />} theme="slate" badge={t.k8s.badges.scheduling} defaultOpen={false}>
@@ -1051,7 +1131,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                         <input type="text" placeholder="key" value={tol.key} onChange={e => updateWorkloadTol(wl.id, i, { key: e.target.value })} className={inpSm} />
                       </div>
                       <div>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-0.5">Operator</p>
+                        <p className="text-[10px] font-bold text-gray-400 mb-2 ml-0.5">Operator</p>
                         <select value={tol.operator} onChange={e => updateWorkloadTol(wl.id, i, { operator: e.target.value as any })} className={`${inpSm} !bg-gray-50/50`}>
                           <option>Equal</option>
                           <option>Exists</option>
@@ -1059,12 +1139,12 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                       </div>
                       {tol.operator === 'Equal' && (
                         <div>
-                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-0.5">Value</p>
+                          <p className="text-[10px] font-bold text-gray-400 mb-2 ml-0.5">Value</p>
                           <input type="text" placeholder="value" value={tol.value} onChange={e => updateWorkloadTol(wl.id, i, { value: e.target.value })} className={inpSm} />
                         </div>
                       )}
                       <div>
-                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-0.5">Effect</p>
+                        <p className="text-[10px] font-bold text-gray-400 mb-2 ml-0.5">Effect</p>
                         <select value={tol.effect} onChange={e => updateWorkloadTol(wl.id, i, { effect: e.target.value as any })} className={`${inpSm} !bg-gray-50/50`}>
                           <option value="">(ANY)</option>
                           <option>NoSchedule</option>
@@ -1081,98 +1161,151 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex flex-wrap gap-x-6 gap-y-3">
-              <Checkbox checked={wl.hostNetwork} onChange={v => up({ hostNetwork: v })} label="hostNetwork" />
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-gray-500 font-bold">{t.k8s.dnsPolicy}:</span>
-                <select value={wl.dnsPolicy} onChange={e => up({ dnsPolicy: e.target.value })} className="bg-transparent text-xs border-b border-gray-300 dark:border-gray-700 focus:outline-none focus:border-blue-400 pb-0.5">
-                  <option value="ClusterFirst">ClusterFirst</option>
-                  <option value="ClusterFirstWithHostNet">ClusterFirstWithHostNet</option>
-                  <option value="Default">Default</option>
-                  <option value="None">None</option>
-                </select>
-              </div>
-            </div>
           </div>
         </Section>
-        <Section title={t.k8s.ingress} icon={<Network className="w-4 h-4" />} theme="green" defaultOpen={true}>
+
+        <Section title={t.k8s.ingress} icon={<Globe className="w-4 h-4" />} theme="blue" badge={t.k8s.badges.network} defaultOpen={false}>
           <div className="space-y-6">
             {/* 1. Services Section */}
-            <div className="space-y-2">
-              <p className="text-[10px] font-bold text-gray-400 flex items-center gap-1"><Layers className="w-3 h-3" />{t.network.service}</p>
-              {services.length === 0 && <p className="text-xs text-gray-400 italic">{t.network.noService}</p>}
-              <div className="space-y-2">
-                {services.map(s => {
-                  const isBound = s.selectorApp === wl.appName;
-                  return (
-                    <div key={s.id} className={`flex items-center justify-between p-2 rounded-lg border transition-all ${isBound ? 'border-green-200 bg-green-50/30 dark:bg-green-900/10' : 'border-gray-100 dark:border-gray-800 opacity-60 hover:opacity-100'}`}>
-                      <div className="flex items-center gap-2">
-                        <Checkbox checked={isBound} onChange={val => updateService(s.id, { selectorApp: val ? wl.appName : '' })} />
-                        <div>
-                          <p className="text-xs font-medium">{s.name} <span className="text-[9px] text-gray-400 font-normal">({s.type})</span></p>
-                          <p className="text-[9px] text-gray-400">Port {s.port} → {s.targetPort}</p>
-                        </div>
-                      </div>
-                      {isBound && <span className="text-[9px] font-bold text-green-600 bg-green-100 dark:bg-green-900/30 px-1 rounded">{t.network.bound}</span>}
-                    </div>
-                  );
-                })}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 px-3 py-1 bg-blue-50/50 dark:bg-blue-900/20 rounded-full border border-blue-100 dark:border-blue-800/50">
+                  <Layers className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <p className="text-[11px] font-black text-blue-700 dark:text-blue-300 uppercase tracking-wider">{t.network.service}</p>
+                  <span className="text-[10px] font-medium text-blue-400/80">(负载入口)</span>
+                </div>
+                <div className="flex gap-1">
+                  <div className="w-1 h-1 rounded-full bg-blue-400/30"></div>
+                  <div className="w-1 h-1 rounded-full bg-blue-400/60"></div>
+                  <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
+                </div>
               </div>
+
+              {services.length === 0 ? (
+                <div className="p-4 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 bg-gray-50/30 dark:bg-gray-900/10 text-center">
+                  <p className="text-[11px] text-gray-400 italic">{t.network.noService}</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {services.map(s => {
+                    const isBound = s.selectorApp === wl.appName;
+                    const isHeadless = s.type === 'Headless';
+                    const isCurrentHeadless = isSts && s.name === wl.serviceName;
+
+                    return (
+                      <div key={s.id}
+                        className={`relative overflow-hidden group p-3 rounded-2xl border-2 transition-all hover:shadow-md ${isBound ? 'bg-green-50/40 dark:bg-green-900/10 border-green-200/60 dark:border-green-800' : 'bg-gray-50/20 dark:bg-gray-900/5 border-gray-100 dark:border-gray-800 hover:border-blue-200 dark:hover:border-blue-900/30'}`}>
+                        <div className="flex items-start justify-between relative z-10">
+                          <div className="flex gap-2.5">
+                            <div className="pt-0.5">
+                              <Checkbox checked={isBound} onChange={val => updateService(s.id, { selectorApp: val ? wl.appName : '' })} />
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className={`text-[12px] font-extrabold ${isBound ? 'text-green-700 dark:text-green-300' : 'text-gray-500'}`}>{s.name}</span>
+                                {isHeadless && <span className="text-[8px] font-black px-1.5 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-400 border border-purple-200/30 uppercase tracking-tighter">Headless</span>}
+                                {isCurrentHeadless && <Star className="w-3 h-3 text-amber-500 fill-amber-500 animate-pulse" />}
+                              </div>
+                              <div className="flex items-center gap-2 text-[10px] text-gray-400 font-medium">
+                                <div className="flex items-center gap-1"><ArrowRightLeft className="w-3 h-3" />{s.port} → {s.targetPort}</div>
+                                {isBound && <div className="flex items-center gap-1 text-green-600/70"><Check className="w-3 h-3" /> ACTIVE</div>}
+                              </div>
+                            </div>
+                          </div>
+
+                          {isSts && isHeadless && !isCurrentHeadless && isBound && (
+                            <button
+                              onClick={() => up({ serviceName: s.name })}
+                              className="shrink-0 p-1.5 rounded-lg bg-white dark:bg-gray-800 text-indigo-500 hover:text-indigo-600 border border-indigo-100 dark:border-indigo-700 shadow-sm transition-all hover:scale-110"
+                              title="Set as Headless Service">
+                              <Zap className="w-3.5 h-3.5 fill-current" />
+                            </button>
+                          )}
+                        </div>
+                        {/* Status Glow for Bound services */}
+                        {isBound && <div className="absolute -right-4 -bottom-4 w-12 h-12 bg-green-400/10 rounded-full blur-xl pointer-events-none group-hover:bg-green-400/20 transition-all"></div>}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* 2. Ingress Section */}
-            <div className="space-y-2 pt-2 border-t border-gray-100 dark:border-gray-800">
-              <p className="text-[10px] font-bold text-gray-400 flex items-center gap-1"><Globe className="w-3 h-3" />{t.network.ingress}</p>
-              {ingresses.length === 0 && <p className="text-xs text-gray-400 italic">{t.network.noIngress}</p>}
-              <div className="space-y-2">
+            <div className="space-y-3 pt-4 border-t border-gray-100 dark:border-gray-800">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 px-3 py-1 bg-purple-50/50 dark:bg-purple-900/20 rounded-full border border-purple-100 dark:border-purple-800/50">
+                  <Globe className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400" />
+                  <p className="text-[11px] font-black text-purple-700 dark:text-purple-300 uppercase tracking-wider">{t.network.ingress}</p>
+                  <span className="text-[10px] font-medium text-purple-400/80">(外部流量路由)</span>
+                </div>
+                {ingresses.length > 0 && <span className="text-[9px] font-bold text-purple-500/50">ACTIVE RULES</span>}
+              </div>
+              {ingresses.length === 0 && (
+                <div className="p-4 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800 bg-gray-50/20 dark:bg-gray-900/5 text-center">
+                  <p className="text-[11px] text-gray-400 italic">{t.network.noIngress}</p>
+                </div>
+              )}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {ingresses.map(ing => {
                   const mySvcs = services.filter(s => s.selectorApp === wl.appName).map(s => s.name);
                   const isPointing = ing.rules.some(r => mySvcs.includes(r.serviceName));
 
                   return (
-                    <div key={ing.id} className={`p-2 rounded-lg border transition-all ${isPointing ? 'border-purple-400 bg-purple-50 dark:bg-purple-900/20 shadow-sm' : 'border-gray-200 dark:border-gray-800 opacity-80'}`}>
-                      <div className="flex justify-between items-start mb-2">
-                        <div>
-                          <p className="text-xs font-bold text-gray-800 dark:text-gray-100">{ing.name}</p>
-                          <p className="text-[9px] text-gray-500 font-medium">Class: {ing.ingressClassName || 'default'}</p>
+                    <div key={ing.id} className={`p-4 rounded-2xl border-2 transition-all ${isPointing ? 'border-purple-200 dark:border-purple-800 bg-purple-50/30 dark:bg-purple-900/5 shadow-sm' : 'border-gray-100 dark:border-gray-800 opacity-80 backdrop-blur-sm'}`}>
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className={`w-2 h-2 rounded-full ${isPointing ? 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.5)]' : 'bg-gray-300'}`} />
+                          <div>
+                            <p className="text-[12px] font-extrabold text-gray-800 dark:text-gray-100 leading-none mb-1">{ing.name}</p>
+                            <span className="text-[9px] font-bold text-purple-600 dark:text-purple-400 uppercase tracking-tight">{ing.ingressClassName || 'Default'} Controller</span>
+                          </div>
                         </div>
                         {isPointing ?
-                          <span className="text-[9px] font-bold text-white bg-purple-600 px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1 animate-pulse-subtle">{t.network.pointing} <Activity className="w-2.5 h-2.5" /></span> :
-                          <span className="text-[9px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">{t.network.unbound}</span>
+                          <span className="text-[9px] font-bold text-white bg-purple-600 px-2 py-0.5 rounded-full shadow-lg shadow-purple-500/20 flex items-center gap-1 animate-pulse-subtle">LIVE TRAFFIC <Activity className="w-2.5 h-2.5" /></span> :
+                          <span className="text-[9px] font-bold text-gray-400 bg-gray-50/50 dark:bg-gray-900/50 px-2 py-0.5 rounded-full border border-gray-200 dark:border-gray-800">DISCONNECTED</span>
                         }
                       </div>
 
-                      <div className="space-y-1.5">
+                      <div className="space-y-2">
                         {ing.rules.map(r => {
                           const pointsToMe = mySvcs.includes(r.serviceName);
                           return (
-                            <div key={r.id} className={`text-[10px] flex items-center justify-between p-2 rounded transition-all ${pointsToMe ? 'bg-white dark:bg-[#1C2128] border border-purple-300 dark:border-purple-700 shadow-sm text-purple-800 dark:text-purple-200' : 'bg-gray-50/50 dark:bg-gray-800/50 border border-transparent text-gray-600'}`}>
-                              <span className="truncate mr-2 font-mono flex-1">
-                                <span className="text-gray-400">{r.host || '*'}{r.path}</span>
-                                <span className="mx-1 text-gray-300">→</span>
-                                <span className={pointsToMe ? 'font-bold' : 'text-gray-400'}>{r.serviceName || '(None)'}</span>
-                              </span>
-                              {pointsToMe ? (
-                                <button
-                                  onClick={() => {
-                                    const { updateIngressRule } = useKubernetesStore.getState();
-                                    updateIngressRule(ing.id, r.id, { serviceName: '' });
-                                  }}
-                                  className="flex items-center gap-1 px-2 py-1 rounded bg-red-600 text-white hover:bg-red-700 transition-all font-bold shadow-sm whitespace-nowrap">
-                                  <Trash2 className="w-2.5 h-2.5" />{t.common.cancel}
-                                </button>
-                              ) : (
-                                mySvcs.length > 0 && (
+                            <div key={r.id} className={`group text-[11px] p-2.5 rounded-xl border transition-all ${pointsToMe ? 'bg-white dark:bg-[#1C2128] border-purple-300/60 dark:border-purple-700 shadow-sm' : 'bg-gray-50/50 dark:bg-gray-900/30 border-transparent text-gray-400 hover:border-gray-200'}`}>
+                              <div className="flex items-center justify-between gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center gap-1.5 mb-0.5">
+                                    <Globe className={`w-3 h-3 ${pointsToMe ? 'text-purple-500' : 'text-gray-300'}`} />
+                                    <span className={`font-mono truncate ${pointsToMe ? 'text-purple-900 dark:text-purple-100 font-bold' : 'text-gray-500 text-[10px]'}`}>{r.host || '*'}</span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 text-[9px] font-medium pl-4">
+                                    <span className="text-gray-400">{r.path}</span>
+                                    <ArrowRightLeft className="w-2.5 h-2.5 text-gray-300" />
+                                    <span className={pointsToMe ? 'text-purple-600 dark:text-purple-400 font-bold' : ''}>{r.serviceName || '(None)'}</span>
+                                  </div>
+                                </div>
+                                {pointsToMe ? (
                                   <button
                                     onClick={() => {
                                       const { updateIngressRule } = useKubernetesStore.getState();
-                                      updateIngressRule(ing.id, r.id, { serviceName: mySvcs[0] });
+                                      updateIngressRule(ing.id, r.id, { serviceName: '' });
                                     }}
-                                    className="flex items-center gap-1 px-2 py-1 rounded bg-blue-700 text-white hover:bg-blue-800 transition-all font-bold shadow-sm whitespace-nowrap">
-                                    <Link className="w-2.5 h-2.5" />{t.network.bound}
+                                    className="hidden group-hover:flex items-center gap-1 px-2 py-1 rounded-lg bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all font-bold text-[9px] border border-red-100">
+                                    UNBIND
                                   </button>
-                                )
-                              )}
+                                ) : (
+                                  mySvcs.length > 0 && (
+                                    <button
+                                      onClick={() => {
+                                        const { updateIngressRule } = useKubernetesStore.getState();
+                                        updateIngressRule(ing.id, r.id, { serviceName: mySvcs[0] });
+                                      }}
+                                      className="hidden group-hover:flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all font-bold text-[9px] border border-blue-100">
+                                      BIND
+                                    </button>
+                                  )
+                                )}
+                              </div>
                             </div>
                           );
                         })}
