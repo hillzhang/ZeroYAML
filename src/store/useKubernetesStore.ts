@@ -3,7 +3,7 @@ import { create } from 'zustand';
 const uid = () => Math.random().toString(36).slice(2, 8);
 
 // ── Primitives ──────────────────────────────────────────────────────────────
-export type WorkloadType = 'Deployment' | 'StatefulSet' | 'DaemonSet' | 'CronJob';
+export type WorkloadType = 'Deployment' | 'StatefulSet' | 'DaemonSet' | 'CronJob' | 'Job';
 export type ProbeType = 'httpGet' | 'tcpSocket' | 'exec' | 'grpc';
 export type K8sSection = 'workload' | 'network' | 'storage';
 export type K8sAccessMode = 'ReadWriteOnce' | 'ReadWriteMany' | 'ReadOnlyMany';

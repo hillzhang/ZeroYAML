@@ -119,16 +119,16 @@ export function CodeViewer() {
           <div className="flex items-center gap-3">
             <div className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${currentOverride.isEnabled ? 'bg-orange-500 animate-pulse ring-4 ring-orange-500/10' : 'bg-blue-500 ring-4 ring-blue-500/10'}`} />
             <div className="flex flex-col">
-              <span className="text-[12px] font-black uppercase tracking-[0.2em] text-gray-900 dark:text-gray-100 leading-none">{currentTitle}</span>
+              <span className="text-[12px] font-bold tracking-tight text-gray-900 dark:text-gray-100 leading-none mr-2">{currentTitle}</span>
               {currentOverride.isEnabled && (
                 <div className="flex items-center gap-2 mt-2 h-4">
-                  <span className="text-[12px] font-black text-white px-2 py-0.5 rounded-lg bg-orange-600 uppercase tracking-[0.2em] shadow-sm whitespace-nowrap">{t.common.overrideActive}</span>
-                  <span className="text-[12px] font-black text-white px-2.5 py-0.5 rounded-lg bg-red-600 uppercase tracking-[0.2em] shadow-xl flex items-center gap-2 animate-pulse whitespace-nowrap border border-red-500/50">
+                  <span className="text-[11px] font-bold text-white px-2 py-0.5 rounded-lg bg-orange-600 tracking-normal shadow-sm whitespace-nowrap">{t.common.overrideActive}</span>
+                  <span className="text-[11px] font-bold text-white px-2.5 py-0.5 rounded-lg bg-red-600 tracking-normal shadow-xl flex items-center gap-2 animate-pulse whitespace-nowrap border border-red-500/50">
                     <AlertTriangle className="w-3 h-3 text-red-100" />
-                    {language === 'zh' ? "恢复即清空手动修改" : "RESTORE WIPES CHANGES"}
+                    {language === 'zh' ? "恢复即清空手动修改" : "Restore will clear manual changes"}
                   </span>
                   {saveStatus && (
-                    <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded uppercase flex items-center gap-1 transition-opacity duration-300 ${saveStatus === 'saving' ? 'bg-blue-100 text-blue-600 animate-pulse' : 'bg-emerald-100 text-emerald-600'}`}>
+                    <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded flex items-center gap-1 transition-opacity duration-300 ${saveStatus === 'saving' ? 'bg-blue-100 text-blue-600 animate-pulse' : 'bg-emerald-100 text-emerald-600'}`}>
                       {saveStatus === 'saving' ? t.common.saving : t.common.saved}
                     </span>
                   )}
@@ -143,13 +143,13 @@ export function CodeViewer() {
             <div className="flex items-center gap-1 bg-gray-100/50 dark:bg-[#0D1117] p-1 rounded-xl border border-gray-200/50 dark:border-gray-800 shadow-inner">
               <button
                 onClick={() => setIsFullStack(false)}
-                className={`px-4 py-1.5 text-[12px] font-black uppercase tracking-[0.2em] rounded-lg transition-all ${!isFullStack ? 'bg-white dark:bg-[#1C2128] text-blue-600 dark:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                className={`px-4 py-1.5 text-[12px] font-bold tracking-tight rounded-lg transition-all ${!isFullStack ? 'bg-white dark:bg-[#1C2128] text-blue-600 dark:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
               >
                 Current
               </button>
               <button
                 onClick={() => setIsFullStack(true)}
-                className={`px-4 py-1.5 text-[9px] font-black uppercase tracking-widest rounded-lg transition-all ${isFullStack ? 'bg-white dark:bg-[#1C2128] text-blue-600 dark:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
+                className={`px-4 py-1.5 text-[10px] font-bold tracking-tight rounded-lg transition-all ${isFullStack ? 'bg-white dark:bg-[#1C2128] text-blue-600 dark:text-blue-400 shadow-sm border border-gray-100 dark:border-gray-700' : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'}`}
               >
                 Full Spec
               </button>
@@ -165,7 +165,7 @@ export function CodeViewer() {
               title={t.common.restoreAuto}
             >
               <RotateCcw className="w-3.5 h-3.5 group-hover:rotate-[-90deg] transition-transform" />
-              <span className="text-[12px] font-black uppercase tracking-[0.2em]">{t.common.restoreAuto}</span>
+              <span className="text-[12px] font-bold tracking-tight">{t.common.restoreAuto}</span>
             </button>
           )}
 
@@ -175,7 +175,7 @@ export function CodeViewer() {
             title={currentOverride.isEditing ? t.common.finishEdit : t.common.manualEdit}
           >
             <Code2 className={`w-3.5 h-3.5 ${currentOverride.isEditing ? 'animate-pulse' : ''}`} />
-            <span className="text-[12px] font-black uppercase tracking-[0.2em] leading-none">
+            <span className="text-[12px] font-bold tracking-tight leading-none">
               {currentOverride.isEditing ? t.common.finishEdit : t.common.manualEdit}
             </span>
           </button>
@@ -186,7 +186,7 @@ export function CodeViewer() {
             title={t.common.newClear}
           >
             <RotateCw className="w-3.5 h-3.5 group-hover:rotate-180 transition-transform duration-500" />
-            <span className="text-[12px] font-black uppercase tracking-[0.2em] leading-none">{t.common.newClear}</span>
+            <span className="text-[12px] font-bold tracking-tight leading-none">{t.common.newClear}</span>
           </button>
 
           <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-800 self-center mx-1" />
@@ -196,7 +196,7 @@ export function CodeViewer() {
             className={`flex items-center gap-2 px-6 h-10 transition-all rounded-2xl border ${isCopied ? 'bg-emerald-50 text-emerald-600 border-emerald-200' : 'bg-white dark:bg-[#1C2128] hover:bg-gray-50 dark:hover:bg-[#252A31] text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-800 shadow-sm'}`}
           >
             {isCopied ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-            <span className="text-[12px] font-black uppercase tracking-[0.2em] leading-none">
+            <span className="text-[12px] font-bold tracking-tight leading-none">
               {isCopied ? t.common.copied : t.common.copyContent}
             </span>
           </button>
@@ -206,7 +206,7 @@ export function CodeViewer() {
             className="flex items-center gap-2 px-6 h-10 bg-gray-900 dark:bg-blue-600 hover:bg-black dark:hover:bg-blue-500 transition-all rounded-2xl text-white shadow-xl shadow-blue-500/10 border-gray-800 dark:border-blue-500"
           >
             <Download className="w-3.5 h-3.5" />
-            <span className="text-[12px] font-black uppercase tracking-[0.2em] leading-none">{t.common.export}</span>
+            <span className="text-[12px] font-bold tracking-tight leading-none">{t.common.export}</span>
           </button>
         </div>
       </div>
@@ -246,7 +246,7 @@ export function CodeViewer() {
         {/* Manual Edit Overlay */}
         {currentOverride.isEditing && (
           <div className="absolute right-10 bottom-10 p-5 rounded-[2rem] bg-orange-500 text-white shadow-2xl shadow-orange-500/20 animate-bounce pointer-events-none z-20">
-            <p className="text-[10px] font-black uppercase tracking-tighter">Editing...</p>
+            <p className="text-[10px] font-bold tracking-tight">Editing...</p>
           </div>
         )}
       </div>

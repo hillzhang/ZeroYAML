@@ -35,7 +35,7 @@ export function Checkbox({ checked, onChange, label, className = "", theme = 'bl
         <Check className={`w-3 h-3 text-white transition-all duration-300 ${checked ? 'scale-110 opacity-100' : 'scale-75 opacity-0'}`} strokeWidth={4} />
       </div>
       {label && (
-        <span className={`text-[11px] font-black uppercase tracking-widest transition-colors duration-300 ${checked ? themes[theme].split(' ').pop() : 'text-gray-500 dark:text-gray-400 group-hover:text-blue-500'}`}>
+        <span className={`text-[11px] font-bold tracking-tight transition-colors duration-300 ${checked ? themes[theme].split(' ').pop() : 'text-gray-500 dark:text-gray-400 group-hover:text-blue-500'}`}>
           {label}
         </span>
       )}

@@ -8,7 +8,7 @@ import { Checkbox } from '@/components/ui/Checkbox';
 import {
   Layers, Server, RefreshCw, Clock, Database, Network, Box, Terminal,
   ChevronDown, Plus, Trash2, Globe, Shield, Cpu, Tag, Activity, KeyRound, FileText, ListTree,
-  HardDrive, Link, Check, ShieldCheck, UserCheck, Settings2, Zap, ArrowRightLeft,
+  HardDrive, Link, Check, ShieldCheck, UserCheck, Settings2, Zap, ArrowRightLeft, Rocket,
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -16,7 +16,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 // ── Shared styles ────────────────────────────────────────────────────────────
 const inp = "w-full bg-white dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-xl py-2 px-4 text-sm font-bold focus:outline-none focus:border-blue-500 focus:ring-4 ring-blue-500/5 transition-all text-gray-900 dark:text-gray-100 placeholder:text-gray-400 shadow-sm hover:border-gray-300 dark:hover:border-gray-700 h-[42px]";
 const inpSm = "w-full bg-white dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-xl py-1.5 px-3 text-[13px] font-bold focus:outline-none focus:border-blue-500 focus:ring-4 ring-blue-500/5 transition-all text-gray-900 dark:text-gray-100 placeholder:text-gray-400 shadow-sm hover:border-gray-300 dark:hover:border-gray-700 h-[36px]";
-const btnSm = "flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all font-bold uppercase tracking-wider shadow-sm hover:scale-105 active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-900";
+const btnSm = "flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all font-bold tracking-tight shadow-sm hover:scale-105 active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-900";
 const card = "p-4 border border-gray-200 dark:border-gray-800 rounded-[1.5rem] cursor-pointer hover:border-blue-400 dark:hover:border-blue-600 transition-all bg-white dark:bg-[#0D1117] shadow-sm";
 const cardActive = "p-4 border-2 border-blue-500 bg-blue-50/50 dark:bg-blue-900/20 rounded-[1.5rem] shadow-lg shadow-blue-500/10";
 
@@ -45,8 +45,8 @@ function Section({ title, icon, children, defaultOpen = false, theme = "blue", b
             <div className={th.icon}>{icon}</div>
           </div>
           <div>
-            <p className="text-base font-black text-gray-800 dark:text-gray-100 uppercase tracking-[0.15em]">{title}</p>
-            {badge && <span className={`mt-1 inline-block px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-widest border ${th.badge}`}>{badge}</span>}
+            <p className="text-base font-bold text-gray-800 dark:text-gray-100 tracking-tight transition-colors">{title}</p>
+            {badge && <span className={`mt-1 inline-block px-2.5 py-1 rounded-full text-xs font-bold tracking-normal border transition-colors ${th.badge}`}>{badge}</span>}
           </div>
         </div>
         <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-500 ${open ? 'rotate-180' : ''}`} />
@@ -61,7 +61,7 @@ function ProbeEditor({ label, probe, onChange }: { label: string; probe: K8sProb
   const { t } = useTranslation();
   return (
     <div className={`p-4 border rounded-[1.2rem] transition-all duration-300 shadow-sm ${probe.enabled ? 'border-blue-500/30 dark:border-blue-500/40 bg-blue-50/40 dark:bg-blue-900/10 shadow-blue-500/5' : 'border-gray-100 dark:border-gray-800 bg-white dark:bg-black/20 hover:border-gray-200 dark:hover:border-gray-700'}`}>
-      <Checkbox checked={probe.enabled} onChange={v => onChange('enabled', v)} label={label.toUpperCase()} className="tracking-widest font-black" />
+      <Checkbox checked={probe.enabled} onChange={v => onChange('enabled', v)} label={label} className="tracking-tight font-bold" />
       {probe.enabled && (
         <div className="mt-4 pl-4 border-l-2 border-blue-500/20 dark:border-blue-500/30 space-y-4">
           <div className="flex gap-2 flex-wrap">
@@ -71,7 +71,7 @@ function ProbeEditor({ label, probe, onChange }: { label: string; probe: K8sProb
                 <button
                   key={t}
                   onClick={() => onChange('type', t)}
-                  className={`px-3 py-1 text-[10px] rounded-full font-black uppercase tracking-wider transition-all duration-300 shadow-sm
+                  className={`px-3 py-1 text-[10px] rounded-full font-bold tracking-normal transition-all duration-300 shadow-sm
                     ${isActive
                       ? 'bg-blue-600 border-blue-600 text-white scale-105 shadow-blue-500/20'
                       : 'bg-gray-50 dark:bg-black/40 border border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:border-blue-300 dark:hover:border-blue-700 hover:text-blue-500'}`}
@@ -86,30 +86,30 @@ function ProbeEditor({ label, probe, onChange }: { label: string; probe: K8sProb
             {probe.type === 'httpGet' && (
               <div className="flex gap-3">
                 <div className="flex-[3]">
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">Path</p>
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">Path</p>
                   <input type="text" value={probe.path} onChange={e => onChange('path', e.target.value)} className={`${inpSm} font-mono`} placeholder="/healthz" />
                 </div>
                 <div className="flex-1 min-w-[80px]">
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">Port</p>
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">Port</p>
                   <input type="text" value={probe.port} onChange={e => onChange('port', e.target.value)} className={`${inpSm} font-mono`} placeholder="8080" />
                 </div>
               </div>
             )}
             {probe.type === 'tcpSocket' && (
               <div className="w-32">
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">Port</p>
+                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">Port</p>
                 <input type="text" value={probe.port} onChange={e => onChange('port', e.target.value)} className={`${inpSm} font-mono`} placeholder="3000" />
               </div>
             )}
             {probe.type === 'exec' && (
               <div>
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">Command</p>
+                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">Command</p>
                 <input type="text" value={probe.command} onChange={e => onChange('command', e.target.value)} className={`${inpSm} font-mono`} placeholder="cat /tmp/ready" />
               </div>
             )}
             {probe.type === 'grpc' && (
               <div className="w-32">
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">Port</p>
+                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">Port</p>
                 <input type="text" value={probe.port} onChange={e => onChange('port', e.target.value)} className={`${inpSm} font-mono`} placeholder="50051" />
               </div>
             )}
@@ -123,14 +123,16 @@ function ProbeEditor({ label, probe, onChange }: { label: string; probe: K8sProb
               ['failureThreshold', t.k8s.failureThreshold],
               ['successThreshold', t.k8s.successThreshold]
             ].map(([k, l]) => (
-              <div key={k}>
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{l}</p>
+              <div key={k} className="flex flex-col">
+                <div className="h-9 flex items-end mb-2 ml-1">
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-tight leading-tight">{l}</p>
+                </div>
                 <input
                   type="number"
                   min="1"
                   value={(probe as any)[k]}
                   onChange={e => onChange(k as keyof K8sProbe, parseInt(e.target.value) || 1)}
-                  className={`${inpSm} font-mono h-8 text-center`}
+                  className={`${inpSm} !h-9 font-mono text-center shadow-inner`}
                 />
               </div>
             ))}
@@ -143,10 +145,10 @@ function ProbeEditor({ label, probe, onChange }: { label: string; probe: K8sProb
 
 // ── Resource Selector (Select + Manual Input Toggle) ─────────────────────────
 function ResourceSelector({
-  label, value, onChange, options, placeholder, manualPlaceholder, className = "", inputClassName = inpSm
+  label, value, onChange, options, placeholder, manualPlaceholder, className = "", inputClassName = inpSm, unit
 }: {
   label: string; value: string; onChange: (v: string) => void; options: { id: string; name: string; info?: string }[];
-  placeholder?: string; manualPlaceholder?: string; className?: string; inputClassName?: string;
+  placeholder?: string; manualPlaceholder?: string; className?: string; inputClassName?: string; unit?: string;
 }) {
   const { t } = useTranslation();
   const [isManual, setIsManual] = useState(() => {
@@ -157,27 +159,32 @@ function ResourceSelector({
   return (
     <div className={`space-y-1.5 ${className}`}>
       <div className="flex justify-between items-center px-1 h-5">
-        <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1">{label}</p>
+        <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1">{label}</p>
         <button
           type="button"
           onClick={() => setIsManual(!isManual)}
           className="text-[11px] text-blue-600 dark:text-blue-400 font-bold flex items-center gap-1 transition-all hover:translate-x-0.5 active:scale-95"
         >
           {isManual ? <ListTree className="w-3 h-3" /> : <FileText className="w-3 h-3" />}
-          {isManual ? t.k8s.listSelect.toUpperCase() : t.k8s.manualInput.toUpperCase()}
+          {isManual ? t.k8s.listSelect : t.k8s.manualInput}
         </button>
       </div>
-      <div className="relative group">
-        {isManual ? (
-          <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={manualPlaceholder || t.k8s.manualPlaceholder} className={`${inputClassName} font-mono`} />
-        ) : (
-          <>
-            <select value={value} onChange={e => onChange(e.target.value)} className={`${inputClassName} font-bold appearance-none pr-8`}>
-              <option value="">{placeholder || t.common.selectPlaceholder}</option>
-              {options.map(o => <option key={o.id} value={o.name}>{o.name}{o.info ? ` (${o.info})` : ''}</option>)}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500 pointer-events-none transition-colors" />
-          </>
+      <div className="relative group flex items-center gap-1.5">
+        <div className="flex-1 relative">
+          {isManual ? (
+            <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder={manualPlaceholder || t.k8s.manualPlaceholder} className={`${inputClassName} font-mono`} />
+          ) : (
+            <>
+              <select value={value} onChange={e => onChange(e.target.value)} className={`${inputClassName} font-bold appearance-none pr-8`}>
+                <option value="">{placeholder || t.common.selectPlaceholder}</option>
+                {options.map(o => <option key={o.id} value={o.name}>{o.name}{o.info ? ` (${o.info})` : ''}</option>)}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 group-hover:text-blue-500 pointer-events-none transition-colors" />
+            </>
+          )}
+        </div>
+        {unit && (
+          <span className="text-[10px] font-bold text-gray-400 dark:text-gray-600 px-1.5 py-0.5 rounded bg-gray-100 dark:bg-black/20 border border-gray-200 dark:border-gray-800 transition-colors">{unit}</span>
         )}
       </div>
     </div>
@@ -218,18 +225,18 @@ const MetadataGroup = ({ title, items, onAdd, onUpdate, onRemove, colorTheme = "
           <div className="p-1.5 rounded-lg bg-white dark:bg-gray-900 shadow-sm">
             <Icon className={`w-3.5 h-3.5 ${textColor} ${labelPrefix.includes('Pod') ? 'animate-pulse' : ''}`} />
           </div>
-          <p className={`text-[12px] font-black uppercase tracking-[0.2em] ml-1 text-gray-600 dark:text-gray-300`}>{title}</p>
+          <p className={`text-[12px] font-bold tracking-normal ml-1 text-gray-600 dark:text-gray-300`}>{title}</p>
         </div>
-        <span className="text-xs bg-white dark:bg-black/40 text-gray-700 dark:text-gray-200 px-3 py-1 rounded-full font-black border border-gray-200 dark:border-gray-800 shadow-sm">{items.length}</span>
+        <span className="text-xs bg-white dark:bg-black/40 text-gray-700 dark:text-gray-200 px-3 py-1 rounded-full font-bold border border-gray-200 dark:border-gray-800 shadow-sm">{items.length}</span>
       </div>
 
       <div className="space-y-2.5">
         {items.map((it: any, i: number) => (
           <div key={i} className="flex gap-2 group animate-in fade-in slide-in-from-left-2 duration-300">
-            <input type="text" placeholder="KEY..." value={it.key}
+            <input type="text" placeholder="Key..." value={it.key}
               onChange={e => onUpdate(items.map((x: any, idx: number) => idx === i ? { ...x, key: e.target.value } : x))}
               className={`${inpSm} font-mono !bg-white dark:!bg-[#161B22] border-gray-100 dark:border-gray-800 shadow-inner`} />
-            <input type="text" placeholder="VALUE..." value={it.value}
+            <input type="text" placeholder="Value..." value={it.value}
               onChange={e => onUpdate(items.map((x: any, idx: number) => idx === i ? { ...x, value: e.target.value } : x))}
               className={`${inpSm} font-mono !bg-white dark:!bg-[#161B22] border-gray-100 dark:border-gray-800 shadow-inner`} />
             <button onClick={() => onRemove(items.filter((_: any, idx: number) => idx !== i))}
@@ -239,7 +246,7 @@ const MetadataGroup = ({ title, items, onAdd, onUpdate, onRemove, colorTheme = "
           </div>
         ))}
         <button onClick={() => onAdd([...items, { key: '', value: '' }])}
-          className={`w-full py-2 border-2 border-dashed rounded-[1.2rem] text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-1.5 mt-2
+          className={`w-full py-2 border-2 border-dashed rounded-[1.2rem] text-[10px] font-bold tracking-normal transition-all flex items-center justify-center gap-1.5 mt-2
             ${colorTheme === 'blue' ? 'border-blue-100 dark:border-blue-900/50 text-blue-500 hover:bg-blue-50/50' :
               colorTheme === 'teal' ? 'border-teal-100 dark:border-teal-900/50 text-teal-500 hover:bg-teal-50/50' :
                 colorTheme === 'indigo' ? 'border-indigo-100 dark:border-indigo-900/50 text-indigo-500 hover:bg-indigo-50/50' :
@@ -307,11 +314,11 @@ function MetadataEditor(props: MetadataEditorProps & { theme?: string }) {
           <div className={`p-1.5 rounded-lg bg-white dark:bg-gray-900 shadow-sm ${open ? 'animate-bounce-subtle' : ''}`}>
             <Tag className={`w-4 h-4 ${th.icon}`} />
           </div>
-          <span className={`text-xs font-black uppercase tracking-widest ${open ? th.text : 'text-gray-600 dark:text-gray-400'}`}>
-            {t.common.metadata.toUpperCase()}
+          <span className={`text-xs font-bold tracking-normal ${open ? th.text : 'text-gray-600 dark:text-gray-400'}`}>
+            {t.common.metadata}
           </span>
           {itemCount > 0 && (
-            <span className={`${th.dot} text-white text-[10px] px-2 py-0.5 rounded-full font-black shadow-sm`}>
+            <span className={`${th.dot} text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm`}>
               {itemCount}
             </span>
           )}
@@ -338,19 +345,19 @@ const EnvItem = ({ e, i, wlId, updateWorkloadEnv, removeWorkloadEnv, configMaps,
       <div className="grid grid-cols-[1fr_20px_1.5fr_100px_32px] gap-2.5 items-center">
         {/* Key input */}
         <div className="relative group">
-          <p className="absolute -top-4 left-1 text-[9px] font-black text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity uppercase">KEY</p>
-          <input type="text" placeholder="KEY" value={e.name}
+          <p className="absolute -top-4 left-1 text-[9px] font-bold text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity">Key</p>
+          <input type="text" placeholder="Key" value={e.name}
             onChange={ev => upE({ name: ev.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_') })}
-            className={`${inpSm} font-black font-mono text-[11px] !bg-gray-50/50 dark:!bg-black/20 border-transparent focus:border-blue-500`} />
+            className={`${inpSm} font-bold font-mono text-[11px] !bg-gray-50/50 dark:!bg-black/20 border-transparent focus:border-blue-500`} />
         </div>
 
-        <div className="text-center text-gray-300 dark:text-gray-700 font-black text-xs">=</div>
+        <div className="text-center text-gray-300 dark:text-gray-700 font-bold text-xs">=</div>
 
         {/* Value / Reference input */}
         <div className="relative group min-w-0">
-          <p className="absolute -top-4 left-1 text-[9px] font-black text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity uppercase">VALUE</p>
+          <p className="absolute -top-4 left-1 text-[9px] font-bold text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity">Value</p>
           {e.type === 'value' ? (
-            <input type="text" placeholder="VALUE" value={e.value}
+            <input type="text" placeholder="Value" value={e.value}
               onChange={ev => upE({ value: ev.target.value })}
               className={`${inpSm} font-mono !bg-white dark:!bg-gray-900 border-gray-200 dark:border-gray-800 shadow-inner`} />
           ) : (
@@ -396,7 +403,7 @@ const EnvItem = ({ e, i, wlId, updateWorkloadEnv, removeWorkloadEnv, configMaps,
           <select
             value={e.type}
             onChange={ev => upE({ type: ev.target.value as any, value: '', refName: '', refKey: '' })}
-            className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl font-black uppercase text-[10px] h-9 pl-3 pr-8 appearance-none cursor-pointer shadow-sm hover:border-blue-400 dark:hover:border-blue-900/60 focus:outline-none focus:ring-4 focus:ring-blue-500/5 transition-all"
+            className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl font-bold text-[10px] h-9 pl-3 pr-8 appearance-none cursor-pointer shadow-sm hover:border-blue-400 dark:hover:border-blue-900/60 focus:outline-none focus:ring-4 focus:ring-blue-500/5 transition-all"
           >
             <option value="value">Static</option>
             <option value="configMapKeyRef">Config</option>
@@ -419,7 +426,7 @@ const EnvItem = ({ e, i, wlId, updateWorkloadEnv, removeWorkloadEnv, configMaps,
 const EnvFromItem = ({ ef, i, wlId, updateWorkloadEnvFrom, removeWorkloadEnvFrom, configMaps, secrets, t, inpSm }: any) => {
   return (
     <div key={ef.id} className="p-4 bg-gray-50/30 dark:bg-black/20 border border-gray-100 dark:border-gray-800 rounded-2xl space-y-3 transition-colors hover:border-blue-100 dark:hover:border-blue-900/30">
-      <div className="flex justify-between items-center text-[10px] font-black text-gray-400 uppercase tracking-widest px-1">
+      <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 tracking-normal px-1">
         <div className="flex items-center gap-2">
           <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
           EnvFrom
@@ -434,7 +441,7 @@ const EnvFromItem = ({ ef, i, wlId, updateWorkloadEnvFrom, removeWorkloadEnvFrom
           <select
             value={ef.type}
             onChange={ev => updateWorkloadEnvFrom(wlId, i, { type: ev.target.value as any, name: '' })}
-            className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl font-black uppercase text-[10px] h-9 pl-2 pr-6 appearance-none cursor-pointer shadow-sm hover:border-blue-400 dark:hover:border-blue-900/60 focus:outline-none transition-all"
+            className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl font-bold text-[10px] h-9 pl-2 pr-6 appearance-none cursor-pointer shadow-sm hover:border-blue-400 dark:hover:border-blue-900/60 focus:outline-none transition-all"
           >
             <option value="configMap">ConfigMap</option>
             <option value="secret">Secret</option>
@@ -458,9 +465,9 @@ const EnvFromItem = ({ ef, i, wlId, updateWorkloadEnvFrom, removeWorkloadEnvFrom
         </div>
 
         <div className="relative group">
-          <p className="absolute -top-3.5 left-1 text-[8px] font-black text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity uppercase">PREFIX</p>
+          <p className="absolute -top-3.5 left-1 text-[8px] font-bold text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity">Prefix</p>
           <input type="text" placeholder="PREFIX_" value={ef.prefix}
-            onChange={ev => updateWorkloadEnvFrom(wlId, i, { prefix: ev.target.value.toUpperCase() })}
+            onChange={ev => updateWorkloadEnvFrom(wlId, i, { prefix: ev.target.value })}
             className={`${inpSm} !bg-white dark:!bg-[#0D1117] font-mono text-[10px] border-none shadow-sm`} />
         </div>
       </div>
@@ -485,10 +492,12 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
   const isCronJob = wl.workloadType === 'CronJob';
   const isDaemon = wl.workloadType === 'DaemonSet';
   const isSts = wl.workloadType === 'StatefulSet';
+  const isJob = wl.workloadType === 'Job';
 
   const WORKLOAD_ICONS: Record<string, React.ReactNode> = {
     Deployment: <Layers className="w-4 h-4" />, StatefulSet: <Server className="w-4 h-4" />,
     DaemonSet: <RefreshCw className="w-4 h-4" />, CronJob: <Clock className="w-4 h-4" />,
+    Job: <Activity className="w-4 h-4" />,
   };
 
   return (
@@ -496,8 +505,8 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
       {/* Workload Editor Card */}
       <div className="border-2 border-blue-100 dark:border-blue-900/30 rounded-2xl p-5 space-y-6 bg-white dark:bg-[#0E1117] shadow-xl shadow-blue-500/5 transition-all animate-in fade-in slide-in-from-top-4 duration-500">
         <div className="flex items-center justify-between pb-2 border-b border-blue-50 dark:border-blue-900/20">
-          <p className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest flex items-center gap-2">
-            <Settings2 className="w-4 h-4 ml-1" /> {t.k8s.workload}: {wl.appName || `(${t.tabs.preview.toUpperCase()})`}
+          <p className="text-xs font-bold text-blue-600 dark:text-blue-400 tracking-normal flex items-center gap-2">
+            <Settings2 className="w-4 h-4 ml-1" /> {t.k8s.workload}: {wl.appName || `(${t.tabs.preview})`}
           </p>
           <div className="flex gap-1">
             <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></div>
@@ -505,57 +514,96 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
           </div>
         </div>
 
-        {/* Workload Type */}
-        <div className="grid grid-cols-4 gap-2">
-          {(['Deployment', 'StatefulSet', 'DaemonSet', 'CronJob'] as const).map(t => (
-            <button key={t} onClick={() => up({ workloadType: t })}
-              className={`flex flex-col items-center gap-1 p-2 border-2 rounded-xl text-xs font-medium transition ${wl.workloadType === t ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400' : 'border-gray-200 dark:border-gray-700 text-gray-500'}`}>
-              {WORKLOAD_ICONS[t]}{t}
-            </button>
-          ))}
-        </div>
-
-        {/* Basic */}
         <Section title={t.k8s.basic} icon={<Box className="w-4 h-4" />} theme="blue" badge={t.k8s.badges.core}>
-          <div className="grid grid-cols-2 gap-6">
-            <div className="relative group">
-              <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">{t.k8s.appName}</p>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-5">
+            {/* Row 1: Identity */}
+            <div className="space-y-1.5">
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center group-hover:text-blue-500 transition-all">{t.k8s.appName}</p>
               <input type="text" value={wl.appName}
-                onChange={e => up({ appName: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ appName: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
                 className={inp} placeholder="my-app" />
             </div>
-            <div className="relative group">
-              <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">{t.k8s.namespace}</p>
-              <input type="text" value={wl.namespace} onChange={e => up({ namespace: e.target.value })} className={inp} />
+            <div className="space-y-1.5">
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center group-hover:text-blue-500 transition-all">{t.k8s.namespace}</p>
+              <input type="text" value={wl.namespace} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ namespace: e.target.value })} className={inp} placeholder="default" />
             </div>
-            <div className="col-span-2 relative group mt-2">
-              <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">{t.k8s.image.toUpperCase()}</p>
-              <input type="text" value={wl.image} onChange={e => up({ image: e.target.value })} className={inp} placeholder="nginx:alpine" />
-            </div>
-            {!isDaemon && !isCronJob && (
-              <div className="grid grid-cols-2 gap-6 col-span-2">
-                <div className="space-y-1.5">
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center group-hover:text-blue-500 transition-all">{t.k8s.replicas}</p>
-                  <input type="number" min="1" value={wl.replicas} onChange={e => up({ replicas: parseInt(e.target.value) || 1 })} className={inp} />
+
+            {/* Row 2: Deployment Blueprint (Image & Secret) */}
+            <div className="col-span-2 p-5 bg-blue-50/20 dark:bg-blue-900/5 rounded-[1.5rem] border border-blue-100/50 dark:border-blue-900/20 grid grid-cols-2 gap-5 shadow-sm">
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center px-1 h-5">
+                  <p className="text-[12px] font-bold text-blue-700 dark:text-blue-400 tracking-normal ml-1 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" />{t.k8s.image}</p>
                 </div>
-                <div>
-                  <ResourceSelector
-                    label={t.k8s.imagePullSecrets.toUpperCase()}
-                    value={wl.imagePullSecrets?.[0]?.name || ''}
-                    inputClassName={inp}
-                    onChange={val => up({ imagePullSecrets: val ? [{ name: val }] : [] })}
-                    options={[
-                      ...secrets.filter(s => s.secretType === 'kubernetes.io/dockerconfigjson').map(s => ({ id: s.id, name: s.name, info: 'Repository Auth' })),
-                      ...secrets.filter(s => s.secretType !== 'kubernetes.io/dockerconfigjson').map(s => ({ id: s.id, name: s.name }))
-                    ]}
-                    placeholder={`-- ${t.storage.secret.toUpperCase()} --`}
-                    manualPlaceholder={t.k8s.secret}
-                  />
+                <input type="text" value={wl.image} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ image: e.target.value })} className={inp + " !bg-white dark:!bg-[#0D1117]"} placeholder="nginx:alpine" />
+              </div>
+              
+              <ResourceSelector
+                label={t.k8s.imagePullSecrets}
+                value={wl.imagePullSecrets?.[0]?.name || ''}
+                inputClassName={inp + " !bg-white dark:!bg-[#0D1117]"}
+                onChange={(val: string) => up({ imagePullSecrets: val ? [{ name: val }] : [] })}
+                options={[
+                  ...secrets.filter(s => s.secretType === 'kubernetes.io/dockerconfigjson').map(s => ({ id: s.id, name: s.name, info: 'Repository Auth' })),
+                  ...secrets.filter(s => s.secretType !== 'kubernetes.io/dockerconfigjson').map(s => ({ id: s.id, name: s.name }))
+                ]}
+                placeholder={`-- ${t.storage.secret} --`}
+                manualPlaceholder={t.k8s.secret}
+              />
+            </div>
+
+            {/* Row 3: Performance & Scaling */}
+            <div className="col-span-2 grid grid-cols-[1fr_1fr_1.5fr] gap-6">
+              {isCronJob ? (
+                <div className="space-y-1.5">
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">Cron Schedule</p>
+                  <input type="text" value={wl.schedule} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ schedule: e.target.value })} className={inp + " font-mono"} placeholder="0 * * * *" />
+                </div>
+              ) : isJob ? (
+                <div className="space-y-1.5">
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">Successful Limit</p>
+                  <input type="number" value={wl.successfulJobsHistoryLimit} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ successfulJobsHistoryLimit: parseInt(e.target.value) || 3 })} className={inp} />
+                </div>
+              ) : !isDaemon ? (
+                <div className="space-y-1.5">
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.replicas}</p>
+                  <input type="number" min="1" value={wl.replicas} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ replicas: parseInt(e.target.value) || 1 })} className={inp} />
+                </div>
+              ) : <div />}
+
+              <div className="space-y-1.5">
+                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.containerPort}</p>
+                <input type="text" value={wl.containerPort} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ containerPort: e.target.value })} className={inp} placeholder="80" />
+              </div>
+
+              <div className="space-y-1.5">
+                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.pullPolicy}</p>
+                <select value={wl.imagePullPolicy} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => up({ imagePullPolicy: e.target.value as any })} className={inp}>
+                  <option value="IfNotPresent">{t.k8s.ifNotPresent}</option>
+                  <option value="Always">{t.k8s.always}</option>
+                  <option value="Never">{t.k8s.never}</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Specialized Batch Policies Row */}
+            {(isCronJob || isJob) && (
+              <div className="col-span-2 grid grid-cols-2 gap-x-6 pt-2">
+                {isCronJob && (
+                  <div className="space-y-1.5">
+                     <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">Concurrency</p>
+                     <select value={wl.concurrencyPolicy} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => up({ concurrencyPolicy: e.target.value as any })} className={inp}>
+                       <option value="Allow">Allow</option><option value="Forbid">Forbid</option><option value="Replace">Replace</option>
+                     </select>
+                  </div>
+                )}
+                <div className="space-y-1.5">
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">Restart Policy</p>
+                  <select value={wl.restartPolicy} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => up({ restartPolicy: e.target.value as any })} className={inp}>
+                    <option value="OnFailure">OnFailure</option><option value="Never">Never</option>
+                  </select>
                 </div>
               </div>
             )}
-            <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.k8s.containerPort.toUpperCase()}</p><input type="text" value={wl.containerPort} onChange={e => up({ containerPort: e.target.value })} className={inp} /></div>
-            <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.k8s.pullPolicy.toUpperCase()}</p><select value={wl.imagePullPolicy} onChange={e => up({ imagePullPolicy: e.target.value as any })} className={inp}><option value="IfNotPresent">{t.k8s.ifNotPresent}</option><option value="Always">{t.k8s.always}</option><option value="Never">{t.k8s.never}</option></select></div>
           </div>
 
           <div className="mt-4 p-3 bg-blue-50/30 dark:bg-blue-900/10 rounded-xl border border-blue-100/50 dark:border-blue-900/30">
@@ -563,7 +611,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               <div className="flex flex-wrap items-center gap-3">
                 <div className="flex items-center gap-2">
                   <Terminal className="w-4 h-4 text-blue-500" />
-                  <span className="text-xs font-black text-blue-700 dark:text-blue-400 uppercase tracking-wider">{t.k8s.exec}</span>
+                  <span className="text-xs font-bold text-blue-700 dark:text-blue-400 tracking-normal">{t.k8s.exec}</span>
                 </div>
 
                 <label className="flex items-center gap-2 px-2 py-1 bg-yellow-50/50 dark:bg-yellow-900/10 border border-yellow-200/50 dark:border-yellow-800/30 rounded-full cursor-pointer hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors group">
@@ -584,75 +632,66 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
-              {/* Connecting Plus Icon */}
-              <div className="hidden md:flex items-center justify-center absolute left-1/2 top-[31px] -translate-x-1/2 -translate-y-1/2 z-10">
-                <div className="w-5 h-5 rounded-full bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800 shadow-lg flex items-center justify-center ring-4 ring-blue-500/5 transition-transform hover:scale-110">
+            <div className="grid grid-cols-[1fr_40px_1fr] items-start gap-y-1.5 mt-2">
+              {/* Labels Row */}
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-1.5">
+                  <Shield className="w-3.5 h-3.5 text-blue-500" />
+                  <span className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">{t.k8s.command}</span>
+                </div>
+                <span className="text-[9px] font-bold text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">{t.k8s.entrypoint}</span>
+              </div>
+
+              <div /> {/* Spacer for icon row alignment */}
+
+              <div className="flex items-center justify-between px-1">
+                <div className="flex items-center gap-1.5">
+                  <Activity className="w-3.5 h-3.5 text-emerald-500" />
+                  <span className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">{t.k8s.args}</span>
+                </div>
+                <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">{t.k8s.cmd}</span>
+              </div>
+
+              {/* Inputs & Plus Icon Row */}
+              <input type="text" value={wl.command} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ command: e.target.value })}
+                placeholder="e.g. /usr/bin/python3"
+                className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-blue-200 dark:border-blue-800"} />
+
+              <div className="h-[42px] flex items-center justify-center">
+                <div className="w-6 h-6 rounded-full bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800 shadow-md flex items-center justify-center ring-4 ring-blue-500/5 transition-transform hover:scale-110">
                   <Plus className="w-3 h-3 text-blue-500 font-bold" />
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <div className="flex items-center justify-between mb-1.5 px-1">
-                  <div className="flex items-center gap-1.5">
-                    <Shield className="w-3.5 h-3.5 text-blue-500" />
-                    <span className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em]">{t.k8s.command}</span>
-                  </div>
-                  <span className="text-[9px] font-black text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">{t.k8s.entrypoint}</span>
-                </div>
-                <input
-                  type="text"
-                  value={wl.command}
-                  onChange={e => up({ command: e.target.value })}
-                  placeholder="e.g. /usr/bin/python3"
-                  className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-blue-200 dark:border-blue-800"}
-                />
-                <p className="text-[9px] text-gray-400 dark:text-gray-500 mt-0.5 pl-1 italic font-medium">{t.k8s.mapToEntrypoint}</p>
-              </div>
+              <input type="text" value={wl.args} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ args: e.target.value })}
+                placeholder="e.g. app.py --port 80"
+                className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-emerald-200 dark:border-emerald-800"} />
 
-              <div className="space-y-1">
-                <div className="flex items-center justify-between mb-1.5 px-1">
-                  <div className="flex items-center gap-1.5">
-                    <Activity className="w-3.5 h-3.5 text-emerald-500" />
-                    <span className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em]">{t.k8s.args}</span>
-                  </div>
-                  <span className="text-[9px] font-black text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">{t.k8s.cmd}</span>
-                </div>
-                <input
-                  type="text"
-                  value={wl.args}
-                  onChange={e => up({ args: e.target.value })}
-                  placeholder="e.g. app.py --port 80"
-                  className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-emerald-200 dark:border-emerald-800"}
-                />
-                <p className="text-[9px] text-emerald-600 dark:text-emerald-400 mt-0.5 pl-1 italic font-medium">{t.k8s.mapToCmd}</p>
-              </div>
+              {/* Helpers Row */}
+              <p className="text-[9px] text-gray-400 dark:text-gray-500 pl-1 italic font-medium">{t.k8s.mapToEntrypoint}</p>
+              <div />
+              <p className="text-[9px] text-emerald-600 dark:text-emerald-400 pl-1 italic font-medium">{t.k8s.mapToCmd}</p>
             </div>
           </div>
 
           {isSts && (
-            <div className="mt-2"><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.k8s.headlessService.toUpperCase()}</p><input type="text" value={wl.serviceName} onChange={e => up({ serviceName: e.target.value })} className={inp} /></div>
-          )}
-          {isCronJob && (
-            <div className="space-y-2 mt-2">
-              <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.k8s.schedule.toUpperCase()}</p><input type="text" value={wl.schedule} onChange={e => up({ schedule: e.target.value })} className={`${inp} font-mono`} /></div>
-              <div className="grid grid-cols-2 gap-2">
-                <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.k8s.concurrency.toUpperCase()}</p><select value={wl.concurrencyPolicy} onChange={e => up({ concurrencyPolicy: e.target.value as any })} className={inp}><option value="Forbid">Forbid</option><option value="Allow">Allow</option><option value="Replace">Replace</option></select></div>
-                <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.k8s.restartPolicy.toUpperCase()}</p><select value={wl.restartPolicy} onChange={e => up({ restartPolicy: e.target.value as any })} className={inp}><option value="OnFailure">OnFailure</option><option value="Never">Never</option></select></div>
-              </div>
+            <div className="mt-2">
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.k8s.headlessService}</p>
+              <input type="text" value={wl.serviceName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ serviceName: e.target.value })} className={inp} />
             </div>
           )}
+
         </Section>
 
         {/* Metadata */}
         <Section title={t.common.metadata} icon={<Tag className="w-4 h-4" />} theme="teal" badge={t.k8s.badges.metadata} defaultOpen={false}>
           <MetadataEditorContent
             labels={wl.labels} annotations={wl.annotations}
-            onUpdateLabels={(v: any) => up({ labels: v })}
-            onUpdateAnnotations={(v: any) => up({ annotations: v })}
+            onUpdateLabels={(v: K8sEnv[]) => up({ labels: v })}
+            onUpdateAnnotations={(v: K8sEnv[]) => up({ annotations: v })}
             podLabels={wl.podLabels} podAnnotations={wl.podAnnotations}
-            onUpdatePodLabels={(v: any) => up({ podLabels: v })}
-            onUpdatePodAnnotations={(v: any) => up({ podAnnotations: v })}
+            onUpdatePodLabels={(v: K8sEnv[]) => up({ podLabels: v })}
+            onUpdatePodAnnotations={(v: K8sEnv[]) => up({ podAnnotations: v })}
             theme="teal"
           />
         </Section>
@@ -677,15 +716,15 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
 
               return (
                 <div key={field.key}>
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">
-                    {field.label.toUpperCase()}
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                    {field.label}
                   </p>
                   <div className="flex gap-1.5 items-stretch h-[36px]">
                     <input
                       type="text"
                       placeholder="NUM..."
                       value={numPart}
-                      onChange={e => up({ [field.key]: e.target.value + unitPart })}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ [field.key]: e.target.value + unitPart })}
                       className={`${inp} flex-1 !h-full`}
                     />
                     <div className="relative group min-w-[75px]">
@@ -731,15 +770,15 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               />
             ))}
           </div>
-          <button onClick={() => addWorkloadEnv(wl.id)} className="w-full mt-4 py-3 border-2 border-dashed border-teal-100 dark:border-teal-900/40 text-teal-600 dark:text-teal-400 rounded-2xl text-xs font-black tracking-wider hover:bg-teal-50/50 hover:border-teal-300 transition-all flex items-center justify-center gap-2">
+          <button onClick={() => addWorkloadEnv(wl.id)} className="w-full mt-4 py-3 border-2 border-dashed border-teal-100 dark:border-teal-900/40 text-teal-600 dark:text-teal-400 rounded-2xl text-xs font-bold tracking-normal hover:bg-teal-50/50 hover:border-teal-300 transition-all flex items-center justify-center gap-2">
             <Plus className="w-4 h-4" /> {t.common.add} {t.common.env}
           </button>
 
           <div className="pt-6 border-t border-gray-100 dark:border-gray-800 mt-6 md:p-6 transition-all duration-300">
-              <p className="text-[10px] font-black text-gray-500 dark:text-gray-400 tracking-wider flex items-center gap-2">
-                <ListTree className="w-3.5 h-3.5 text-blue-500" />
-                envFrom ({t.tabs.preview})
-              </p>
+            <p className="text-[10px] font-bold text-gray-500 dark:text-gray-400 tracking-normal flex items-center gap-2">
+              <ListTree className="w-3.5 h-3.5 text-blue-500" />
+              envFrom ({t.tabs.preview})
+            </p>
 
             <div className="space-y-3">
               {(wl.envFrom || []).map((ef, i) => (
@@ -758,7 +797,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               ))}
             </div>
             <button onClick={() => addWorkloadEnvFrom(wl.id)}
-              className="w-full mt-4 py-3 border-2 border-dashed border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 rounded-2xl text-xs font-black tracking-wider hover:bg-blue-50/10 dark:hover:bg-blue-900/10 transition-all flex items-center justify-center gap-2">
+              className="w-full mt-4 py-3 border-2 border-dashed border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 rounded-2xl text-xs font-bold tracking-normal hover:bg-blue-50/10 dark:hover:bg-blue-900/10 transition-all flex items-center justify-center gap-2">
               <Plus className="w-4 h-4" /> {t.common.add} envFrom
             </button>
           </div>
@@ -769,24 +808,24 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
           <div className="space-y-3">
             {wl.volumeMounts.map(v => (
               <div key={v.id} className="p-3 bg-gray-50 dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-lg space-y-3">
-                <div className="flex justify-between items-center text-xs font-bold text-gray-500 dark:text-gray-300 uppercase">
+                <div className="flex justify-between items-center text-xs font-bold text-gray-500 dark:text-gray-300">
                   <div className="flex items-center gap-2"><Box className="w-4 h-4 text-indigo-500" />VOLUME MOUNT</div>
                   <button onClick={() => removeWorkloadVol(wl.id, v.id)} className="text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight mb-1 ml-1">{t.storage.volumeName.toUpperCase()}</p>
+                    <p className="text-xs font-bold text-gray-500 dark:text-gray-400 tracking-tight mb-1 ml-1">{t.storage.volumeName}</p>
                     <input type="text" placeholder="data-vol" value={v.name} onChange={e => updateWorkloadVol(wl.id, v.id, { name: e.target.value })} className={inpSm} />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-tight mb-1 ml-1">{t.storage.mountPath.toUpperCase()}</p>
+                    <p className="text-xs font-bold text-gray-500 dark:text-gray-400 tracking-tight mb-1 ml-1">{t.storage.mountPath}</p>
                     <input type="text" placeholder="/data" value={v.mountPath} onChange={e => updateWorkloadVol(wl.id, v.id, { mountPath: e.target.value })} className={inpSm} />
                   </div>
 
                   <div className="space-y-1.5">
-                    <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center">
-                      {t.storage.storageSource.toUpperCase()}
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
+                      {t.storage.storageSource}
                     </p>
                     <div className="relative group">
                       <select value={v.sourceType}
@@ -805,7 +844,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                   <div className="space-y-1.5">
                     {['pvc', 'configMap', 'secret'].includes(v.sourceType) ? (
                       <ResourceSelector
-                        label={t.k8s.bindResource.toUpperCase()}
+                        label={t.k8s.bindResource}
                         value={v.resourceRef}
                         onChange={val => updateWorkloadVol(wl.id, v.id, { resourceRef: val })}
                         options={(v.sourceType === 'pvc' ? pvcs : v.sourceType === 'configMap' ? configMaps : secrets).map(r => ({ id: r.id, name: r.name }))}
@@ -814,7 +853,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                       />
                     ) : (
                       <div className="space-y-1.5">
-                        <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center">{t.k8s.path.toUpperCase()}</p>
+                        <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.path}</p>
                         <input type="text"
                           placeholder={v.sourceType === 'hostPath' ? "Absolute host path (e.g. /var/data)" : "No resource required"}
                           disabled={v.sourceType === 'emptyDir'}
@@ -831,7 +870,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
 
                   {(v.sourceType === 'configMap' || v.sourceType === 'secret') && (
                     <div className="flex-1 flex items-center gap-2 pl-4 border-l border-gray-200 dark:border-gray-800 overflow-hidden">
-                      <span className="text-[12px] text-gray-600 dark:text-gray-300 font-black uppercase tracking-[0.2em]">SUBPATH / KEY:</span>
+                      <span className="text-[12px] text-gray-600 dark:text-gray-300 font-bold tracking-normal">SUBPATH / KEY:</span>
                       {(() => {
                         const res = (v.sourceType === 'configMap' ? configMaps : secrets).find(r => r.name === v.resourceRef);
                         const keys = res?.data.map(d => d.key) || [];
@@ -869,9 +908,9 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
         {/* Security */}
         <Section title={t.k8s.security} icon={<Shield className="w-4 h-4" />} theme="purple" badge={t.k8s.badges.security} defaultOpen={false}>
           <div className="grid grid-cols-3 gap-2">
-            <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">runAsUser</p><input type="number" placeholder="1000" value={wl.runAsUser} onChange={e => up({ runAsUser: e.target.value })} className={inpSm} /></div>
-            <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">runAsGroup</p><input type="number" placeholder="3000" value={wl.runAsGroup} onChange={e => up({ runAsGroup: e.target.value })} className={inpSm} /></div>
-            <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">fsGroup</p><input type="number" placeholder="2000" value={wl.fsGroup} onChange={e => up({ fsGroup: e.target.value })} className={inpSm} /></div>
+            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">runAsUser</p><input type="number" placeholder="1000" value={wl.runAsUser} onChange={e => up({ runAsUser: e.target.value })} className={inpSm} /></div>
+            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">runAsGroup</p><input type="number" placeholder="3000" value={wl.runAsGroup} onChange={e => up({ runAsGroup: e.target.value })} className={inpSm} /></div>
+            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">fsGroup</p><input type="number" placeholder="2000" value={wl.fsGroup} onChange={e => up({ fsGroup: e.target.value })} className={inpSm} /></div>
           </div>
           <div className="flex flex-wrap gap-4 mt-3">
             <Checkbox checked={wl.runAsNonRoot} onChange={v => up({ runAsNonRoot: v })} label="runAsNonRoot" />
@@ -884,13 +923,13 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
         {!isDaemon && !isCronJob && (
           <Section title={t.k8s.updating} icon={<RefreshCw className="w-4 h-4" />} theme="cyan" badge={t.k8s.badges.strategy} defaultOpen={false}>
             <div className="flex gap-3">
-              <div className="flex-1"><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">STRATEGY</p>
+              <div className="flex-1"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">STRATEGY</p>
                 <select value={wl.updateStrategy} onChange={e => up({ updateStrategy: e.target.value as any })} className={inp}>
                   <option value="RollingUpdate">RollingUpdate</option><option value="Recreate">Recreate</option>
                 </select></div>
               {wl.updateStrategy === 'RollingUpdate' && <>
-                <div className="flex-1"><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">maxSurge</p><input type="text" value={wl.maxSurge} onChange={e => up({ maxSurge: e.target.value })} className={inp} /></div>
-                <div className="flex-1"><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">maxUnavailable</p><input type="text" value={wl.maxUnavailable} onChange={e => up({ maxUnavailable: e.target.value })} className={inp} /></div>
+                <div className="flex-1"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">maxSurge</p><input type="text" value={wl.maxSurge} onChange={e => up({ maxSurge: e.target.value })} className={inp} /></div>
+                <div className="flex-1"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">maxUnavailable</p><input type="text" value={wl.maxUnavailable} onChange={e => up({ maxUnavailable: e.target.value })} className={inp} /></div>
               </>}
             </div>
           </Section>
@@ -899,50 +938,66 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
         {/* Node Scheduling */}
         <Section title={t.k8s.scheduling} icon={<Globe className="w-4 h-4" />} theme="slate" badge={t.k8s.badges.scheduling} defaultOpen={false}>
           <div className="space-y-4">
-            <div>
-              <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1"><Tag className="w-3.5 h-3.5 text-blue-500" />{t.k8s.nodeSelector}</p>
-              <div className="space-y-2">
+            <div className="bg-gray-50/50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
+                  <Tag className="w-4 h-4" />
+                </div>
+                <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{t.k8s.nodeSelector}</p>
+              </div>
+              <div className="space-y-3">
                 {wl.nodeSelector.map((ns, i) => (
-                  <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-2 items-center">
-                    <input type="text" placeholder="key (e.g. disktype)" value={ns.key} onChange={e => updateWorkloadNS(wl.id, i, 'key', e.target.value)} className={inpSm} />
-                    <input type="text" placeholder="value (e.g. ssd)" value={ns.value} onChange={e => updateWorkloadNS(wl.id, i, 'value', e.target.value)} className={inpSm} />
-                    <button onClick={() => removeWorkloadNS(wl.id, i)} className="p-1 text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-3 items-center">
+                    <div className="relative group">
+                      <p className="absolute -top-4 left-1 text-[9px] font-bold text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity whitespace-nowrap">Label Key</p>
+                      <input type="text" placeholder="key (e.g. disktype)" value={ns.key} onChange={e => updateWorkloadNS(wl.id, i, 'key', e.target.value)} className={inpSm} />
+                    </div>
+                    <div className="relative group">
+                      <p className="absolute -top-4 left-1 text-[9px] font-bold text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity whitespace-nowrap">Label Value</p>
+                      <input type="text" placeholder="value (e.g. ssd)" value={ns.value} onChange={e => updateWorkloadNS(wl.id, i, 'value', e.target.value)} className={inpSm} />
+                    </div>
+                    <button onClick={() => removeWorkloadNS(wl.id, i)} className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 ))}
-                <button onClick={() => addWorkloadNS(wl.id)} className="text-xs text-blue-500 hover:text-blue-400 font-bold flex items-center gap-1 mt-1">
-                  <Plus className="w-3 h-3" />{t.common.add} Selector
+                <button onClick={() => addWorkloadNS(wl.id)} className="text-[11px] text-blue-600 hover:text-blue-500 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-blue-200 hover:border-blue-400 bg-blue-50/30 dark:bg-blue-900/10 transition-all w-fit mt-1">
+                  <Plus className="w-3.5 h-3.5" />{t.common.add} {t.k8s.nodeSelector}
                 </button>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
-              <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1"><ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />{t.k8s.tolerations} (Tolerations)</p>
-              <div className="space-y-3">
-                {wl.tolerations.map((t, i) => (
-                  <div key={i} className="p-2.5 bg-gray-50/50 dark:bg-gray-800/20 border border-gray-100 dark:border-gray-800 rounded-lg relative group">
-                    <button onClick={() => removeWorkloadTol(wl.id, i)} className="absolute top-2 right-2 text-gray-300 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"><Trash2 className="w-3 h-3" /></button>
+            <div className="bg-gray-50/50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800 p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="p-1.5 rounded-lg bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400">
+                  <ShieldCheck className="w-4 h-4" />
+                </div>
+                <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{t.k8s.tolerations}</p>
+              </div>
+              <div className="space-y-4">
+                {wl.tolerations.map((tol, i) => (
+                  <div key={i} className="p-4 bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 rounded-xl relative group shadow-sm hover:shadow-md transition-all">
+                    <button onClick={() => removeWorkloadTol(wl.id, i)} className="absolute top-3 right-3 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 p-1.5 rounded-lg transition-all opacity-0 group-hover:opacity-100"><Trash2 className="w-3.5 h-3.5" /></button>
 
-                    <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 pr-8">
                       <div>
-                        <p className="text-[10px] text-gray-400 mb-1 ml-0.5">Key</p>
-                        <input type="text" placeholder="key" value={t.key} onChange={e => updateWorkloadTol(wl.id, i, { key: e.target.value })} className={inpSm} />
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-0.5">Key</p>
+                        <input type="text" placeholder="key" value={tol.key} onChange={e => updateWorkloadTol(wl.id, i, { key: e.target.value })} className={inpSm} />
                       </div>
                       <div>
-                        <p className="text-[10px] text-gray-400 mb-1 ml-0.5">Operator</p>
-                        <select value={t.operator} onChange={e => updateWorkloadTol(wl.id, i, { operator: e.target.value as any })} className={inpSm}>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-0.5">Operator</p>
+                        <select value={tol.operator} onChange={e => updateWorkloadTol(wl.id, i, { operator: e.target.value as any })} className={`${inpSm} !bg-gray-50/50`}>
                           <option>Equal</option>
                           <option>Exists</option>
                         </select>
                       </div>
-                      {t.operator === 'Equal' && (
+                      {tol.operator === 'Equal' && (
                         <div>
-                          <p className="text-[10px] text-gray-400 mb-1 ml-0.5">Value</p>
-                          <input type="text" placeholder="value" value={t.value} onChange={e => updateWorkloadTol(wl.id, i, { value: e.target.value })} className={inpSm} />
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-0.5">Value</p>
+                          <input type="text" placeholder="value" value={tol.value} onChange={e => updateWorkloadTol(wl.id, i, { value: e.target.value })} className={inpSm} />
                         </div>
                       )}
                       <div>
-                        <p className="text-[10px] text-gray-400 mb-1 ml-0.5">Effect</p>
-                        <select value={t.effect} onChange={e => updateWorkloadTol(wl.id, i, { effect: e.target.value as any })} className={inpSm}>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2 ml-0.5">Effect</p>
+                        <select value={tol.effect} onChange={e => updateWorkloadTol(wl.id, i, { effect: e.target.value as any })} className={`${inpSm} !bg-gray-50/50`}>
                           <option value="">(ANY)</option>
                           <option>NoSchedule</option>
                           <option>PreferNoSchedule</option>
@@ -952,8 +1007,8 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                     </div>
                   </div>
                 ))}
-                <button onClick={() => addWorkloadTol(wl.id)} className="text-[10px] text-blue-500 hover:text-blue-400 font-bold flex items-center gap-1 mt-1">
-                  <Plus className="w-3 h-3" />{t.common.add} Toleration
+                <button onClick={() => addWorkloadTol(wl.id)} className="text-[11px] text-emerald-600 hover:text-emerald-500 font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-dashed border-emerald-200 hover:border-emerald-400 bg-emerald-50/30 dark:bg-emerald-900/10 transition-all w-fit">
+                  <Plus className="w-3.5 h-3.5" />{t.common.add} {t.k8s.tolerations}
                 </button>
               </div>
             </div>
@@ -961,7 +1016,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
             <div className="pt-4 border-t border-gray-100 dark:border-gray-800 flex flex-wrap gap-x-6 gap-y-3">
               <Checkbox checked={wl.hostNetwork} onChange={v => up({ hostNetwork: v })} label="hostNetwork" />
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-gray-500 font-bold uppercase">{t.k8s.dnsPolicy}:</span>
+                <span className="text-[10px] text-gray-500 font-bold">{t.k8s.dnsPolicy}:</span>
                 <select value={wl.dnsPolicy} onChange={e => up({ dnsPolicy: e.target.value })} className="bg-transparent text-xs border-b border-gray-300 dark:border-gray-700 focus:outline-none focus:border-blue-400 pb-0.5">
                   <option value="ClusterFirst">ClusterFirst</option>
                   <option value="ClusterFirstWithHostNet">ClusterFirstWithHostNet</option>
@@ -976,7 +1031,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
           <div className="space-y-6">
             {/* 1. Services Section */}
             <div className="space-y-2">
-              <p className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1"><Layers className="w-3 h-3" />{t.network.service}</p>
+              <p className="text-[10px] font-bold text-gray-400 flex items-center gap-1"><Layers className="w-3 h-3" />{t.network.service}</p>
               {services.length === 0 && <p className="text-xs text-gray-400 italic">{t.network.noService}</p>}
               <div className="space-y-2">
                 {services.map(s => {
@@ -999,7 +1054,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
 
             {/* 2. Ingress Section */}
             <div className="space-y-2 pt-2 border-t border-gray-100 dark:border-gray-800">
-              <p className="text-[10px] font-bold text-gray-400 uppercase flex items-center gap-1"><Globe className="w-3 h-3" />{t.network.ingress}</p>
+              <p className="text-[10px] font-bold text-gray-400 flex items-center gap-1"><Globe className="w-3 h-3" />{t.network.ingress}</p>
               {ingresses.length === 0 && <p className="text-xs text-gray-400 italic">{t.network.noIngress}</p>}
               <div className="space-y-2">
                 {ingresses.map(ing => {
@@ -1014,7 +1069,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                           <p className="text-[9px] text-gray-500 font-medium">Class: {ing.ingressClassName || 'default'}</p>
                         </div>
                         {isPointing ?
-                          <span className="text-[9px] font-black text-white bg-purple-600 px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1 animate-pulse-subtle">{t.network.pointing} <Activity className="w-2.5 h-2.5" /></span> :
+                          <span className="text-[9px] font-bold text-white bg-purple-600 px-1.5 py-0.5 rounded shadow-sm flex items-center gap-1 animate-pulse-subtle">{t.network.pointing} <Activity className="w-2.5 h-2.5" /></span> :
                           <span className="text-[9px] font-bold text-gray-500 bg-gray-100 dark:bg-gray-800 px-1.5 py-0.5 rounded border border-gray-200 dark:border-gray-700">{t.network.unbound}</span>
                         }
                       </div>
@@ -1118,7 +1173,7 @@ function NetworkSection() {
       {svc && (
         <div className="border-2 border-green-100 dark:border-green-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] shadow-xl shadow-green-500/5 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-black text-green-600 dark:text-green-400 uppercase tracking-widest">{t.k8s.edit} Service</p>
+            <p className="text-xs font-bold text-green-600 dark:text-green-400 tracking-normal">{t.k8s.edit} Service</p>
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
               <div className="w-1.5 h-1.5 rounded-full bg-green-500/50"></div>
@@ -1127,13 +1182,13 @@ function NetworkSection() {
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2 space-y-3">
               <div>
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">
+                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
                   {t.k8s.nameLabel}
                 </p>
                 <input type="text" value={svc.name} onChange={e => updateService(svc.id, { name: e.target.value })} className={inp} />
               </div>
               <div>
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">
+                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
                   {t.k8s.namespaceLabel}
                 </p>
                 <input type="text" value={svc.namespace} onChange={e => updateService(svc.id, { namespace: e.target.value })} className={inp} />
@@ -1149,7 +1204,7 @@ function NetworkSection() {
               />
             </div>
             <div className="space-y-1.5">
-              <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center">
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
                 {t.k8s.typeLabel}
               </p>
               <div className="relative group">
@@ -1175,7 +1230,7 @@ function NetworkSection() {
             <div className="col-span-2">
               <div className="flex items-end gap-3 p-3 bg-gray-50/50 dark:bg-black/20 rounded-[1.2rem] border border-gray-100 dark:border-gray-800/50">
                 <div className="flex-1">
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
                     {t.k8s.servicePortLabel}
                   </p>
                   <input type="text" placeholder="80" value={svc.port} onChange={e => updateService(svc.id, { port: e.target.value })} className={`${inpSm} font-mono text-center !h-9 shadow-sm`} />
@@ -1188,7 +1243,7 @@ function NetworkSection() {
                 </div>
 
                 <div className="flex-1">
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
                     {t.k8s.targetPortLabel}
                   </p>
                   <input type="text" placeholder="80" value={svc.targetPort} onChange={e => updateService(svc.id, { targetPort: e.target.value })} className={`${inpSm} font-mono text-center !h-9 shadow-sm`} />
@@ -1200,7 +1255,7 @@ function NetworkSection() {
                       <div className="w-px h-8 bg-gray-200 dark:bg-gray-800" />
                     </div>
                     <div className="flex-1">
-                      <p className="text-[12px] text-orange-600 dark:text-orange-400 font-black uppercase tracking-[0.2em] mb-2.5 ml-1">
+                      <p className="text-[12px] text-orange-600 dark:text-orange-400 font-bold tracking-normal mb-2.5 ml-1">
                         {t.k8s.nodePortLabel}
                       </p>
                       <input type="text" placeholder="30000" value={svc.nodePort} onChange={e => updateService(svc.id, { nodePort: e.target.value })} className={`${inpSm} font-mono text-center border-orange-200 dark:border-orange-900/40 !h-9 bg-orange-50/30 dark:bg-orange-900/10 shadow-sm`} />
@@ -1228,7 +1283,7 @@ function NetworkSection() {
       {ing && (
         <div className="border-2 border-purple-100 dark:border-purple-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] shadow-xl shadow-purple-500/5 duration-300 animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-black text-purple-600 dark:text-purple-400 uppercase tracking-wider">{t.k8s.edit} Ingress</p>
+            <p className="text-xs font-bold text-purple-600 dark:text-purple-400 tracking-normal">{t.k8s.edit} Ingress</p>
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></div>
               <div className="w-1.5 h-1.5 rounded-full bg-purple-500/50"></div>
@@ -1236,13 +1291,13 @@ function NetworkSection() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
                 {t.k8s.nameLabel}
               </p>
               <input type="text" value={ing.name} onChange={e => updateIngress(ing.id, { name: e.target.value })} className={inp} />
             </div>
             <div>
-              <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
                 {t.k8s.ingressClassLabel}
               </p>
               <input type="text" placeholder="nginx" value={ing.ingressClassName} onChange={e => updateIngress(ing.id, { ingressClassName: e.target.value })} className={inp} />
@@ -1270,17 +1325,17 @@ function NetworkSection() {
               />
             </div>
           )}
-          <p className="text-[12px] text-gray-600 dark:text-gray-300 font-black uppercase tracking-[0.2em] py-2 border-t border-gray-100 dark:border-gray-800">
+          <p className="text-[12px] text-gray-600 dark:text-gray-300 font-bold tracking-normal py-2 border-t border-gray-100 dark:border-gray-800">
             {t.k8s.rulesLabel}
           </p>
           {ing.rules.map(r => (
             <div key={r.id} className="flex gap-2 flex-wrap items-end p-3 bg-gray-50/50 dark:bg-black/20 rounded-xl border border-gray-100 dark:border-gray-800/50">
               <div className="flex-1 min-w-28 space-y-1.5">
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center">{t.k8s.hostLabel}</p>
+                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.hostLabel}</p>
                 <input type="text" placeholder="example.com" value={r.host} onChange={e => updateIngressRule(ing.id, r.id, { host: e.target.value })} className={inpSm} />
               </div>
               <div className="w-32 space-y-1.5">
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center">{t.k8s.pathLabel}</p>
+                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.pathLabel}</p>
                 <input type="text" placeholder="/" value={r.path} onChange={e => updateIngressRule(ing.id, r.id, { path: e.target.value })} className={inpSm} />
               </div>
               <div className="flex-1 min-w-[12rem]">
@@ -1299,7 +1354,7 @@ function NetworkSection() {
                 />
               </div>
               <div className="w-24 space-y-1.5">
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center">{t.k8s.portLabel}</p>
+                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.portLabel}</p>
                 <input type="text" placeholder="80" value={r.servicePort} onChange={e => updateIngressRule(ing.id, r.id, { servicePort: e.target.value })} className={`${inpSm} font-mono`} />
               </div>
               <button onClick={() => removeIngressRule(ing.id, r.id)} className="text-gray-300 hover:text-red-400 transition-colors p-1.5 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg">
@@ -1363,14 +1418,14 @@ function StorageSection() {
       {sc && (
         <div className="border-2 border-orange-100 dark:border-orange-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] shadow-xl shadow-orange-500/5 duration-300 animate-in fade-in slide-in-from-top-2">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-black text-orange-600 dark:text-orange-400 uppercase tracking-wider">{t.k8s.edit} StorageClass</p>
+            <p className="text-xs font-bold text-orange-600 dark:text-orange-400 tracking-normal">{t.k8s.edit} StorageClass</p>
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></div>
               <div className="w-1.5 h-1.5 rounded-full bg-orange-500/50"></div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2"><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.common.name}</p><input type="text" value={sc.name} onChange={e => updateStorageClass(sc.id, { name: e.target.value })} className={inp} /></div>
+            <div className="col-span-2"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.common.name}</p><input type="text" value={sc.name} onChange={e => updateStorageClass(sc.id, { name: e.target.value })} className={inp} /></div>
 
             <div className="col-span-2 mb-2">
               <MetadataEditor
@@ -1381,14 +1436,14 @@ function StorageSection() {
               />
             </div>
 
-            <div className="col-span-2"><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">Provisioner</p><input type="text" placeholder="kubernetes.io/aws-ebs" value={sc.provisioner} onChange={e => updateStorageClass(sc.id, { provisioner: e.target.value })} className={inp} /></div>
-            <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.k8s.restartPolicy}</p><select value={sc.reclaimPolicy} onChange={e => updateStorageClass(sc.id, { reclaimPolicy: e.target.value as any })} className={inp}><option value="Delete">Delete</option><option value="Retain">Retain</option></select></div>
-            <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">Binding Mode</p><select value={sc.volumeBindingMode} onChange={e => updateStorageClass(sc.id, { volumeBindingMode: e.target.value as any })} className={inp}><option value="Immediate">Immediate</option><option value="WaitForFirstConsumer">WaitForFirstConsumer</option></select></div>
+            <div className="col-span-2"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">Provisioner</p><input type="text" placeholder="kubernetes.io/aws-ebs" value={sc.provisioner} onChange={e => updateStorageClass(sc.id, { provisioner: e.target.value })} className={inp} /></div>
+            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.k8s.restartPolicy}</p><select value={sc.reclaimPolicy} onChange={e => updateStorageClass(sc.id, { reclaimPolicy: e.target.value as any })} className={inp}><option value="Delete">Delete</option><option value="Retain">Retain</option></select></div>
+            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">Binding Mode</p><select value={sc.volumeBindingMode} onChange={e => updateStorageClass(sc.id, { volumeBindingMode: e.target.value as any })} className={inp}><option value="Immediate">Immediate</option><option value="WaitForFirstConsumer">WaitForFirstConsumer</option></select></div>
             <div className="col-span-2"><Checkbox checked={sc.allowVolumeExpansion} onChange={v => updateStorageClass(sc.id, { allowVolumeExpansion: v })} label="Allow Volume Expansion" /></div>
           </div>
 
           <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-            <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Parameters (驱动参数)</p>
+            <p className="text-[10px] font-bold text-gray-400 mb-2">Parameters (驱动参数)</p>
             <div className="space-y-2">
               {sc.parameters.map((p, i) => (
                 <div key={p.id} className="flex gap-2 items-center">
@@ -1416,7 +1471,7 @@ function StorageSection() {
       {pv && (
         <div className="border-2 border-slate-100 dark:border-slate-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] duration-300 animate-in fade-in slide-in-from-top-2 shadow-xl shadow-slate-500/5">
           <div className="flex items-center justify-between">
-            <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.k8s.edit} PersistentVolume</p>
+            <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.k8s.edit} PersistentVolume</p>
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-pulse"></div>
               <div className="w-1.5 h-1.5 rounded-full bg-slate-500/50"></div>
@@ -1424,9 +1479,9 @@ function StorageSection() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2">
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">
-                  {t.k8s.nameLabel}
-                </p>
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                {t.k8s.nameLabel}
+              </p>
               <input type="text" value={pv.name} onChange={e => updatePv(pv.id, { name: e.target.value })} className={inp} />
             </div>
             <div className="col-span-2">
@@ -1438,7 +1493,7 @@ function StorageSection() {
               />
             </div>
             <div className="space-y-1.5">
-              <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center">
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
                 {t.k8s.capacityLabel}
               </p>
               {(() => {
@@ -1464,7 +1519,7 @@ function StorageSection() {
               })()}
             </div>
             <div className="space-y-1.5">
-              <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center">
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
                 {t.k8s.accessModeLabel}
               </p>
               <div className="relative group">
@@ -1477,7 +1532,7 @@ function StorageSection() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center">
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
                 {t.k8s.reclaimPolicyLabel}
               </p>
               <div className="relative group">
@@ -1490,7 +1545,7 @@ function StorageSection() {
               </div>
             </div>
             <div className="space-y-1.5">
-              <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center">
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
                 {t.k8s.scLabel}
               </p>
               <div className="relative group">
@@ -1506,28 +1561,32 @@ function StorageSection() {
 
 
           <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-            <p className="text-[12px] font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2">{t.storage.storageSource}</p>
-            <div className="space-y-3">
-              <div className="flex gap-2">
-                <select value={pv.sourceType} onChange={e => updatePv(pv.id, { sourceType: e.target.value as any })} className={`w-32 shrink-0 ${inpSm}`}>
+            <p className="text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 ml-0.5">{t.storage.storageSource}</p>
+            <div className="flex gap-2 items-start">
+              <div className="relative group w-36 shrink-0">
+                <select value={pv.sourceType} onChange={e => updatePv(pv.id, { sourceType: e.target.value as any })} className={`${inpSm} font-bold appearance-none pr-8 bg-gray-50/50`}>
                   <option value="hostPath">HostPath</option>
                   <option value="nfs">NFS</option>
                   <option value="local">Local</option>
                   <option value="csi">CSI</option>
                 </select>
-                {pv.sourceType === 'hostPath' && <input type="text" placeholder={t.storage.pathPlaceholder} value={pv.hostPath} onChange={e => updatePv(pv.id, { hostPath: e.target.value })} className={inpSm} />}
-                {pv.sourceType === 'local' && <input type="text" placeholder={t.storage.localPathPlaceholder} value={pv.hostPath} onChange={e => updatePv(pv.id, { hostPath: e.target.value })} className={inpSm} />}
+                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors" />
+              </div>
+
+              <div className="flex-1 flex gap-2">
+                {pv.sourceType === 'hostPath' && <input type="text" placeholder={t.storage.pathPlaceholder} value={pv.hostPath} onChange={e => updatePv(pv.id, { hostPath: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />}
+                {pv.sourceType === 'local' && <input type="text" placeholder={t.storage.localPathPlaceholder} value={pv.hostPath} onChange={e => updatePv(pv.id, { hostPath: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />}
                 {pv.sourceType === 'nfs' && (
-                  <div className="flex-1 flex gap-2">
-                    <input type="text" placeholder={t.storage.nfsServerPlaceholder} value={pv.nfsServer} onChange={e => updatePv(pv.id, { nfsServer: e.target.value })} className={inpSm} />
-                    <input type="text" placeholder={t.storage.nfsPathPlaceholder} value={pv.nfsPath} onChange={e => updatePv(pv.id, { nfsPath: e.target.value })} className={inpSm} />
-                  </div>
+                  <>
+                    <input type="text" placeholder={t.storage.nfsServerPlaceholder} value={pv.nfsServer} onChange={e => updatePv(pv.id, { nfsServer: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />
+                    <input type="text" placeholder={t.storage.nfsPathPlaceholder} value={pv.nfsPath} onChange={e => updatePv(pv.id, { nfsPath: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />
+                  </>
                 )}
                 {pv.sourceType === 'csi' && (
-                  <div className="flex-1 flex gap-2">
-                    <input type="text" placeholder={t.storage.csiDriverPlaceholder} value={pv.csiDriver} onChange={e => updatePv(pv.id, { csiDriver: e.target.value })} className={inpSm} />
-                    <input type="text" placeholder={t.storage.vHandlePlaceholder} value={pv.csiHandle} onChange={e => updatePv(pv.id, { csiHandle: e.target.value })} className={inpSm} />
-                  </div>
+                  <>
+                    <input type="text" placeholder={t.storage.csiDriverPlaceholder} value={pv.csiDriver} onChange={e => updatePv(pv.id, { csiDriver: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />
+                    <input type="text" placeholder={t.storage.vHandlePlaceholder} value={pv.csiHandle} onChange={e => updatePv(pv.id, { csiHandle: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />
+                  </>
                 )}
               </div>
             </div>
@@ -1547,7 +1606,7 @@ function StorageSection() {
       {pvc && (
         <div className="border-2 border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] duration-300 animate-in fade-in slide-in-from-top-2 shadow-xl shadow-indigo-500/5">
           <div className="flex items-center justify-between">
-            <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.k8s.edit} PVC</p>
+            <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.k8s.edit} PVC</p>
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
               <div className="w-1.5 h-1.5 rounded-full bg-indigo-500/50"></div>
@@ -1555,15 +1614,15 @@ function StorageSection() {
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">
-                  {t.k8s.nameLabel}
-                </p>
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                {t.k8s.nameLabel}
+              </p>
               <input type="text" value={pvc.name} onChange={e => updatePvc(pvc.id, { name: e.target.value })} className={inp} />
             </div>
             <div>
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">
-                  {t.k8s.namespaceLabel}
-                </p>
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                {t.k8s.namespaceLabel}
+              </p>
               <input type="text" value={pvc.namespace} onChange={e => updatePvc(pvc.id, { namespace: e.target.value })} className={inp} />
             </div>
             <div className="col-span-2">
@@ -1575,9 +1634,9 @@ function StorageSection() {
               />
             </div>
             <div>
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">
-                  {t.k8s.storageLabel}
-                </p>
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                {t.k8s.storageLabel}
+              </p>
               {(() => {
                 const valStr = String(pvc.storage || "");
                 const match = valStr.match(/^(\d+)(.*)$/);
@@ -1601,9 +1660,9 @@ function StorageSection() {
               })()}
             </div>
             <div>
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">
-                  {t.k8s.accessModeLabel}
-                </p>
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                {t.k8s.accessModeLabel}
+              </p>
               <div className="relative group">
                 <select value={pvc.accessMode} onChange={e => updatePvc(pvc.id, { accessMode: e.target.value as any })} className={`${inp} font-bold appearance-none pr-8`}>
                   <option value="ReadWriteOnce">ReadWriteOnce</option>
@@ -1614,9 +1673,9 @@ function StorageSection() {
               </div>
             </div>
             <div className="col-span-2">
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">
-                  {t.k8s.scLabel}
-                </p>
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                {t.k8s.scLabel}
+              </p>
               <div className="relative group">
                 <select value={pvc.storageClass} onChange={e => updatePvc(pvc.id, { storageClass: e.target.value })} className={`${inp} font-bold appearance-none pr-8`}>
                   <option value="">-- Cluster Default --</option>
@@ -1659,15 +1718,15 @@ function StorageSection() {
       {cm && (
         <div className="border-2 border-teal-100 dark:border-teal-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] duration-300 animate-in fade-in slide-in-from-top-2 shadow-xl shadow-teal-500/5">
           <div className="flex items-center justify-between">
-            <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.common.edit} ConfigMap</p>
+            <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.common.edit} ConfigMap</p>
             <div className="flex gap-1">
               <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></div>
               <div className="w-1.5 h-1.5 rounded-full bg-teal-500/50"></div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5"><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center">{t.common.name}</p><input type="text" value={cm.name} onChange={e => updateConfigMap(cm.id, { name: e.target.value })} className={inp} /></div>
-            <div className="space-y-1.5"><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center">{t.k8s.namespace}</p><input type="text" value={cm.namespace} onChange={e => updateConfigMap(cm.id, { namespace: e.target.value })} className={inp} /></div>
+            <div className="space-y-1.5"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.common.name}</p><input type="text" value={cm.name} onChange={e => updateConfigMap(cm.id, { name: e.target.value })} className={inp} /></div>
+            <div className="space-y-1.5"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.namespace}</p><input type="text" value={cm.namespace} onChange={e => updateConfigMap(cm.id, { namespace: e.target.value })} className={inp} /></div>
             <div className="col-span-2">
               <MetadataEditor
                 labels={cm.labels} annotations={cm.annotations}
@@ -1682,7 +1741,7 @@ function StorageSection() {
             {cm.data.map((d, i) => (
               <div key={i} className="p-3 bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-lg space-y-2">
                 <div className="flex justify-between items-center mb-2">
-                  <div className="flex items-center gap-1.5 text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em]">
+                  <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">
                     <FileText className="w-3.5 h-3.5" />{t.storage.key}
                   </div>
                   <button onClick={() => removeConfigMapData(cm.id, i)} className="text-gray-400 hover:text-red-400 p-0.5"><Trash2 className="w-3.5 h-3.5" /></button>
@@ -1690,7 +1749,7 @@ function StorageSection() {
                 <input type="text" placeholder="config.yaml / db_host..." value={d.key}
                   onChange={e => updateConfigMapData(cm.id, i, 'key', e.target.value)}
                   className={inpSm} />
-                <div className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.storage.value}</div>
+                <div className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.value}</div>
                 <textarea placeholder={t.storage.valuePlaceholder} value={d.value}
                   onChange={e => updateConfigMapData(cm.id, i, 'value', e.target.value)}
                   className={`w-full block min-h-[100px] max-h-[400px] bg-white dark:bg-[#1C2128] border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 text-sm focus:outline-none focus:border-teal-500 font-mono transition`} />
@@ -1712,11 +1771,11 @@ function StorageSection() {
       </div>
       {sec && (
         <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3 bg-white dark:bg-[#0E1117]">
-          <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.common.edit} Secret</p>
+          <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.common.edit} Secret</p>
           <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5"><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center">{t.common.name.toUpperCase()}</p><input type="text" value={sec.name} onChange={e => updateSecret(sec.id, { name: e.target.value })} className={inp} /></div>
+            <div className="space-y-1.5"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.common.name}</p><input type="text" value={sec.name} onChange={e => updateSecret(sec.id, { name: e.target.value })} className={inp} /></div>
             <div className="space-y-1.5">
-              <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] ml-1 h-5 flex items-center">{t.storage.type.toUpperCase()}</p>
+              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.storage.type}</p>
               <select value={sec.secretType} onChange={e => updateSecret(sec.id, { secretType: e.target.value })} className={inp}>
                 <option value="Opaque">Opaque (Custom/Generic)</option>
                 <option value="kubernetes.io/dockerconfigjson">kubernetes.io/dockerconfigjson (Docker Registry)</option>
@@ -1741,10 +1800,10 @@ function StorageSection() {
               return (
                 <div className="p-4 bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl space-y-3">
                   <p className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" />{t.storage.registryHelper} (.dockerconfigjson)</p>
-                  <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.storage.registryUrl}</p><input type="text" placeholder="https://index.docker.io/v1/" defaultValue="https://index.docker.io/v1/" id="docker-registry" className={inpSm} /></div>
+                  <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.registryUrl}</p><input type="text" placeholder="https://index.docker.io/v1/" defaultValue="https://index.docker.io/v1/" id="docker-registry" className={inpSm} /></div>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.storage.username}</p><input type="text" placeholder="admin" id="docker-user" className={inpSm} /></div>
-                    <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.storage.password}</p><input type="password" placeholder="******" id="docker-pass" className={inpSm} /></div>
+                    <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.username}</p><input type="text" placeholder="admin" id="docker-user" className={inpSm} /></div>
+                    <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.password}</p><input type="password" placeholder="******" id="docker-pass" className={inpSm} /></div>
                   </div>
                   <button onClick={() => {
                     const reg = (document.getElementById('docker-registry') as HTMLInputElement).value || 'https://index.docker.io/v1/';
@@ -1763,8 +1822,8 @@ function StorageSection() {
               return (
                 <div className="p-4 bg-purple-50/50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl space-y-3">
                   <p className="text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" />{t.storage.tlsHelper} (tls.crt / tls.key)</p>
-                  <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.storage.tlsCrt}</p><textarea id="tls-crt" className={`${inpSm} h-24 font-mono text-[10px]`} placeholder="-----BEGIN CERTIFICATE-----" /></div>
-                  <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.storage.tlsKey}</p><textarea id="tls-key" className={`${inpSm} h-24 font-mono text-[10px]`} placeholder="-----BEGIN PRIVATE KEY-----" /></div>
+                  <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.tlsCrt}</p><textarea id="tls-crt" className={`${inpSm} h-24 font-mono text-[10px]`} placeholder="-----BEGIN CERTIFICATE-----" /></div>
+                  <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.tlsKey}</p><textarea id="tls-key" className={`${inpSm} h-24 font-mono text-[10px]`} placeholder="-----BEGIN PRIVATE KEY-----" /></div>
                   <button onClick={() => {
                     const crt = (document.getElementById('tls-crt') as HTMLTextAreaElement).value;
                     const key = (document.getElementById('tls-key') as HTMLTextAreaElement).value;
@@ -1780,8 +1839,8 @@ function StorageSection() {
                 <div className="p-4 bg-teal-50/50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl space-y-3">
                   <p className="text-xs font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5" />{t.storage.basicAuthHelper}</p>
                   <div className="grid grid-cols-2 gap-2">
-                    <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.storage.username}</p><input type="text" id="ba-user" className={inpSm} placeholder="admin" /></div>
-                    <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.storage.password}</p><input type="password" id="ba-pass" className={inpSm} placeholder="******" /></div>
+                    <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.username}</p><input type="text" id="ba-user" className={inpSm} placeholder="admin" /></div>
+                    <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.password}</p><input type="password" id="ba-pass" className={inpSm} placeholder="******" /></div>
                   </div>
                   <button onClick={() => {
                     const user = (document.getElementById('ba-user') as HTMLInputElement).value;
@@ -1797,7 +1856,7 @@ function StorageSection() {
               return (
                 <div className="p-4 bg-slate-50/50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
                   <p className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5" />{t.storage.sshHelper}</p>
-                  <div><p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.storage.sshKey}</p><textarea id="ssh-key" className={`${inpSm} h-32 font-mono text-[10px]`} placeholder="-----BEGIN OPENSSH PRIVATE KEY-----" /></div>
+                  <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.sshKey}</p><textarea id="ssh-key" className={`${inpSm} h-32 font-mono text-[10px]`} placeholder="-----BEGIN OPENSSH PRIVATE KEY-----" /></div>
                   <button onClick={() => {
                     const key = (document.getElementById('ssh-key') as HTMLTextAreaElement).value;
                     if (!key) return;
@@ -1815,13 +1874,13 @@ function StorageSection() {
                   {sec.data.map((d, i) => (
                     <div key={i} className="p-3 bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-lg space-y-2">
                       <div className="flex justify-between items-center mb-2">
-                        <div className="flex items-center gap-1.5 text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em]">
+                        <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">
                           <KeyRound className="w-3.5 h-3.5" />{t.storage.key}
                         </div>
                         <button onClick={() => removeSecretData(sec.id, i)} className="text-gray-400 hover:text-red-400 p-0.5"><Trash2 className="w-3.5 h-3.5" /></button>
                       </div>
                       <input type="text" placeholder="key..." value={d.key} onChange={e => updateSecretData(sec.id, i, 'key', e.target.value)} className={inpSm} />
-                      <div className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.storage.plaintextValue}</div>
+                      <div className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.plaintextValue}</div>
                       <textarea placeholder={t.storage.valuePlaceholder} value={d.value} onChange={e => updateSecretData(sec.id, i, 'value', e.target.value)} className={`${inpSm} h-16 font-mono text-[11px]`} />
                     </div>
                   ))}
@@ -1870,20 +1929,20 @@ export function KubernetesTab() {
       {/* ── Global Header ── */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 p-4 bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-2xl gap-4">
         <div className="flex flex-col">
-          <span className="text-xs font-bold text-gray-600 dark:text-gray-300 uppercase tracking-widest mb-1 items-center flex gap-1.5"><Globe className="w-4 h-4 text-blue-500" />{t.k8s.globalConfig}</span>
+          <span className="text-xs font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-1 items-center flex gap-1.5"><Globe className="w-4 h-4 text-blue-500" />{t.k8s.globalConfig}</span>
           <div className="flex items-center gap-2">
             <input type="text" value={globalNamespace}
               onChange={e => setNamespace(e.target.value)}
               placeholder={`${t.k8s.namespace} (e.g. prod)`}
               className="bg-white dark:bg-[#0E1117] border border-gray-300 dark:border-gray-700 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:border-blue-500 w-40" />
             <button onClick={syncAllNamespaces}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-black uppercase tracking-wider shadow-sm transition-all active:scale-95">
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-bold tracking-normal shadow-sm transition-all active:scale-95">
               <RefreshCw className="w-4 h-4" /> {t.k8s.syncAll}
             </button>
           </div>
         </div>
         <div className="text-right hidden sm:block">
-          <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-1">{t.k8s.stats}</p>
+          <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-1">{t.k8s.stats}</p>
           <p className="text-xs text-gray-500 dark:text-gray-300 font-medium">
             {workloads.length} {t.k8s.unitWload} · {services.length + ingresses.length} {t.k8s.unitNet} · {pvcs.length + configMaps.length + secrets.length} {t.k8s.unitStore}
           </p>
@@ -1904,7 +1963,7 @@ export function KubernetesTab() {
       {activeSection === 'workload' && (
         <div>
           <div className="flex items-center justify-between mb-3">
-            <p className="text-xs text-gray-500 uppercase tracking-wider font-semibold">{t.k8s.workloadList}</p>
+            <p className="text-xs text-gray-500 tracking-normal font-semibold">{t.k8s.workloadList}</p>
             <button onClick={addWorkload} className={`${btnSm} border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20`}><Plus className="w-3 h-3" />{t.network.newWorkload}</button>
           </div>
 

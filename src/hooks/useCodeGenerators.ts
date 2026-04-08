@@ -99,13 +99,24 @@ export function useCodeGenerators() {
 
   const renderStartCommands = () => {
     let result = '';
+    const entry = entrypoint.trim();
+    const cmd = startCmd.trim();
 
-    if (entrypoint.trim()) {
-      result += `\nENTRYPOINT ${formatCmd(entrypoint, '[]', useShellWrapper)}\n`;
-    }
-
-    if (startCmd.trim()) {
-      result += `${!entrypoint.trim() ? '\n' : ''}CMD ${formatCmd(startCmd, '[]', !entrypoint.trim() && useShellWrapper)}`;
+    if (useShellWrapper) {
+      if (entry && cmd) {
+        result += `\nENTRYPOINT ["sh", "-ec"]\nCMD ["${entry.replace(/"/g, '\\"')} ${cmd.replace(/"/g, '\\"')}"]`;
+      } else if (entry) {
+        result += `\nENTRYPOINT ["sh", "-ec", "${entry.replace(/"/g, '\\"')}"]`;
+      } else if (cmd) {
+        result += `\nCMD ["sh", "-ec", "${cmd.replace(/"/g, '\\"')}"]`;
+      }
+    } else {
+      if (entry) {
+        result += `\nENTRYPOINT ${formatCmd(entry, '[]', false)}\n`;
+      }
+      if (cmd) {
+        result += `${!entry ? '\n' : ''}CMD ${formatCmd(cmd, '[]', false)}`;
+      }
     }
 
     return result.trim();
@@ -156,16 +167,24 @@ export function useCodeGenerators() {
         vVols.forEach(v => yaml += `      - ${v.host}:${v.container}\n`);
       }
 
-      if (svc.useShellWrapper && svc.command.trim()) {
-        yaml += `    command: ["sh", "-ec", "${svc.command.trim().replace(/"/g, '\\"') || ''}"]\n`;
-      } else if (svc.command.trim()) {
-        yaml += `    command: ${svc.command.trim()}\n`;
-      }
-
-      if (svc.useShellWrapper && svc.entrypoint.trim()) {
-        yaml += `    entrypoint: ["sh", "-ec", "${svc.entrypoint.trim().replace(/"/g, '\\"') || ''}"]\n`;
-      } else if (svc.entrypoint.trim()) {
-        yaml += `    entrypoint: ${svc.entrypoint.trim()}\n`;
+      if (svc.useShellWrapper) {
+        const cmd = svc.command.trim();
+        const entry = svc.entrypoint.trim();
+        if (entry && cmd) {
+          yaml += `    entrypoint: ["sh", "-ec"]\n`;
+          yaml += `    command: ["${entry.replace(/"/g, '\\"')} ${cmd.replace(/"/g, '\\"')}"]\n`;
+        } else if (entry) {
+          yaml += `    entrypoint: ["sh", "-ec", "${entry.replace(/"/g, '\\"')}"]\n`;
+        } else if (cmd) {
+          yaml += `    command: ["sh", "-ec", "${cmd.replace(/"/g, '\\"')}"]\n`;
+        }
+      } else {
+        if (svc.entrypoint.trim()) {
+          yaml += `    entrypoint: ${svc.entrypoint.trim()}\n`;
+        }
+        if (svc.command.trim()) {
+          yaml += `    command: ${svc.command.trim()}\n`;
+        }
       }
       if (svc.user.trim()) yaml += `    user: "${svc.user.trim()}"\n`;
       if (svc.privileged) yaml += `    privileged: true\n`;
@@ -465,27 +484,32 @@ ${renderStartCommands() || 'CMD ["./main"]'}`;
     };
 
     const buildContainer = (w: any, ind: string) => {
-      let c = `${ind}- name: ${sn(w.appName)}-container\n${ind}  image: ${w.image || 'nginx:alpine'}\n${ind}  imagePullPolicy: ${w.imagePullPolicy}`;
+      let c = `${ind}- name: ${sn(w.appName)}-container\n${ind}  image: ${w.image || 'nginx:alpine'}\n${ind}  imagePullPolicy: ${w.imagePullPolicy || 'IfNotPresent'}`;
       if (w.containerPort) c += `\n${ind}  ports:\n${ind}  - containerPort: ${w.containerPort || 80}`;
 
-      if (w.command?.trim()) {
-        if (w.useShellWrapper) {
-          c += `\n${ind}  command: ["sh", "-ec", "${w.command.trim().replace(/"/g, '\\"')}"]`;
-        } else {
-          const parts = w.command.trim().split(/\s+/).filter(Boolean);
+      const cmdObj = w;
+      if (cmdObj.useShellWrapper) {
+        const cmd = cmdObj.command?.trim();
+        const args = cmdObj.args?.trim();
+        if (cmd && args) {
+          c += `\n${ind}  command: ["sh", "-ec"]`;
+          c += `\n${ind}  args: ["${cmd.replace(/"/g, '\\"')} ${args.replace(/"/g, '\\"')}"]`;
+        } else if (cmd) {
+          c += `\n${ind}  command: ["sh", "-ec", "${cmd.replace(/"/g, '\\"')}"]`;
+        } else if (args) {
+          c += `\n${ind}  command: ["sh", "-ec"]`;
+          c += `\n${ind}  args: ["${args.replace(/"/g, '\\"')}"]`;
+        }
+      } else {
+        if (cmdObj.command?.trim()) {
+          const parts = cmdObj.command.trim().split(/\s+/).filter(Boolean);
           if (parts.length) {
             c += `\n${ind}  command:`;
             parts.forEach((p: string) => c += `\n${ind}  - ${p}`);
           }
         }
-      }
-
-      if (w.args?.trim()) {
-        if (w.useShellWrapper && !w.command?.trim()) {
-          // 如果没有 command 但开启了 wrapper，则在 args 处包裹 sh -ec
-          c += `\n${ind}  args: ["sh", "-ec", "${w.args.trim().replace(/"/g, '\\"')}"]`;
-        } else {
-          const parts = w.args.trim().split(/\s+/).filter(Boolean);
+        if (cmdObj.args?.trim()) {
+          const parts = cmdObj.args.trim().split(/\s+/).filter(Boolean);
           if (parts.length) {
             c += `\n${ind}  args:`;
             parts.forEach((p: string) => c += `\n${ind}  - ${p}`);
@@ -493,7 +517,7 @@ ${renderStartCommands() || 'CMD ["./main"]'}`;
         }
       }
 
-      const venvs = w.envs.filter((e: any) => e.name);
+      const venvs = w.envs?.filter((e: any) => e.name) || [];
       if (venvs.length) {
         c += `\n${ind}  env:`;
         venvs.forEach((e: any) => {
@@ -511,7 +535,7 @@ ${renderStartCommands() || 'CMD ["./main"]'}`;
         });
       }
 
-      const vvols = w.volumeMounts.filter((v: any) => v.name && v.mountPath);
+      const vvols = (w.volumeMounts?.filter((v: any) => v.name && v.mountPath) || []);
       if (vvols.length) {
         c += `\n${ind}  volumeMounts:`;
         vvols.forEach((v: any) => {
@@ -539,9 +563,9 @@ ${renderStartCommands() || 'CMD ["./main"]'}`;
       }
 
       const pi = `${ind}  `;
-      if (w.livenessProbe.enabled) c += `\n${pi}livenessProbe:${buildProbe(w.livenessProbe, pi)}`;
-      if (w.readinessProbe.enabled) c += `\n${pi}readinessProbe:${buildProbe(w.readinessProbe, pi)}`;
-      if (w.startupProbe.enabled) c += `\n${pi}startupProbe:${buildProbe(w.startupProbe, pi)}`;
+      if (w.livenessProbe?.enabled) c += `\n${pi}livenessProbe:${buildProbe(w.livenessProbe, pi)}`;
+      if (w.readinessProbe?.enabled) c += `\n${pi}readinessProbe:${buildProbe(w.readinessProbe, pi)}`;
+      if (w.startupProbe?.enabled) c += `\n${pi}startupProbe:${buildProbe(w.startupProbe, pi)}`;
 
       return c;
     };
@@ -571,7 +595,8 @@ ${renderStartCommands() || 'CMD ["./main"]'}`;
       const vtols = w.tolerations.filter((t: any) => t.key);
       if (vtols.length) { s += `\n${si}tolerations:`; vtols.forEach((t: any) => { s += `\n${si}- key: ${t.key}\n${si}  operator: ${t.operator}`; if (t.operator === 'Equal') s += `\n${si}  value: "${t.value}"`; if (t.effect) s += `\n${si}  effect: ${t.effect}`; }); }
       if (w.fsGroup || w.runAsNonRoot) { s += `\n${si}securityContext:`; if (w.fsGroup) s += `\n${si}  fsGroup: ${w.fsGroup}`; if (w.runAsNonRoot) s += `\n${si}  runAsNonRoot: true`; }
-      if (w.workloadType === 'CronJob') s += `\n${si}restartPolicy: ${w.restartPolicy}`;
+      if (w.workloadType === 'CronJob' || w.workloadType === 'Job') s += `\n${si}restartPolicy: ${w.restartPolicy || 'OnFailure'}`;
+      
       s += `\n${si}containers:\n${buildContainer(w, si)}`;
       const vvols = w.volumeMounts.filter((v: any) => v.name && v.mountPath);
       if (vvols.length) {
@@ -672,9 +697,10 @@ ${renderStartCommands() || 'CMD ["./main"]'}`;
       } else if (wt === 'DaemonSet') {
         doc = `apiVersion: apps/v1\nkind: DaemonSet\n${buildMetadata(name + '-ds', ns, w.labels, w.annotations, { app: name })}\nspec:\n  selector:\n    matchLabels:\n      app: ${name}\n  updateStrategy:\n    type: ${w.daemonSetUpdateStrategy}\n  template:\n${buildPodSpec(w, '    ')}`;
       } else if (wt === 'CronJob') {
-        doc = `apiVersion: batch/v1\nkind: CronJob\n${buildMetadata(name + '-cronjob', ns, w.labels, w.annotations, { app: name })}\nspec:\n  schedule: "${w.schedule}"\n  concurrencyPolicy: ${w.concurrencyPolicy}\n  successfulJobsHistoryLimit: ${w.successfulJobsHistoryLimit}\n  failedJobsHistoryLimit: ${w.failedJobsHistoryLimit}`;
         if (w.activeDeadlineSeconds) doc += `\n  jobTemplate:\n    spec:\n      activeDeadlineSeconds: ${w.activeDeadlineSeconds}\n      template:\n${buildPodSpec(w, '        ')}`;
         else doc += `\n  jobTemplate:\n    spec:\n      template:\n${buildPodSpec(w, '        ')}`;
+      } else if (wt === 'Job') {
+        doc = `apiVersion: batch/v1\nkind: Job\n${buildMetadata(name + '-job', ns, w.labels, w.annotations, { app: name })}\nspec:\n  template:\n${buildPodSpec(w, '    ')}`;
       }
       if (doc) workloadDocs.push(doc);
     });

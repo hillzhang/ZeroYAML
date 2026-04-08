@@ -13,9 +13,9 @@ import {
 } from "lucide-react";
 
 // ── Shared styles ────────────────────────────────────────────────────────────
-const inp = "w-full bg-white dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-xl py-2 px-4 text-sm font-bold focus:outline-none focus:border-blue-500 focus:ring-4 ring-blue-500/5 transition-all text-gray-900 dark:text-gray-100 placeholder:text-gray-400 shadow-sm hover:border-gray-300 dark:hover:border-gray-700";
-const inpSm = "w-full bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 rounded-lg py-1.5 px-3 text-[13px] font-bold focus:outline-none focus:border-blue-400 transition-all text-gray-800 dark:text-gray-200";
-const btnSm = "flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all font-bold uppercase tracking-wider shadow-sm hover:scale-105 active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-900";
+const inp = "w-full bg-white dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-xl py-2 px-4 text-sm font-bold h-[42px] focus:outline-none focus:border-blue-500 focus:ring-4 ring-blue-500/5 transition-all text-gray-900 dark:text-gray-100 placeholder:text-gray-400 shadow-sm hover:border-gray-300 dark:hover:border-gray-700";
+const inpSm = "w-full bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 rounded-lg py-1.5 px-3 text-[13px] font-bold h-[36px] focus:outline-none focus:border-blue-400 transition-all text-gray-800 dark:text-gray-200";
+const btnSm = "flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all font-bold tracking-tight shadow-sm hover:scale-105 active:scale-95 hover:bg-gray-50 dark:hover:bg-gray-900";
 
 // ── Collapsible Section ──────────────────────────────────────────────────────
 function Section({ title, icon, children, defaultOpen = false, theme = "blue", badge }: { title: string; icon: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean; theme?: string; badge?: string }) {
@@ -38,8 +38,8 @@ function Section({ title, icon, children, defaultOpen = false, theme = "blue", b
             <div className={t.icon}>{icon}</div>
           </div>
           <div>
-            <p className="text-base font-black text-gray-800 dark:text-gray-100 uppercase tracking-[0.15em]">{title}</p>
-            {badge && <span className={`mt-1 inline-block px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-widest border ${t.badge}`}>{badge}</span>}
+            <p className="text-base font-bold text-gray-800 dark:text-gray-100 tracking-tight transition-colors">{title}</p>
+            {badge && <span className={`mt-1 inline-block px-2.5 py-1 rounded-full text-xs font-bold tracking-normal border transition-colors ${t.badge}`}>{badge}</span>}
           </div>
         </div>
         <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-500 ${open ? 'rotate-180' : ''}`} />
@@ -69,18 +69,18 @@ function MetadataGroup({ title, items, onUpdate, colorTheme = "blue", icon: Icon
           <div className="p-1.5 rounded-xl bg-white dark:bg-gray-900 shadow-sm border border-black/5">
             <Icon className={`w-4 h-4 ${textColor}`} />
           </div>
-          <p className={`text-[12px] font-black uppercase tracking-[0.2em] ${textColor}`}>{title}</p>
+          <p className={`text-[12px] font-bold tracking-normal ${textColor}`}>{title}</p>
         </div>
-        <span className="text-[11px] bg-white dark:bg-black/40 text-gray-700 dark:text-gray-200 px-3 py-1 rounded-full font-black border border-gray-100 dark:border-gray-800 shadow-inner">{items.length} ITMS</span>
+        <span className="text-[11px] bg-white dark:bg-black/40 text-gray-700 dark:text-gray-200 px-3 py-1 rounded-full font-bold border border-gray-100 dark:border-gray-800 shadow-inner transition-colors">{items.length} Items</span>
       </div>
 
       <div className="space-y-3">
         {(items || []).map((it: any, i: number) => (
           <div key={i} className="flex gap-2 group animate-in fade-in slide-in-from-left-2 duration-300">
-            <input type="text" placeholder="KEY..." value={it.key}
+            <input type="text" placeholder="Key..." value={it.key}
               onChange={e => onUpdate(items.map((x: any, idx: number) => idx === i ? { ...x, key: e.target.value } : x))}
               className={`${inpSm} font-mono !bg-white dark:!bg-[#1C2128] border-gray-100 dark:border-gray-700 shadow-inner`} />
-            <input type="text" placeholder="VALUE..." value={it.value}
+            <input type="text" placeholder="Value..." value={it.value}
               onChange={e => onUpdate(items.map((x: any, idx: number) => idx === i ? { ...x, value: e.target.value } : x))}
               className={`${inpSm} font-mono !bg-white dark:!bg-[#1C2128] border-gray-100 dark:border-gray-700 shadow-inner`} />
             <button onClick={() => onUpdate(items.filter((_: any, idx: number) => idx !== i))}
@@ -90,12 +90,12 @@ function MetadataGroup({ title, items, onUpdate, colorTheme = "blue", icon: Icon
           </div>
         ))}
         <button onClick={() => onUpdate([...items, { key: '', value: '' }])}
-          className={`w-full py-2.5 border-2 border-dashed rounded-[1.2rem] text-xs font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 mt-2 
+          className={`w-full py-2.5 border-2 border-dashed rounded-[1.2rem] text-xs font-bold tracking-normal transition-all flex items-center justify-center gap-2 mt-2 
             ${colorTheme === 'blue' ? 'border-blue-100 dark:border-blue-900/50 text-blue-500 hover:bg-blue-50/50' :
               colorTheme === 'teal' ? 'border-teal-100 dark:border-teal-900/50 text-teal-500 hover:bg-teal-50/50' :
                 colorTheme === 'orange' ? 'border-orange-100 dark:border-orange-900/50 text-orange-500 hover:bg-orange-50/50' :
                   'border-slate-100 dark:border-slate-900/50 text-slate-500 hover:bg-slate-50/50'}`}>
-          <Plus className="w-3.5 h-3.5" /> ADD NEW {title.split(' ')[0]}
+          <Plus className="w-3.5 h-3.5" /> Add {title.split(' ')[0]}
         </button>
       </div>
     </div>
@@ -129,7 +129,7 @@ export function DockerfileTab() {
       <Section title={`1. ${t.dockerfile.coreConfig}`} icon={<Rocket className="w-4 h-4" />} theme="blue" badge="CORE DEFINITION">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="relative group">
-            <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
+            <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
               {t.dockerfile.appName}
               <Info className="w-3.5 h-3.5 cursor-help opacity-40 hover:opacity-100" onClick={() => setActiveTooltip(activeTooltip === 'appName' ? null : 'appName')} />
             </p>
@@ -141,7 +141,7 @@ export function DockerfileTab() {
           </div>
 
           <div className="relative group">
-            <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
+            <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
               {t.dockerfile.baseImage}
               <Info className="w-3.5 h-3.5 cursor-help opacity-40 hover:opacity-100" onClick={() => setActiveTooltip(activeTooltip === 'baseImage' ? null : 'baseImage')} />
             </p>
@@ -158,14 +158,14 @@ export function DockerfileTab() {
           </div>
 
           <div className="relative group">
-            <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
+            <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
               {t.dockerfile.workdir}
             </p>
             <input type="text" value={workdir} onChange={(e) => setWorkdir(e.target.value)} className={inp} placeholder="/app" />
           </div>
 
           <div className="relative group">
-            <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
+            <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
               {t.dockerfile.user}
             </p>
             <input type="text" placeholder="node / www-data / 1001" value={user} onChange={(e) => setUser(e.target.value)} className={inp} />
@@ -181,21 +181,21 @@ export function DockerfileTab() {
                   <Terminal className="w-4 h-4 text-white" />
                 </div>
                 <div>
-                  <p className="text-[12px] font-black text-blue-600 dark:text-blue-400 uppercase tracking-[0.2em] leading-none">{t.dockerfile.startConfig}</p>
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.dockerfile.executionLogic}</p>
+                  <p className="text-[12px] font-bold text-blue-600 dark:text-blue-400 tracking-normal leading-none">{t.dockerfile.startConfig}</p>
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.dockerfile.executionLogic}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-6">
-                <Checkbox checked={useShellWrapper} onChange={(val: boolean) => setUseShellWrapper(val)} label="SH -EC WRAPPER" theme="yellow" />
+                <Checkbox checked={useShellWrapper} onChange={(val: boolean) => setUseShellWrapper(val)} label="Use SH -EC Wrapper" theme="yellow" />
               </div>
             </div>
 
             {(entrypoint || startCmd) && (
               <div className="px-5 py-2 bg-white/80 dark:bg-black/40 rounded-2xl border border-blue-100 dark:border-blue-900/30 shadow-sm backdrop-blur-md transition-transform hover:scale-[1.02]">
                 <p className="text-[11px] font-mono text-blue-600 dark:text-blue-400 truncate max-w-[300px]">
-                  <span className="opacity-50 text-[10px] font-sans mr-2 uppercase font-black">Preview:</span>
-                  {useShellWrapper ? 'sh -ec "' : ''}<span className="font-black">{entrypoint || '<ENTRYPOINT>'}</span> {startCmd || '<CMD>'}{useShellWrapper ? '"' : ''}
+                  <span className="opacity-50 text-[10px] font-sans mr-2 font-bold">Preview:</span>
+                  {useShellWrapper ? 'sh -ec "' : ''}<span className="font-bold">{entrypoint || '<ENTRYPOINT>'}</span> {startCmd || '<CMD>'}{useShellWrapper ? '"' : ''}
                 </p>
               </div>
             )}
@@ -208,10 +208,10 @@ export function DockerfileTab() {
 
             <div className="space-y-3 relative group">
               <div className="flex items-center justify-between px-1">
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
+                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
                   <Shield className="w-4 h-4 text-blue-500" /> {t.dockerfile.entrypoint}
                 </p>
-                <span className="text-[11px] font-black text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-800/60 px-3 py-1 rounded-full shadow-sm">FIXED</span>
+                <span className="text-[11px] font-bold text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-800/60 px-3 py-1 rounded-full shadow-sm">FIXED</span>
               </div>
               <input type="text" placeholder="[node]" value={entrypoint} onChange={(e) => setEntrypoint(e.target.value)}
                 className={`${inp} !bg-white dark:!bg-[#0D1117] border-blue-200 dark:border-blue-800 shadow-lg focus:ring-blue-500/10 placeholder:opacity-30`} />
@@ -220,10 +220,10 @@ export function DockerfileTab() {
 
             <div className="space-y-3 relative group">
               <div className="flex items-center justify-between px-1">
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
+                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
                   <Activity className="w-4 h-4 text-emerald-500" /> {t.dockerfile.cmd}
                 </p>
-                <span className="text-[11px] font-black text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-800/60 px-3 py-1 rounded-full shadow-sm">ARGS</span>
+                <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-800/60 px-3 py-1 rounded-full shadow-sm">ARGS</span>
               </div>
               <input type="text" placeholder="[server.js]" value={startCmd} onChange={(e) => setStartCmd(e.target.value)}
                 className={`${inp} !bg-white dark:!bg-[#0D1117] border-emerald-200 dark:border-emerald-800 shadow-lg focus:ring-emerald-500/10 placeholder:opacity-30`} />
@@ -254,11 +254,11 @@ export function DockerfileTab() {
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-2xl bg-orange-500 shadow-xl shadow-orange-500/20"><Terminal className="w-4 h-4 text-white" /></div>
                 <div>
-                  <p className="text-[12px] font-black text-gray-800 dark:text-gray-200 uppercase tracking-[0.2em]">{t.dockerfile.run}</p>
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.dockerfile.layerScripts}</p>
+                  <p className="text-[12px] font-bold text-gray-800 dark:text-gray-200 tracking-normal">{t.dockerfile.run}</p>
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.dockerfile.layerScripts}</p>
                 </div>
               </div>
-              <button onClick={() => setRunCmds([...runCmds, ""])} className={`${btnSm} !bg-white dark:!bg-[#0D1117] border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-500 transition-all duration-300 shadow-md active:translate-y-0.5`}><Plus className="w-4 h-4" /> {t.dockerfile.addStep.toUpperCase()}</button>
+              <button onClick={() => setRunCmds([...runCmds, ""])} className={`${btnSm} !bg-white dark:!bg-[#0D1117] border-orange-200 text-orange-600 hover:bg-orange-50 hover:border-orange-500 transition-all duration-300 shadow-md active:translate-y-0.5`}><Plus className="w-4 h-4" /> {t.dockerfile.addStep}</button>
             </div>
 
             <div className="space-y-4 relative z-10">
@@ -276,7 +276,7 @@ export function DockerfileTab() {
                   </div>
                 </div>
               ))}
-              {runCmds.length === 0 && <div className="py-10 border-2 border-dashed border-orange-200 dark:border-orange-800 rounded-[2rem] flex flex-col items-center justify-center opacity-40 italic text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em]">{t.dockerfile.noSteps}</div>}
+              {runCmds.length === 0 && <div className="py-10 border-2 border-dashed border-orange-200 dark:border-orange-800 rounded-[2rem] flex flex-col items-center justify-center opacity-40 italic text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">{t.dockerfile.noSteps}</div>}
             </div>
           </div>
 
@@ -286,48 +286,48 @@ export function DockerfileTab() {
               <div className="flex items-center gap-3">
                 <div className="p-2.5 rounded-2xl bg-blue-500 shadow-xl shadow-blue-500/20"><Files className="w-4 h-4 text-white" /></div>
                 <div>
-                  <p className="text-[12px] font-black text-gray-800 dark:text-gray-200 uppercase tracking-[0.2em]">{t.dockerfile.addCopy}</p>
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] mb-2.5 ml-1">{t.dockerfile.srcDestMapping}</p>
+                  <p className="text-[12px] font-bold text-gray-800 dark:text-gray-200 tracking-normal">{t.dockerfile.addCopy}</p>
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.dockerfile.srcDestMapping}</p>
                 </div>
               </div>
-              <button onClick={() => setCopyAddItems([...copyAddItems, { type: "COPY", from: "", chown: "", src: "", dest: "" }])} className={`${btnSm} !bg-white dark:!bg-[#0D1117] border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-500 transition-all duration-300 shadow-md active:translate-y-0.5`}><Plus className="w-4 h-4" /> {t.dockerfile.addRule.toUpperCase()}</button>
+              <button onClick={() => setCopyAddItems([...copyAddItems, { type: "COPY", from: "", chown: "", src: "", dest: "" }])} className={`${btnSm} !bg-white dark:!bg-[#0D1117] border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-500 transition-all duration-300 shadow-md active:translate-y-0.5`}><Plus className="w-4 h-4" /> {t.dockerfile.addRule}</button>
             </div>
             <div className="grid grid-cols-1 gap-4">
               {copyAddItems.map((item, i) => (
                 <div key={i} className="flex flex-col lg:flex-row gap-4 items-center bg-gray-50/50 dark:bg-[#161B22]/50 p-4 rounded-3xl border border-gray-100 dark:border-gray-800 hover:border-blue-400/50 transition-all group/file shadow-sm">
                   <div className="flex items-center gap-3">
                     <select value={item.type} onChange={(e) => updateArrayField(copyAddItems, setCopyAddItems, i, "type", e.target.value)}
-                      className="bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-700 rounded-full py-2 px-6 text-[11px] font-black text-blue-600 shadow-lg focus:ring-4 ring-blue-500/10 outline-none cursor-pointer transition-all">
+                      className="bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-700 rounded-full py-2 px-6 text-[11px] font-bold text-blue-600 shadow-lg focus:ring-4 ring-blue-500/10 outline-none cursor-pointer transition-all">
                       <option value="COPY">COPY</option>
                       <option value="ADD">ADD</option>
                     </select>
                     {item.type === 'COPY' && (
                       <div className="flex items-center gap-2 bg-white dark:bg-[#0D1117] px-3 py-1.5 rounded-full border border-gray-100 dark:border-gray-800 shadow-inner">
-                        <span className="text-[10px] text-gray-400 font-black uppercase">FROM</span>
+                        <span className="text-[10px] text-gray-400 font-bold">FROM</span>
                         <input type="text" placeholder="--from" value={item.from} onChange={(e) => updateArrayField(copyAddItems, setCopyAddItems, i, "from", e.target.value)}
-                          className={`w-[80px] bg-transparent outline-none text-[11px] font-black text-blue-500`} />
+                          className={`w-[80px] bg-transparent outline-none text-[11px] font-bold text-blue-500`} />
                       </div>
                     )}
                   </div>
                   <div className="flex-1 w-full flex items-center gap-4">
                     <div className="flex-1 relative group">
                       <input type="text" placeholder="Source pattern..." value={item.src} onChange={(e) => updateArrayField(copyAddItems, setCopyAddItems, i, "src", e.target.value)}
-                        className={`${inpSm} !py-2.5 !rounded-2xl !bg-white dark:!bg-[#0D1117] border-blue-200/50 font-mono shadow-md focus:ring-4 ring-blue-500/5`} />
-                      <p className="absolute -top-2 left-4 px-1.5 bg-white dark:bg-[#0D1117] text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] shadow-sm border border-gray-100 dark:border-gray-800 rounded">{t.dockerfile.src}</p>
+                        className={`${inpSm} !h-[44px] !py-3 !rounded-2xl !bg-white dark:!bg-[#0D1117] border-blue-200/50 font-mono shadow-md focus:ring-4 ring-blue-500/5`} />
+                      <p className="absolute -top-2.5 left-4 px-2 py-0.5 bg-white dark:bg-[#0D1117] text-[10px] font-black text-blue-600 dark:text-blue-400 tracking-wider shadow-sm border border-blue-100 dark:border-blue-800 rounded-lg z-10">{t.dockerfile.src}</p>
                     </div>
                     <div className="w-8 h-8 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center shrink-0 border border-blue-100 dark:border-blue-800">
                       <Rocket className="w-4 h-4 text-blue-600 rotate-90" />
                     </div>
                     <div className="flex-1 relative group">
                       <input type="text" placeholder="Container dest..." value={item.dest} onChange={(e) => updateArrayField(copyAddItems, setCopyAddItems, i, "dest", e.target.value)}
-                        className={`${inpSm} !py-2.5 !rounded-2xl !bg-white dark:!bg-[#0D1117] border-blue-200/50 font-mono shadow-md focus:ring-4 ring-blue-500/5`} />
-                      <p className="absolute -top-2 left-4 px-1.5 bg-white dark:bg-[#0D1117] text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em] shadow-sm border border-gray-100 dark:border-gray-800 rounded">{t.dockerfile.dest}</p>
+                        className={`${inpSm} !h-[44px] !py-3 !rounded-2xl !bg-white dark:!bg-[#0D1117] border-blue-200/50 font-mono shadow-md focus:ring-4 ring-blue-500/5`} />
+                      <p className="absolute -top-2.5 left-4 px-2 py-0.5 bg-white dark:bg-[#0D1117] text-[10px] font-black text-blue-600 dark:text-blue-400 tracking-wider shadow-sm border border-blue-100 dark:border-blue-800 rounded-lg z-10">{t.dockerfile.dest}</p>
                     </div>
                   </div>
                   <button onClick={() => removeArrayItem(copyAddItems, setCopyAddItems, i)} className="text-gray-300 hover:text-red-500 p-3 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-2xl transition-all opacity-0 group-hover/file:opacity-100"><Trash2 className="w-5 h-5" /></button>
                 </div>
               ))}
-              {copyAddItems.length === 0 && <div className="py-10 border-2 border-dashed border-blue-200 dark:border-gray-800 rounded-[2rem] flex flex-col items-center justify-center opacity-60 italic text-[12px] font-black text-gray-600 dark:text-gray-300 uppercase tracking-[0.2em]">{t.dockerfile.noResources}</div>}
+              {copyAddItems.length === 0 && <div className="py-10 border-2 border-dashed border-blue-200 dark:border-gray-800 rounded-[2rem] flex flex-col items-center justify-center opacity-60 italic text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">{t.dockerfile.noResources}</div>}
             </div>
           </div>
 
@@ -337,13 +337,13 @@ export function DockerfileTab() {
               <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 blur-3xl rounded-full" />
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2.5 rounded-2xl bg-indigo-500 shadow-xl shadow-indigo-500/20"><Globe className="w-4 h-4 text-white" /></div>
-                <p className="text-[12px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em]">{t.dockerfile.expose}</p>
+                <p className="text-[12px] font-bold text-indigo-600 dark:text-indigo-400 tracking-normal">{t.dockerfile.expose}</p>
               </div>
               <div className="relative group">
                 <input type="text" value={port} onChange={(e) => setPort(e.target.value)} className={`${inp} !bg-white dark:!bg-[#0D1117] !font-mono !text-lg !py-4 shadow-lg`} placeholder="80 443 8080/tcp" />
                 <div className="flex justify-between items-center mt-3">
                   <p className="text-[11px] text-gray-500 dark:text-gray-400 font-bold italic">{t.dockerfile.exposeDesc || 'Declare internal container ports'}</p>
-                  <p className="text-[11px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider bg-indigo-50/50 dark:bg-indigo-900/40 px-2.5 py-1 rounded-xl shadow-sm">{t.dockerfile.exposeHint || 'Space separated'}</p>
+                  <p className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 tracking-normal bg-indigo-50/50 dark:bg-indigo-900/40 px-2.5 py-1 rounded-xl shadow-sm">{t.dockerfile.exposeHint || 'Space separated'}</p>
                 </div>
               </div>
             </div>
@@ -352,21 +352,21 @@ export function DockerfileTab() {
               <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/5 blur-3xl rounded-full" />
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-2.5 rounded-2xl bg-emerald-500 shadow-xl shadow-emerald-500/20"><Activity className="w-4 h-4 text-white" /></div>
-                <p className="text-[12px] font-black text-emerald-600 dark:text-emerald-400 tracking-wider transition-colors">{t.dockerfile.healthcheck}</p>
+                <p className="text-[12px] font-bold text-emerald-600 dark:text-emerald-400 tracking-normal transition-colors">{t.dockerfile.healthcheck}</p>
               </div>
               <div className="space-y-6">
                 <div className="space-y-1.5">
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-wider mb-2.5 ml-1">{t.dockerfile.healthcheckCmd}</p>
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.dockerfile.healthcheckCmd}</p>
                   <input type="text" placeholder="curl -f http://localhost:8080/ || exit 1" value={healthcheck} onChange={(e) => setHealthcheck(e.target.value)} className={`${inp} !bg-white dark:!bg-[#0D1117] shadow-lg font-mono focus:ring-emerald-500/10`} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-wider mb-2.5 ml-1">{t.dockerfile.interval}</p>
-                    <input type="text" placeholder="30s" className={`${inpSm} !py-2.5 !bg-white dark:!bg-[#0D1117] text-center font-black shadow-md`} />
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.dockerfile.interval}</p>
+                    <input type="text" placeholder="30s" className={`${inpSm} !py-2.5 !bg-white dark:!bg-[#0D1117] text-center font-bold shadow-md`} />
                   </div>
                   <div className="space-y-1.5">
-                    <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-wider mb-2.5 ml-1">{t.dockerfile.timeout}</p>
-                    <input type="text" placeholder="5s" className={`${inpSm} !py-2.5 !bg-white dark:!bg-[#0D1117] text-center font-black shadow-md`} />
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.dockerfile.timeout}</p>
+                    <input type="text" placeholder="5s" className={`${inpSm} !py-2.5 !bg-white dark:!bg-[#0D1117] text-center font-bold shadow-md`} />
                   </div>
                 </div>
               </div>
@@ -376,7 +376,7 @@ export function DockerfileTab() {
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-2xl bg-gray-600 shadow-xl shadow-black/20"><Database className="w-4 h-4 text-white" /></div>
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-wider mb-2.5 ml-1">{t.dockerfile.volume}</p>
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.dockerfile.volume}</p>
                 </div>
                 <button onClick={() => setVolumes([...volumes, ""])} className={`${btnSm} !bg-white dark:!bg-[#0D1117] border-gray-200 text-gray-500 hover:border-gray-900 transition-all shadow-md active:translate-y-0.5`}><Plus className="w-4 h-4" /> {t.dockerfile.addVolume}</button>
               </div>
@@ -388,7 +388,7 @@ export function DockerfileTab() {
                     <button onClick={() => setVolumes(volumes.filter((_, idx) => idx !== i))} className="p-3 text-gray-300 hover:text-red-500 opacity-0 group-hover/vol:opacity-100 transition-all hover:bg-red-50 dark:hover:bg-red-900/10 rounded-2xl"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 ))}
-                {volumes.length === 0 && <div className="md:col-span-2 py-8 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-[2rem] flex flex-col items-center justify-center opacity-40 italic text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-wider">{t.dockerfile.noVolumesDefined}</div>}
+                {volumes.length === 0 && <div className="md:col-span-2 py-8 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-[2rem] flex flex-col items-center justify-center opacity-40 italic text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">{t.dockerfile.noVolumesDefined}</div>}
               </div>
             </div>
           </div>
@@ -396,7 +396,7 @@ export function DockerfileTab() {
       </Section>
 
       {/* 4. Templates */}
-      <h2 className="text-[13px] font-black text-gray-400 dark:text-gray-500 mb-10 mt-16 flex items-center justify-center gap-8 tracking-widest transition-colors">
+      <h2 className="text-[13px] font-bold text-gray-400 dark:text-gray-500 mb-10 mt-16 flex items-center justify-center gap-8 tracking-normal transition-colors">
         <div className="h-px flex-1 bg-gradient-to-r from-transparent via-gray-200 to-gray-400 dark:via-gray-800 dark:to-gray-700" />
         {t.dockerfile.templates}
         <div className="h-px flex-1 bg-gradient-to-l from-transparent via-gray-200 to-gray-400 dark:via-gray-800 dark:to-gray-700" />
@@ -453,9 +453,9 @@ export function DockerfileTab() {
                       'bg-orange-500 text-white shadow-orange-500/20'}`}>
               {tpl.icon}
             </div>
-            <h3 className="text-sm font-black text-gray-900 dark:text-gray-100 mb-3 truncate pr-6 tracking-tight transition-colors">{tpl.title}</h3>
+            <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100 mb-3 truncate pr-6 tracking-tight transition-colors">{tpl.title}</h3>
             <p className="text-[12px] font-medium text-gray-500 dark:text-gray-400 leading-relaxed mb-2.5 ml-1 transition-colors">{tpl.desc}</p>
-            <div className="mt-8 flex items-center gap-2 text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-wider opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
+            <div className="mt-8 flex items-center gap-2 text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal opacity-0 group-hover:opacity-100 transition-all translate-x-4 group-hover:translate-x-0">
               {t.dockerfile.appTemplate} <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
             </div>
             {/* Aesthetic flourish */}
