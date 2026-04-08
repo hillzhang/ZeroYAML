@@ -1,14 +1,12 @@
-"use client";
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
-  useKubernetesStore, K8sWorkload, K8sProbe, K8sWorkloadEnv, K8sEnvFrom, K8sEnv,
+  useKubernetesStore, K8sWorkload, K8sProbe, K8sWorkloadEnv, K8sEnvFrom, K8sEnv, K8sContainer,
 } from '@/store/useKubernetesStore';
 import { Checkbox } from '@/components/ui/Checkbox';
 import {
   Layers, Server, RefreshCw, Clock, Database, Network, Box, Terminal,
   ChevronDown, Plus, Trash2, Globe, Shield, Cpu, Tag, Activity, KeyRound, FileText, ListTree,
-  HardDrive, Link, Check, ShieldCheck, UserCheck, Settings2, Zap, ArrowRightLeft, Rocket,
+  HardDrive, Link, Check, ShieldCheck, UserCheck, Settings2, Zap, ArrowRightLeft, Rocket, X,
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -233,10 +231,10 @@ const MetadataGroup = ({ title, items, onAdd, onUpdate, onRemove, colorTheme = "
       <div className="space-y-2.5">
         {items.map((it: any, i: number) => (
           <div key={i} className="flex gap-2 group animate-in fade-in slide-in-from-left-2 duration-300">
-            <input type="text" placeholder="Key..." value={it.key}
+            <input type="text" placeholder="Key..." value={it.key || ''}
               onChange={e => onUpdate(items.map((x: any, idx: number) => idx === i ? { ...x, key: e.target.value } : x))}
               className={`${inpSm} font-mono !bg-white dark:!bg-[#161B22] border-gray-100 dark:border-gray-800 shadow-inner`} />
-            <input type="text" placeholder="Value..." value={it.value}
+            <input type="text" placeholder="Value..." value={it.value || ''}
               onChange={e => onUpdate(items.map((x: any, idx: number) => idx === i ? { ...x, value: e.target.value } : x))}
               className={`${inpSm} font-mono !bg-white dark:!bg-[#161B22] border-gray-100 dark:border-gray-800 shadow-inner`} />
             <button onClick={() => onRemove(items.filter((_: any, idx: number) => idx !== i))}
@@ -337,8 +335,8 @@ function MetadataEditor(props: MetadataEditorProps & { theme?: string }) {
 
 
 // ── Env Item (Isolated to prevent focus loss) ──────────────────────────────
-const EnvItem = ({ e, i, wlId, updateWorkloadEnv, removeWorkloadEnv, configMaps, secrets, t, inpSm }: any) => {
-  const upE = (patch: Partial<typeof e>) => updateWorkloadEnv(wlId, i, patch);
+const EnvItem = ({ e, i, wlId, containerId, isInit, updateEnv, removeEnv, configMaps, secrets, t, inpSm }: any) => {
+  const upE = (patch: Partial<typeof e>) => updateEnv(wlId, containerId, isInit, e.id, patch);
 
   return (
     <div key={e.id} className={`p-4 border rounded-2xl bg-white dark:bg-[#0D1117] shadow-sm transition-all duration-200 border-gray-100 dark:border-gray-800 hover:shadow-md hover:border-blue-100 dark:hover:border-blue-900/40 animate-in fade-in slide-in-from-left-2 duration-300`}>
@@ -346,7 +344,7 @@ const EnvItem = ({ e, i, wlId, updateWorkloadEnv, removeWorkloadEnv, configMaps,
         {/* Key input */}
         <div className="relative group">
           <p className="absolute -top-4 left-1 text-[9px] font-bold text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity">Key</p>
-          <input type="text" placeholder="Key" value={e.name}
+          <input type="text" placeholder="Key" value={e.name || ''}
             onChange={ev => upE({ name: ev.target.value.toUpperCase().replace(/[^A-Z0-9_]/g, '_') })}
             className={`${inpSm} font-bold font-mono text-[11px] !bg-gray-50/50 dark:!bg-black/20 border-transparent focus:border-blue-500`} />
         </div>
@@ -357,7 +355,7 @@ const EnvItem = ({ e, i, wlId, updateWorkloadEnv, removeWorkloadEnv, configMaps,
         <div className="relative group min-w-0">
           <p className="absolute -top-4 left-1 text-[9px] font-bold text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity">Value</p>
           {e.type === 'value' ? (
-            <input type="text" placeholder="Value" value={e.value}
+            <input type="text" placeholder="Value" value={e.value || ''}
               onChange={ev => upE({ value: ev.target.value })}
               className={`${inpSm} font-mono !bg-white dark:!bg-gray-900 border-gray-200 dark:border-gray-800 shadow-inner`} />
           ) : (
@@ -366,7 +364,7 @@ const EnvItem = ({ e, i, wlId, updateWorkloadEnv, removeWorkloadEnv, configMaps,
                 <input
                   list={`env-names-${e.id}`}
                   placeholder={e.type === 'configMapKeyRef' ? 'CM Name' : 'Secret Name'}
-                  value={e.refName}
+                  value={e.refName || ''}
                   onChange={ev => upE({ refName: ev.target.value, refKey: '' })}
                   className={`${inpSm} font-bold text-[10px] w-full !bg-white dark:!bg-gray-900 border-blue-100 dark:border-blue-900 shadow-inner`}
                 />
@@ -381,7 +379,7 @@ const EnvItem = ({ e, i, wlId, updateWorkloadEnv, removeWorkloadEnv, configMaps,
                 <input
                   list={`env-keys-${e.id}`}
                   placeholder="Key"
-                  value={e.refKey}
+                  value={e.refKey || ''}
                   onChange={ev => upE({ refKey: ev.target.value })}
                   className={`${inpSm} font-mono text-[10px] w-full !bg-white dark:!bg-gray-900 border-gray-100 dark:border-gray-800 shadow-inner`}
                 />
@@ -413,9 +411,9 @@ const EnvItem = ({ e, i, wlId, updateWorkloadEnv, removeWorkloadEnv, configMaps,
         </div>
 
         {/* Delete */}
-        <button onClick={() => removeWorkloadEnv(wlId, i)}
+        <button onClick={() => removeEnv(wlId, containerId, isInit, e.id)}
           className="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all">
-          <Trash2 className="w-3.5 h-3.5" />
+          <X className="w-3.5 h-3.5" />
         </button>
       </div>
     </div>
@@ -423,7 +421,8 @@ const EnvItem = ({ e, i, wlId, updateWorkloadEnv, removeWorkloadEnv, configMaps,
 };
 
 // ── Env From Item (Isolated) ───────────────────────────────────────────
-const EnvFromItem = ({ ef, i, wlId, updateWorkloadEnvFrom, removeWorkloadEnvFrom, configMaps, secrets, t, inpSm }: any) => {
+const EnvFromItem = ({ ef, i, wlId, containerId, isInit, updateEnvFrom, removeEnvFrom, configMaps, secrets, t, inpSm }: any) => {
+  const up = (patch: any) => updateEnvFrom(wlId, containerId, isInit, ef.id, patch);
   return (
     <div key={ef.id} className="p-4 bg-gray-50/30 dark:bg-black/20 border border-gray-100 dark:border-gray-800 rounded-2xl space-y-3 transition-colors hover:border-blue-100 dark:hover:border-blue-900/30">
       <div className="flex justify-between items-center text-[10px] font-bold text-gray-400 tracking-normal px-1">
@@ -431,8 +430,8 @@ const EnvFromItem = ({ ef, i, wlId, updateWorkloadEnvFrom, removeWorkloadEnvFrom
           <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
           EnvFrom
         </div>
-        <button onClick={() => removeWorkloadEnvFrom(wlId, i)} className="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all">
-          <Trash2 className="w-3 h-3" />
+        <button onClick={() => removeEnvFrom(wlId, containerId, isInit, ef.id)} className="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all">
+          <X className="w-3 h-3" />
         </button>
       </div>
 
@@ -440,7 +439,7 @@ const EnvFromItem = ({ ef, i, wlId, updateWorkloadEnvFrom, removeWorkloadEnvFrom
         <div className="relative group overflow-hidden">
           <select
             value={ef.type}
-            onChange={ev => updateWorkloadEnvFrom(wlId, i, { type: ev.target.value as any, name: '' })}
+            onChange={ev => up({ type: ev.target.value as any, name: '' })}
             className="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl font-bold text-[10px] h-9 pl-2 pr-6 appearance-none cursor-pointer shadow-sm hover:border-blue-400 dark:hover:border-blue-900/60 focus:outline-none transition-all"
           >
             <option value="configMap">ConfigMap</option>
@@ -453,8 +452,8 @@ const EnvFromItem = ({ ef, i, wlId, updateWorkloadEnvFrom, removeWorkloadEnvFrom
           <input
             list={`ef-names-${ef.id}`}
             placeholder={ef.type === 'configMap' ? 'Choose or type ConfigMap name' : 'Choose or type Secret name'}
-            value={ef.name}
-            onChange={ev => updateWorkloadEnvFrom(wlId, i, { name: ev.target.value })}
+            value={ef.name || ''}
+            onChange={ev => up({ name: ev.target.value })}
             className={`${inpSm} w-full !bg-white dark:!bg-[#0D1117] font-bold border-gray-100 dark:border-gray-800 shadow-inner`}
           />
           <datalist id={`ef-names-${ef.id}`}>
@@ -466,8 +465,8 @@ const EnvFromItem = ({ ef, i, wlId, updateWorkloadEnvFrom, removeWorkloadEnvFrom
 
         <div className="relative group">
           <p className="absolute -top-3.5 left-1 text-[8px] font-bold text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity">Prefix</p>
-          <input type="text" placeholder="PREFIX_" value={ef.prefix}
-            onChange={ev => updateWorkloadEnvFrom(wlId, i, { prefix: ev.target.value })}
+          <input type="text" placeholder="PREFIX_" value={ef.prefix || ''}
+            onChange={ev => up({ prefix: ev.target.value })}
             className={`${inpSm} !bg-white dark:!bg-[#0D1117] font-mono text-[10px] border-none shadow-sm`} />
         </div>
       </div>
@@ -477,18 +476,37 @@ const EnvFromItem = ({ ef, i, wlId, updateWorkloadEnvFrom, removeWorkloadEnvFrom
 
 // ── Workload Editor ──────────────────────────────────────────────────────────
 function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
+  const { t } = useTranslation();
   const {
     pvcs, configMaps, secrets,
-    updateWorkload, updateWorkloadProbe,
-    addWorkloadEnv, removeWorkloadEnv, updateWorkloadEnv,
-    addWorkloadEnvFrom, removeWorkloadEnvFrom, updateWorkloadEnvFrom,
-    addWorkloadVol, removeWorkloadVol, updateWorkloadVol,
+    updateWorkload, 
+    updateContainer, updateContainerProbe,
+    addContainer, removeContainer,
+    addContainerEnv, removeContainerEnv, updateContainerEnv,
+    addContainerEnvFrom, removeContainerEnvFrom, updateContainerEnvFrom,
+    addContainerVol, removeContainerVol, updateContainerVol,
     addWorkloadNS, removeWorkloadNS, updateWorkloadNS,
     addWorkloadTol, removeWorkloadTol, updateWorkloadTol,
     services, updateService, ingresses,
   } = useKubernetesStore();
-  const { t } = useTranslation();
+
+  const [selectedContainerId, setSelectedContainerId] = useState<string | null>(wl.containers[0]?.id || null);
+  const [isInitMode, setIsInitMode] = useState(false);
+
+  // Sync selected container if wl changes or list changes
+  useEffect(() => {
+    const list = isInitMode ? wl.initContainers : wl.containers;
+    const found = list.find(c => c.id === selectedContainerId);
+    if (!found && list.length > 0) {
+      setSelectedContainerId(list[0].id);
+    }
+  }, [wl.id, isInitMode, wl.containers.length, wl.initContainers.length]);
+
+  const selectedContainer = (isInitMode ? wl.initContainers : wl.containers).find(c => c.id === selectedContainerId) || wl.containers[0] || ({} as K8sContainer);
+
   const up = (patch: Partial<K8sWorkload>) => updateWorkload(wl.id, patch);
+  const upC = (patch: Partial<K8sContainer>) => selectedContainer && updateContainer(wl.id, selectedContainer.id, isInitMode, patch);
+
   const isCronJob = wl.workloadType === 'CronJob';
   const isDaemon = wl.workloadType === 'DaemonSet';
   const isSts = wl.workloadType === 'StatefulSet';
@@ -514,83 +532,160 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
           </div>
         </div>
 
+        {/* Global Workload Identity & Settings */}
+        <div className="grid grid-cols-4 gap-4 p-4 bg-blue-50/30 dark:bg-blue-900/10 rounded-2xl border border-blue-100/50 dark:border-blue-900/20">
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 tracking-normal ml-1 flex items-center gap-1.5"><Layers className="w-3.5 h-3.5" />{isInitMode ? 'Init ' : ''}{t.k8s.workload}</p>
+            <div className="relative group">
+              <select value={wl.workloadType} onChange={(e: any) => up({ workloadType: e.target.value })} 
+                className={inp + " appearance-none !bg-indigo-50 dark:!bg-indigo-900/20 !text-indigo-700 dark:!text-indigo-300 font-extrabold !border-indigo-200 dark:!border-indigo-800 shadow-sm hover:!border-indigo-400 dark:hover:!border-indigo-600 transition-all cursor-pointer pr-10"}>
+                {['Deployment', 'StatefulSet', 'DaemonSet', 'CronJob', 'Job'].map(type => (
+                  <option key={type} value={type} className="text-black dark:text-gray-200 bg-white dark:bg-gray-800">{type}</option>
+                ))}
+              </select>
+              <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-indigo-500/50 group-hover:text-indigo-500 pointer-events-none transition-colors" />
+            </div>
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-normal ml-1 flex items-center gap-1.5"><Box className="w-3.5 h-3.5" />{t.k8s.appName}</p>
+            <input type="text" value={wl.appName}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ appName: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
+              className={inp + " !bg-white dark:!bg-[#0D1117] font-bold"} placeholder="my-app" />
+          </div>
+          <div className="space-y-1.5">
+            <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-normal ml-1 flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" />{t.k8s.namespace}</p>
+            <input type="text" value={wl.namespace} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ namespace: e.target.value })} 
+              className={inp + " !bg-white dark:!bg-[#0D1117]"} placeholder="default" />
+          </div>
+          {isCronJob ? (
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-bold text-amber-600 dark:text-amber-400 tracking-normal ml-1 flex items-center gap-1.5"><Clock className="w-3.5 h-3.5" />Schedule</p>
+              <input type="text" value={wl.schedule} onChange={(e: any) => up({ schedule: e.target.value })} 
+                className={inp + " !bg-white dark:!bg-[#0D1117] font-mono"} placeholder="0 * * * *" />
+            </div>
+          ) : isJob ? (
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 tracking-normal ml-1 flex items-center gap-1.5"><Activity className="w-3.5 h-3.5" />Successful Limit</p>
+              <input type="number" value={wl.successfulJobsHistoryLimit} onChange={(e: any) => up({ successfulJobsHistoryLimit: parseInt(e.target.value) || 3 })} 
+                className={inp + " !bg-white dark:!bg-[#0D1117]"} />
+            </div>
+          ) : !isDaemon ? (
+            <div className="space-y-1.5">
+              <p className="text-[11px] font-bold text-indigo-600 dark:text-indigo-400 tracking-normal ml-1 flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5" />{t.k8s.replicas}</p>
+              <input type="number" min="1" value={wl.replicas} onChange={(e: any) => up({ replicas: parseInt(e.target.value) || 1 })} 
+                className={inp + " !bg-white dark:!bg-[#0D1117]"} />
+            </div>
+          ) : (
+            <div className="flex items-end pb-2 justify-center">
+              <span className="text-[10px] text-gray-400 font-bold uppercase tracking-tight italic">Daemon on all nodes</span>
+            </div>
+          )}
+        </div>
+
+        {/* Container Selector Tabs */}
+        <div className="bg-gray-50/50 dark:bg-black/20 p-4 rounded-xl border border-gray-100 dark:border-gray-800/50">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2 bg-white dark:bg-gray-800 p-1 rounded-lg border border-gray-200 dark:border-gray-800 shadow-sm">
+              <button 
+                onClick={() => setIsInitMode(false)}
+                className={`text-[10px] font-bold px-3 py-1.5 rounded-md transition-all ${!isInitMode ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
+                CONTAINERS
+              </button>
+              <button 
+                onClick={() => setIsInitMode(true)}
+                className={`text-[10px] font-bold px-3 py-1.5 rounded-md transition-all ${isInitMode ? 'bg-orange-600 text-white shadow-md shadow-orange-600/20' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}>
+                INIT CONTAINERS
+              </button>
+            </div>
+            <button 
+              onClick={() => addContainer(wl.id, isInitMode)}
+              className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200/50 dark:border-blue-800/50 transition-all hover:scale-105 active:scale-95 hover:bg-blue-100 dark:hover:bg-blue-900/40 shadow-sm">
+              <Plus className="w-4 h-4" /> ADD {isInitMode ? 'INIT' : ''} CONTAINER
+            </button>
+          </div>
+          
+          <div className="flex flex-wrap gap-2">
+            {(isInitMode ? wl.initContainers : wl.containers).map((c) => (
+              <div 
+                key={c.id} 
+                onClick={() => setSelectedContainerId(c.id)}
+                className={`group flex items-center gap-2.5 px-3.5 py-2 rounded-[1rem] cursor-pointer transition-all border-2 ${selectedContainerId === c.id ? 'bg-white dark:bg-gray-800 border-indigo-400 dark:border-indigo-600 shadow-md text-indigo-600 dark:text-indigo-400' : 'bg-white/50 dark:bg-gray-900/50 border-gray-100 dark:border-gray-800 text-gray-500 hover:border-gray-300 dark:hover:border-gray-700'}`}>
+                <div className={`w-2 h-2 rounded-full ${selectedContainerId === c.id ? 'bg-indigo-500 animate-pulse' : 'bg-gray-300 dark:bg-gray-600'}`} />
+                <span className="text-[11px] font-bold truncate max-w-[120px]">{c.name}</span>
+                {((!isInitMode && wl.containers.length > 1) || isInitMode) && (
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); removeContainer(wl.id, c.id, isInitMode); }}
+                    className={`ml-1 opacity-40 group-hover:opacity-100 p-1 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg text-gray-400 hover:text-red-500 transition-all`}>
+                    <X className="w-3 h-3" />
+                  </button>
+                )}
+              </div>
+            ))}
+            {(isInitMode ? wl.initContainers : wl.containers).length === 0 && (
+              <span className="text-[10px] text-gray-400 italic px-3 py-2 font-medium bg-white/30 dark:bg-black/10 rounded-lg border border-dashed border-gray-200 dark:border-gray-800">
+                No {isInitMode ? 'init ' : ''}containers defined. Click add to start.
+              </span>
+            )}
+          </div>
+        </div>
+
         <Section title={t.k8s.basic} icon={<Box className="w-4 h-4" />} theme="blue" badge={t.k8s.badges.core}>
           <div className="grid grid-cols-2 gap-x-6 gap-y-5">
-            {/* Row 1: Identity */}
-            <div className="space-y-1.5">
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center group-hover:text-blue-500 transition-all">{t.k8s.appName}</p>
-              <input type="text" value={wl.appName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ appName: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })}
-                className={inp} placeholder="my-app" />
-            </div>
-            <div className="space-y-1.5">
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center group-hover:text-blue-500 transition-all">{t.k8s.namespace}</p>
-              <input type="text" value={wl.namespace} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ namespace: e.target.value })} className={inp} placeholder="default" />
-            </div>
-
-            {/* Row 2: Deployment Blueprint (Image & Secret) */}
-            <div className="col-span-2 p-5 bg-blue-50/20 dark:bg-blue-900/5 rounded-[1.5rem] border border-blue-100/50 dark:border-blue-900/20 grid grid-cols-2 gap-5 shadow-sm">
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center px-1 h-5">
-                  <p className="text-[12px] font-bold text-blue-700 dark:text-blue-400 tracking-normal ml-1 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" />{t.k8s.image}</p>
-                </div>
-                <input type="text" value={wl.image} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ image: e.target.value })} className={inp + " !bg-white dark:!bg-[#0D1117]"} placeholder="nginx:alpine" />
-              </div>
-              
-              <ResourceSelector
-                label={t.k8s.imagePullSecrets}
-                value={wl.imagePullSecrets?.[0]?.name || ''}
-                inputClassName={inp + " !bg-white dark:!bg-[#0D1117]"}
-                onChange={(val: string) => up({ imagePullSecrets: val ? [{ name: val }] : [] })}
-                options={[
-                  ...secrets.filter(s => s.secretType === 'kubernetes.io/dockerconfigjson').map(s => ({ id: s.id, name: s.name, info: 'Repository Auth' })),
-                  ...secrets.filter(s => s.secretType !== 'kubernetes.io/dockerconfigjson').map(s => ({ id: s.id, name: s.name }))
-                ]}
-                placeholder={`-- ${t.storage.secret} --`}
-                manualPlaceholder={t.k8s.secret}
-              />
-            </div>
-
-            {/* Row 3: Performance & Scaling */}
-            <div className="col-span-2 grid grid-cols-[1fr_1fr_1.5fr] gap-6">
-              {isCronJob ? (
+            {/* Deployment Blueprint (Name, Image, Port & PullPolicy) */}
+            <div className="col-span-2 p-6 bg-gray-50/30 dark:bg-black/10 rounded-[2rem] border border-gray-100 dark:border-gray-800 space-y-6 shadow-sm">
+              {/* Row 1: Identity & Policy */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="space-y-1.5">
-                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">Cron Schedule</p>
-                  <input type="text" value={wl.schedule} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ schedule: e.target.value })} className={inp + " font-mono"} placeholder="0 * * * *" />
+                  <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-normal ml-1 flex items-center gap-1.5"><Tag className="w-3.5 h-3.5" />{isInitMode ? 'Init ' : ''}Name</p>
+                  <input type="text" value={selectedContainer.name || ''} 
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => upC({ name: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-') })} 
+                    className={inp + " font-bold"} placeholder="main" />
                 </div>
-              ) : isJob ? (
                 <div className="space-y-1.5">
-                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">Successful Limit</p>
-                  <input type="number" value={wl.successfulJobsHistoryLimit} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ successfulJobsHistoryLimit: parseInt(e.target.value) || 3 })} className={inp} />
+                  <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-normal ml-1 h-5 flex items-center gap-1.5"><Terminal className="w-3.5 h-3.5" />{t.k8s.containerPort}</p>
+                  <input type="text" value={selectedContainer.containerPort || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => upC({ containerPort: e.target.value })} className={inp} placeholder="80" />
                 </div>
-              ) : !isDaemon ? (
                 <div className="space-y-1.5">
-                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.replicas}</p>
-                  <input type="number" min="1" value={wl.replicas} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ replicas: parseInt(e.target.value) || 1 })} className={inp} />
+                  <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-normal ml-1 h-5 flex items-center gap-1.5"><RefreshCw className="w-3.5 h-3.5" />Pull Policy</p>
+                  <select value={selectedContainer.imagePullPolicy || 'IfNotPresent'} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => upC({ imagePullPolicy: e.target.value as any })} className={inp}>
+                    <option value="IfNotPresent">IfNotPresent</option>
+                    <option value="Always">Always</option>
+                    <option value="Never">Never</option>
+                  </select>
                 </div>
-              ) : <div />}
-
-              <div className="space-y-1.5">
-                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.containerPort}</p>
-                <input type="text" value={wl.containerPort} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ containerPort: e.target.value })} className={inp} placeholder="80" />
               </div>
 
-              <div className="space-y-1.5">
-                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.pullPolicy}</p>
-                <select value={wl.imagePullPolicy} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => up({ imagePullPolicy: e.target.value as any })} className={inp}>
-                  <option value="IfNotPresent">{t.k8s.ifNotPresent}</option>
-                  <option value="Always">{t.k8s.always}</option>
-                  <option value="Never">{t.k8s.never}</option>
-                </select>
+              {/* Row 2: Image & Secret */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+                <div className="md:col-span-2 space-y-1.5">
+                  <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 tracking-normal ml-1 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" />{t.k8s.image}</p>
+                  <input type="text" value={selectedContainer.image || ''} onChange={(e: React.ChangeEvent<HTMLInputElement>) => upC({ image: e.target.value })} className={inp} placeholder="nginx:alpine" />
+                </div>
+                
+                <div className="space-y-1.5">
+                  <ResourceSelector
+                    label={t.k8s.imagePullSecrets}
+                    value={wl.imagePullSecrets?.[0]?.name || ''}
+                    inputClassName={inp}
+                    onChange={(val: string) => up({ imagePullSecrets: val ? [{ name: val }] : [] })}
+                    options={[
+                      ...secrets.filter(s => s.secretType === 'kubernetes.io/dockerconfigjson').map(s => ({ id: s.id, name: s.name, info: 'Repository Auth' })),
+                      ...secrets.filter(s => s.secretType !== 'kubernetes.io/dockerconfigjson').map(s => ({ id: s.id, name: s.name }))
+                    ]}
+                    placeholder={`-- ${t.storage.secret} --`}
+                    manualPlaceholder={t.k8s.secret}
+                  />
+                </div>
               </div>
             </div>
+
 
             {/* Specialized Batch Policies Row */}
             {(isCronJob || isJob) && (
-              <div className="col-span-2 grid grid-cols-2 gap-x-6 pt-2">
+              <div className="col-span-2 grid grid-cols-2 gap-x-6 pt-1 border-t border-blue-50 dark:border-blue-900/20">
                 {isCronJob && (
                   <div className="space-y-1.5">
-                     <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">Concurrency</p>
+                     <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">Concurrency Policy</p>
                      <select value={wl.concurrencyPolicy} onChange={(e: React.ChangeEvent<HTMLSelectElement>) => up({ concurrencyPolicy: e.target.value as any })} className={inp}>
                        <option value="Allow">Allow</option><option value="Forbid">Forbid</option><option value="Replace">Replace</option>
                      </select>
@@ -616,10 +711,10 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
 
                 <label className="flex items-center gap-2 px-2 py-1 bg-yellow-50/50 dark:bg-yellow-900/10 border border-yellow-200/50 dark:border-yellow-800/30 rounded-full cursor-pointer hover:bg-yellow-50 dark:hover:bg-yellow-900/20 transition-colors group">
                   <div
-                    onClick={() => up({ useShellWrapper: !wl.useShellWrapper })}
-                    className={`w-3 h-3 rounded border transition-all flex items-center justify-center cursor-pointer ${wl.useShellWrapper ? 'bg-yellow-500 border-yellow-500' : 'bg-white border-yellow-400/60 shadow-inner'}`}
+                    onClick={() => upC({ useShellWrapper: !selectedContainer.useShellWrapper })}
+                    className={`w-3 h-3 rounded border transition-all flex items-center justify-center cursor-pointer ${selectedContainer.useShellWrapper ? 'bg-yellow-500 border-yellow-500' : 'bg-white border-yellow-400/60 shadow-inner'}`}
                   >
-                    {wl.useShellWrapper && <Check className="w-2 h-2 text-white stroke-[4]" />}
+                    {selectedContainer.useShellWrapper && <Check className="w-2 h-2 text-white stroke-[4]" />}
                   </div>
                   <span className="text-[9px] font-bold text-yellow-700 dark:text-yellow-400 flex items-center gap-1">
                     <Zap className="w-2.5 h-2.5 fill-yellow-500" /> {t.k8s.shellMode}
@@ -628,59 +723,48 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               </div>
 
               <div className="text-[9px] font-mono bg-white/50 dark:bg-black/30 px-2.5 py-1 rounded-full border border-blue-100 dark:border-blue-800 shadow-sm">
-                <span className="opacity-40">Pods:</span> {wl.useShellWrapper ? 'sh -ec "' : ''}{wl.command || '<ENTRYPOINT>'} {wl.args || '<ARGS>'}{wl.useShellWrapper ? '"' : ''}
+                <span className="opacity-40">Pods:</span> {selectedContainer.useShellWrapper ? 'sh -ec "' : ''}{selectedContainer.command || '<ENTRYPOINT>'} {selectedContainer.args || '<ARGS>'}{selectedContainer.useShellWrapper ? '"' : ''}
               </div>
             </div>
 
-            <div className="grid grid-cols-[1fr_40px_1fr] items-start gap-y-1.5 mt-2">
-              {/* Labels Row */}
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-1.5">
-                  <Shield className="w-3.5 h-3.5 text-blue-500" />
-                  <span className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">{t.k8s.command}</span>
-                </div>
-                <span className="text-[9px] font-bold text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">{t.k8s.entrypoint}</span>
-              </div>
-
-              <div /> {/* Spacer for icon row alignment */}
-
-              <div className="flex items-center justify-between px-1">
-                <div className="flex items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5 text-emerald-500" />
-                  <span className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">{t.k8s.args}</span>
-                </div>
-                <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">{t.k8s.cmd}</span>
-              </div>
-
-              {/* Inputs & Plus Icon Row */}
-              <input type="text" value={wl.command} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ command: e.target.value })}
-                placeholder="e.g. /usr/bin/python3"
-                className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-blue-200 dark:border-blue-800"} />
-
-              <div className="h-[42px] flex items-center justify-center">
-                <div className="w-6 h-6 rounded-full bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800 shadow-md flex items-center justify-center ring-4 ring-blue-500/5 transition-transform hover:scale-110">
-                  <Plus className="w-3 h-3 text-blue-500 font-bold" />
-                </div>
-              </div>
-
-              <input type="text" value={wl.args} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ args: e.target.value })}
-                placeholder="e.g. app.py --port 80"
-                className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-emerald-200 dark:border-emerald-800"} />
-
-              {/* Helpers Row */}
-              <p className="text-[9px] text-gray-400 dark:text-gray-500 pl-1 italic font-medium">{t.k8s.mapToEntrypoint}</p>
-              <div />
-              <p className="text-[9px] text-emerald-600 dark:text-emerald-400 pl-1 italic font-medium">{t.k8s.mapToCmd}</p>
+            <div className="col-span-2 grid grid-cols-[1fr_40px_1fr] items-start gap-y-1.5 mt-2 p-4 bg-gray-50/20 dark:bg-black/10 rounded-2xl border border-gray-100 dark:border-gray-800">
+               <div className="flex items-center justify-between px-1">
+                 <div className="flex items-center gap-1.5">
+                   <Shield className="w-3.5 h-3.5 text-blue-500" />
+                   <span className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">{t.k8s.command}</span>
+                 </div>
+                 <span className="text-[9px] font-bold text-blue-700 bg-blue-100 dark:text-blue-300 dark:bg-blue-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">{t.k8s.entrypoint}</span>
+               </div>
+               <div />
+               <div className="flex items-center justify-between px-1">
+                 <div className="flex items-center gap-1.5">
+                   <Activity className="w-3.5 h-3.5 text-emerald-500" />
+                   <span className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">{t.k8s.args}</span>
+                 </div>
+                 <span className="text-[9px] font-bold text-emerald-700 bg-emerald-100 dark:text-emerald-300 dark:bg-emerald-800/60 px-1.5 py-0.5 rounded shadow-sm scale-90">{t.k8s.cmd}</span>
+               </div>
+               <input type="text" value={selectedContainer?.command || ''} onChange={(e: any) => upC({ command: e.target.value })}
+                 placeholder="e.g. /usr/bin/python3"
+                 className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-blue-200 dark:border-blue-800"} />
+               <div className="h-[42px] flex items-center justify-center">
+                 <div className="w-6 h-6 rounded-full bg-white dark:bg-gray-900 border border-blue-200 dark:border-blue-800 shadow-md flex items-center justify-center ring-4 ring-blue-500/5 transition-transform hover:scale-110">
+                   <Plus className="w-3 h-3 text-blue-500 font-bold" />
+                 </div>
+               </div>
+               <input type="text" value={selectedContainer?.args || ''} onChange={(e: any) => upC({ args: e.target.value })}
+                 placeholder="e.g. app.py --port 80"
+                 className={inp + " font-mono !bg-white dark:!bg-[#1C2128] border-emerald-200 dark:border-emerald-800"} />
+               <p className="text-[9px] text-gray-400 dark:text-gray-500 pl-1 italic font-medium">{t.k8s.mapToEntrypoint}</p>
+               <div />
+               <p className="text-[9px] text-emerald-600 dark:text-emerald-400 pl-1 italic font-medium">{t.k8s.mapToCmd}</p>
             </div>
           </div>
-
           {isSts && (
-            <div className="mt-2">
+            <div className="mt-3 px-1">
               <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.k8s.headlessService}</p>
-              <input type="text" value={wl.serviceName} onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ serviceName: e.target.value })} className={inp} />
+              <input type="text" value={wl.serviceName} onChange={(e: any) => up({ serviceName: e.target.value })} className={inp} />
             </div>
           )}
-
         </Section>
 
         {/* Metadata */}
@@ -700,51 +784,31 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
         <Section title={t.k8s.resources} icon={<Cpu className="w-4 h-4" />} theme="orange" badge={t.k8s.badges.quota} defaultOpen={false}>
           <div className="grid grid-cols-2 gap-4">
             {[
-              { label: t.k8s.cpuReq, val: wl.cpuReq, key: 'cpuReq', type: 'cpu', hints: ['100m', '500m', '1'] },
-              { label: t.k8s.cpuLim, val: wl.cpuLimit, key: 'cpuLimit', type: 'cpu', hints: ['500m', '1', '2'] },
-              { label: t.k8s.memReq, val: wl.memReq, key: 'memReq', type: 'mem', hints: ['128Mi', '512Mi', '1Gi'] },
-              { label: t.k8s.memLim, val: wl.memLimit, key: 'memLimit', type: 'mem', hints: ['512Mi', '1Gi', '2Gi'] },
+              { label: t.k8s.cpuReq, val: selectedContainer.cpuReq, key: 'cpuReq', type: 'cpu', hints: ['100m', '500m', '1'] },
+              { label: t.k8s.cpuLim, val: selectedContainer.cpuLimit, key: 'cpuLimit', type: 'cpu', hints: ['500m', '1', '2'] },
+              { label: t.k8s.memReq, val: selectedContainer.memReq, key: 'memReq', type: 'mem', hints: ['128Mi', '512Mi', '1Gi'] },
+              { label: t.k8s.memLim, val: selectedContainer.memLimit, key: 'memLimit', type: 'mem', hints: ['512Mi', '1Gi', '2Gi'] },
             ].map(field => {
-              // Parse value and unit
               const valStr = String(field.val || "");
               const match = valStr.match(/^(\d+)(.*)$/);
               const numPart = match ? match[1] : valStr;
               const unitPart = match ? match[2] : "";
-
               const units = field.type === 'cpu' ? ['', 'm'] : ['Mi', 'Gi', 'Ti', 'Ki'];
-              const unitLabels: Record<string, string> = { '': 'Core', 'm': 'm', 'Mi': 'Mi', 'Gi': 'Gi', 'Ti': 'Ti', 'Ki': 'Ki' };
 
               return (
                 <div key={field.key}>
-                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
-                    {field.label}
-                  </p>
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{field.label}</p>
                   <div className="flex gap-1.5 items-stretch h-[36px]">
-                    <input
-                      type="text"
-                      placeholder="NUM..."
-                      value={numPart}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => up({ [field.key]: e.target.value + unitPart })}
-                      className={`${inp} flex-1 !h-full`}
-                    />
+                    <input type="text" placeholder="NUM..." value={numPart}
+                      onChange={(e: any) => upC({ [field.key]: e.target.value + unitPart })}
+                      className={`${inp} flex-1 !h-full`} />
                     <div className="relative group min-w-[75px]">
-                      <select
-                        value={unitPart}
-                        onChange={e => up({ [field.key]: numPart + e.target.value })}
-                        className="w-full bg-gray-50/50 dark:bg-black/20 border border-gray-200 dark:border-gray-800 rounded-xl font-bold text-[11px] h-full pl-2.5 pr-6 appearance-none cursor-pointer hover:border-orange-200 dark:hover:border-orange-900/40 transition-all focus:outline-none text-gray-700 dark:text-gray-300"
-                      >
-                        {units.map(u => <option key={u} value={u}>{unitLabels[u] || u}</option>)}
+                      <select value={unitPart} onChange={e => upC({ [field.key]: numPart + e.target.value })}
+                        className="w-full bg-gray-50/50 dark:bg-black/20 border border-gray-200 dark:border-gray-800 rounded-xl font-bold text-[11px] h-full pl-2.5 pr-6 appearance-none cursor-pointer hover:border-orange-200 transition-all focus:outline-none text-gray-700 dark:text-gray-300">
+                        {units.map(u => <option key={u} value={u}>{u || 'Core'}</option>)}
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 group-hover:text-orange-500 pointer-events-none transition-colors" />
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400 group-hover:text-blue-500 pointer-events-none" />
                     </div>
-                  </div>
-                  <div className="flex gap-1.5 mt-2 flex-wrap">
-                    {field.hints.map(h => (
-                      <button key={h} onClick={() => up({ [field.key]: h })}
-                        className="px-2.5 py-1 rounded-full bg-orange-50/50 dark:bg-orange-900/20 border border-orange-100/50 dark:border-orange-800/30 text-[10px] text-orange-700 dark:text-orange-400 font-bold tracking-tight hover:bg-orange-500 hover:text-white hover:border-orange-500 hover:scale-105 active:scale-95 transition-all shadow-sm">
-                        {h}
-                      </button>
-                    ))}
                   </div>
                 </div>
               );
@@ -753,16 +817,18 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
         </Section>
 
         {/* Env Vars */}
-        <Section title={t.common.env} icon={<Zap className="w-4 h-4" />} theme="indigo" badge={t.k8s.badges.env} defaultOpen={true}>
+        <Section title={t.common.env} icon={<Zap className="w-4 h-4" />} theme="indigo" badge={t.k8s.badges.env} defaultOpen={false}>
           <div className="space-y-3">
-            {wl.envs.map((e, i) => (
+            {selectedContainer.envs.map((e, i) => (
               <EnvItem
                 key={e.id}
                 e={e}
                 i={i}
                 wlId={wl.id}
-                updateWorkloadEnv={updateWorkloadEnv}
-                removeWorkloadEnv={removeWorkloadEnv}
+                containerId={selectedContainer.id}
+                isInit={isInitMode}
+                updateEnv={updateContainerEnv}
+                removeEnv={removeContainerEnv}
                 configMaps={configMaps}
                 secrets={secrets}
                 t={t}
@@ -770,7 +836,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               />
             ))}
           </div>
-          <button onClick={() => addWorkloadEnv(wl.id)} className="w-full mt-4 py-3 border-2 border-dashed border-teal-100 dark:border-teal-900/40 text-teal-600 dark:text-teal-400 rounded-2xl text-xs font-bold tracking-normal hover:bg-teal-50/50 hover:border-teal-300 transition-all flex items-center justify-center gap-2">
+          <button onClick={() => addContainerEnv(wl.id, selectedContainer.id, isInitMode)} className="w-full mt-4 py-3 border-2 border-dashed border-teal-100 dark:border-teal-900/40 text-teal-600 dark:text-teal-400 rounded-2xl text-xs font-bold tracking-normal hover:bg-teal-50/50 hover:border-teal-300 transition-all flex items-center justify-center gap-2">
             <Plus className="w-4 h-4" /> {t.common.add} {t.common.env}
           </button>
 
@@ -781,14 +847,16 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
             </p>
 
             <div className="space-y-3">
-              {(wl.envFrom || []).map((ef, i) => (
+              {(selectedContainer.envFrom || []).map((ef, i) => (
                 <EnvFromItem
                   key={ef.id}
                   ef={ef}
                   i={i}
                   wlId={wl.id}
-                  updateWorkloadEnvFrom={updateWorkloadEnvFrom}
-                  removeWorkloadEnvFrom={removeWorkloadEnvFrom}
+                  containerId={selectedContainer.id}
+                  isInit={isInitMode}
+                  updateEnvFrom={updateContainerEnvFrom}
+                  removeEnvFrom={removeContainerEnvFrom}
                   configMaps={configMaps}
                   secrets={secrets}
                   t={t}
@@ -796,7 +864,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                 />
               ))}
             </div>
-            <button onClick={() => addWorkloadEnvFrom(wl.id)}
+            <button onClick={() => addContainerEnvFrom(wl.id, selectedContainer.id, isInitMode)}
               className="w-full mt-4 py-3 border-2 border-dashed border-blue-100 dark:border-blue-900/40 text-blue-600 dark:text-blue-400 rounded-2xl text-xs font-bold tracking-normal hover:bg-blue-50/10 dark:hover:bg-blue-900/10 transition-all flex items-center justify-center gap-2">
               <Plus className="w-4 h-4" /> {t.common.add} envFrom
             </button>
@@ -806,21 +874,21 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
         {/* Volumes (Persistence) */}
         <Section title={t.common.volumes} icon={<Database className="w-4 h-4" />} theme="amber" badge={t.k8s.badges.persistence} defaultOpen={false}>
           <div className="space-y-3">
-            {wl.volumeMounts.map(v => (
+            {selectedContainer.volumeMounts.map(v => (
               <div key={v.id} className="p-3 bg-gray-50 dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-lg space-y-3">
                 <div className="flex justify-between items-center text-xs font-bold text-gray-500 dark:text-gray-300">
                   <div className="flex items-center gap-2"><Box className="w-4 h-4 text-indigo-500" />VOLUME MOUNT</div>
-                  <button onClick={() => removeWorkloadVol(wl.id, v.id)} className="text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                  <button onClick={() => removeContainerVol(wl.id, selectedContainer.id, isInitMode, v.id)} className="text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <p className="text-xs font-bold text-gray-500 dark:text-gray-400 tracking-tight mb-1 ml-1">{t.storage.volumeName}</p>
-                    <input type="text" placeholder="data-vol" value={v.name} onChange={e => updateWorkloadVol(wl.id, v.id, { name: e.target.value })} className={inpSm} />
+                    <input type="text" placeholder="data-vol" value={v.name || ''} onChange={e => updateContainerVol(wl.id, selectedContainer.id, isInitMode, v.id, { name: e.target.value })} className={inpSm} />
                   </div>
                   <div>
                     <p className="text-xs font-bold text-gray-500 dark:text-gray-400 tracking-tight mb-1 ml-1">{t.storage.mountPath}</p>
-                    <input type="text" placeholder="/data" value={v.mountPath} onChange={e => updateWorkloadVol(wl.id, v.id, { mountPath: e.target.value })} className={inpSm} />
+                    <input type="text" placeholder="/data" value={v.mountPath || ''} onChange={e => updateContainerVol(wl.id, selectedContainer.id, isInitMode, v.id, { mountPath: e.target.value })} className={inpSm} />
                   </div>
 
                   <div className="space-y-1.5">
@@ -829,7 +897,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                     </p>
                     <div className="relative group">
                       <select value={v.sourceType}
-                        onChange={e => updateWorkloadVol(wl.id, v.id, { sourceType: e.target.value as any, resourceRef: '' })}
+                        onChange={e => updateContainerVol(wl.id, selectedContainer.id, isInitMode, v.id, { sourceType: e.target.value as any, resourceRef: '' })}
                         className={`${inpSm} font-bold appearance-none pr-8`}>
                         <option value="pvc">PersistentVolumeClaim</option>
                         <option value="configMap">ConfigMap</option>
@@ -846,7 +914,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                       <ResourceSelector
                         label={t.k8s.bindResource}
                         value={v.resourceRef}
-                        onChange={val => updateWorkloadVol(wl.id, v.id, { resourceRef: val })}
+                        onChange={val => updateContainerVol(wl.id, selectedContainer.id, isInitMode, v.id, { resourceRef: val })}
                         options={(v.sourceType === 'pvc' ? pvcs : v.sourceType === 'configMap' ? configMaps : secrets).map(r => ({ id: r.id, name: r.name }))}
                         placeholder={t.k8s.bindResource}
                         manualPlaceholder={`Enter existing ${v.sourceType} name`}
@@ -858,7 +926,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                           placeholder={v.sourceType === 'hostPath' ? "Absolute host path (e.g. /var/data)" : "No resource required"}
                           disabled={v.sourceType === 'emptyDir'}
                           value={v.hostPathValue || ''}
-                          onChange={e => updateWorkloadVol(wl.id, v.id, { hostPathValue: e.target.value })}
+                          onChange={e => updateContainerVol(wl.id, selectedContainer.id, isInitMode, v.id, { hostPathValue: e.target.value })}
                           className={inpSm} />
                       </div>
                     )}
@@ -866,7 +934,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                 </div>
 
                 <div className="flex items-center gap-4 pt-2 border-t border-gray-200 dark:border-gray-800">
-                  <Checkbox checked={v.readOnly} onChange={val => updateWorkloadVol(wl.id, v.id, { readOnly: val })} label="ReadOnly" className="shrink-0" />
+                  <Checkbox checked={v.readOnly} onChange={val => updateContainerVol(wl.id, selectedContainer.id, isInitMode, v.id, { readOnly: val })} label="ReadOnly" className="shrink-0" />
 
                   {(v.sourceType === 'configMap' || v.sourceType === 'secret') && (
                     <div className="flex-1 flex items-center gap-2 pl-4 border-l border-gray-200 dark:border-gray-800 overflow-hidden">
@@ -876,15 +944,15 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                         const keys = res?.data.map(d => d.key) || [];
                         if (keys.length > 0) {
                           return (
-                            <select value={v.subPath} onChange={e => updateWorkloadVol(wl.id, v.id, { subPath: e.target.value })}
+                            <select value={v.subPath} onChange={e => updateContainerVol(wl.id, selectedContainer.id, isInitMode, v.id, { subPath: e.target.value })}
                               className="flex-1 min-w-0 bg-transparent text-xs py-0.5 border-b border-dashed border-gray-400 dark:border-gray-600 focus:outline-none focus:border-blue-400 h-6">
                               <option value="">-- Mount All (Default) --</option>
                               {keys.map(k => <option key={k} value={k}>{k}</option>)}
                             </select>
                           );
                         }
-                        return <input type="text" placeholder="Specify key to mount as file (optional)" value={v.subPath}
-                          onChange={e => updateWorkloadVol(wl.id, v.id, { subPath: e.target.value })}
+                        return <input type="text" placeholder="Specify key to mount as file (optional)" value={v.subPath || ''}
+                          onChange={e => updateContainerVol(wl.id, selectedContainer.id, isInitMode, v.id, { subPath: e.target.value })}
                           className="flex-1 border-b border-gray-200 dark:border-gray-700 bg-transparent text-xs py-0.5 px-1 focus:outline-none focus:border-blue-400" />;
                       })()}
                     </div>
@@ -893,29 +961,29 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
               </div>
             ))}
           </div>
-          <button onClick={() => addWorkloadVol(wl.id)} className="text-xs text-indigo-500 hover:text-indigo-400 font-bold py-1 mt-2">+ {t.common.add} Volume</button>
+          <button onClick={() => addContainerVol(wl.id, selectedContainer.id, isInitMode)} className="text-xs text-indigo-500 hover:text-indigo-400 font-bold py-1 mt-2">+ {t.common.add} Volume</button>
         </Section>
 
         {/* Probes */}
         <Section title={t.k8s.probes} icon={<Activity className="w-4 h-4" />} theme="emerald" badge={t.k8s.badges.availability} defaultOpen={false}>
           <div className="space-y-3">
-            <ProbeEditor label="Liveness" probe={wl.livenessProbe} onChange={(f, v) => updateWorkloadProbe(wl.id, 'livenessProbe', f, v)} />
-            <ProbeEditor label="Readiness" probe={wl.readinessProbe} onChange={(f, v) => updateWorkloadProbe(wl.id, 'readinessProbe', f, v)} />
-            <ProbeEditor label="Startup" probe={wl.startupProbe} onChange={(f, v) => updateWorkloadProbe(wl.id, 'startupProbe', f, v)} />
+            <ProbeEditor label="Liveness" probe={selectedContainer.livenessProbe} onChange={(f, v) => updateContainerProbe(wl.id, selectedContainer.id, isInitMode, 'livenessProbe', f, v)} />
+            <ProbeEditor label="Readiness" probe={selectedContainer.readinessProbe} onChange={(f, v) => updateContainerProbe(wl.id, selectedContainer.id, isInitMode, 'readinessProbe', f, v)} />
+            <ProbeEditor label="Startup" probe={selectedContainer.startupProbe} onChange={(f, v) => updateContainerProbe(wl.id, selectedContainer.id, isInitMode, 'startupProbe', f, v)} />
           </div>
         </Section>
 
         {/* Security */}
         <Section title={t.k8s.security} icon={<Shield className="w-4 h-4" />} theme="purple" badge={t.k8s.badges.security} defaultOpen={false}>
           <div className="grid grid-cols-3 gap-2">
-            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">runAsUser</p><input type="number" placeholder="1000" value={wl.runAsUser} onChange={e => up({ runAsUser: e.target.value })} className={inpSm} /></div>
-            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">runAsGroup</p><input type="number" placeholder="3000" value={wl.runAsGroup} onChange={e => up({ runAsGroup: e.target.value })} className={inpSm} /></div>
-            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">fsGroup</p><input type="number" placeholder="2000" value={wl.fsGroup} onChange={e => up({ fsGroup: e.target.value })} className={inpSm} /></div>
+            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">runAsUser</p><input type="number" placeholder="1000" value={selectedContainer.runAsUser || ''} onChange={e => upC({ runAsUser: e.target.value })} className={inpSm} /></div>
+            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">runAsGroup</p><input type="number" placeholder="3000" value={selectedContainer.runAsGroup || ''} onChange={e => upC({ runAsGroup: e.target.value })} className={inpSm} /></div>
+            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">fsGroup (Pod)</p><input type="number" placeholder="2000" value={wl.fsGroup || ''} onChange={e => up({ fsGroup: e.target.value })} className={inpSm} /></div>
           </div>
           <div className="flex flex-wrap gap-4 mt-3">
-            <Checkbox checked={wl.runAsNonRoot} onChange={v => up({ runAsNonRoot: v })} label="runAsNonRoot" />
-            <Checkbox checked={wl.readOnlyRootFilesystem} onChange={v => up({ readOnlyRootFilesystem: v })} label="readOnlyRootFilesystem" />
-            <Checkbox checked={wl.allowPrivilegeEscalation} onChange={v => up({ allowPrivilegeEscalation: v })} label="allowPrivilegeEscalation" />
+            <Checkbox checked={selectedContainer.runAsNonRoot} onChange={v => upC({ runAsNonRoot: v })} label="runAsNonRoot" />
+            <Checkbox checked={selectedContainer.readOnlyRootFilesystem} onChange={v => upC({ readOnlyRootFilesystem: v })} label="readOnlyRootFilesystem" />
+            <Checkbox checked={selectedContainer.allowPrivilegeEscalation} onChange={v => upC({ allowPrivilegeEscalation: v })} label="allowPrivilegeEscalation" />
           </div>
         </Section>
 
@@ -950,11 +1018,11 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                   <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-3 items-center">
                     <div className="relative group">
                       <p className="absolute -top-4 left-1 text-[9px] font-bold text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity whitespace-nowrap">Label Key</p>
-                      <input type="text" placeholder="key (e.g. disktype)" value={ns.key} onChange={e => updateWorkloadNS(wl.id, i, 'key', e.target.value)} className={inpSm} />
+                      <input type="text" placeholder="key (e.g. disktype)" value={ns.key || ''} onChange={e => updateWorkloadNS(wl.id, i, 'key', e.target.value)} className={inpSm} />
                     </div>
                     <div className="relative group">
                       <p className="absolute -top-4 left-1 text-[9px] font-bold text-gray-400 opacity-0 group-focus-within:opacity-100 transition-opacity whitespace-nowrap">Label Value</p>
-                      <input type="text" placeholder="value (e.g. ssd)" value={ns.value} onChange={e => updateWorkloadNS(wl.id, i, 'value', e.target.value)} className={inpSm} />
+                      <input type="text" placeholder="value (e.g. ssd)" value={ns.value || ''} onChange={e => updateWorkloadNS(wl.id, i, 'value', e.target.value)} className={inpSm} />
                     </div>
                     <button onClick={() => removeWorkloadNS(wl.id, i)} className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg transition-all"><Trash2 className="w-4 h-4" /></button>
                   </div>
@@ -1977,7 +2045,7 @@ export function KubernetesTab() {
                     <span className={w.id === activeWorkloadId ? 'text-blue-500' : 'text-gray-400'}>{ICONS[w.workloadType]}</span>
                     <div>
                       <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{w.appName}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{w.workloadType} · {w.image}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{w.workloadType} · {w.containers[0]?.image || 'No image'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">

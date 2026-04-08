@@ -53,21 +53,60 @@ export interface K8sVolumeMount {
   resourceRef: string; // name of PVC / ConfigMap / Secret
 }
 
-// ── Workload ────────────────────────────────────────────────────────────────
-export interface K8sWorkload {
-  id: string; workloadType: WorkloadType;
-  appName: string; namespace: string; image: string;
-  imagePullPolicy: 'Always' | 'Never' | 'IfNotPresent'; imagePullSecrets: { name: string }[];
+// ── Container ────────────────────────────────────────────────────────────────
+export interface K8sContainer {
+  id: string;
+  name: string;
+  image: string;
+  imagePullPolicy: 'Always' | 'Never' | 'IfNotPresent';
   containerPort: string;
   command: string;
   args: string;
+  useShellWrapper: boolean;
   cpuReq: string; cpuLimit: string; memReq: string; memLimit: string;
   envs: K8sWorkloadEnv[];
   envFrom: K8sEnvFrom[];
   volumeMounts: K8sVolumeMount[];
-  livenessProbe: K8sProbe; readinessProbe: K8sProbe; startupProbe: K8sProbe;
-  runAsUser: string; runAsGroup: string; fsGroup: string;
-  runAsNonRoot: boolean; readOnlyRootFilesystem: boolean; allowPrivilegeEscalation: boolean;
+  livenessProbe: K8sProbe;
+  readinessProbe: K8sProbe;
+  startupProbe: K8sProbe;
+  runAsUser: string; runAsGroup: string;
+  runAsNonRoot: boolean;
+  readOnlyRootFilesystem: boolean;
+  allowPrivilegeEscalation: boolean;
+}
+
+const defaultContainer = (name: string): K8sContainer => ({
+  id: uid(),
+  name,
+  image: 'nginx:alpine',
+  imagePullPolicy: 'IfNotPresent',
+  containerPort: '80',
+  command: '',
+  args: '',
+  useShellWrapper: false,
+  cpuReq: '100m', cpuLimit: '500m', memReq: '128Mi', memLimit: '512Mi',
+  envs: [],
+  envFrom: [],
+  volumeMounts: [],
+  livenessProbe: defaultProbe(),
+  readinessProbe: defaultProbe(),
+  startupProbe: defaultProbe(),
+  runAsUser: '',
+  runAsGroup: '',
+  runAsNonRoot: false,
+  readOnlyRootFilesystem: false,
+  allowPrivilegeEscalation: true,
+});
+
+// ── Workload ────────────────────────────────────────────────────────────────
+export interface K8sWorkload {
+  id: string; workloadType: WorkloadType;
+  appName: string; namespace: string;
+  imagePullSecrets: { name: string }[];
+  containers: K8sContainer[];
+  initContainers: K8sContainer[];
+  fsGroup: string;
   replicas: number; updateStrategy: 'RollingUpdate' | 'Recreate';
   maxSurge: string; maxUnavailable: string;
   serviceName: string; // StatefulSet headless service
@@ -80,27 +119,25 @@ export interface K8sWorkload {
   labels: K8sEnv[]; annotations: K8sEnv[];
   podLabels: K8sEnv[]; podAnnotations: K8sEnv[];
   hostNetwork: boolean; dnsPolicy: string;
-  useShellWrapper: boolean;
 }
 
-const defaultWorkload = (): K8sWorkload => ({
-  id: uid(), workloadType: 'Deployment',
-  appName: 'my-app', namespace: 'default', image: 'nginx:alpine',
-  imagePullPolicy: 'IfNotPresent', imagePullSecrets: [], containerPort: '80',
-  command: '', args: '',
-  cpuReq: '100m', cpuLimit: '500m', memReq: '128Mi', memLimit: '512Mi',
-  envs: [], envFrom: [], volumeMounts: [],
-  livenessProbe: defaultProbe(), readinessProbe: defaultProbe(), startupProbe: defaultProbe(),
-  runAsUser: '', runAsGroup: '', fsGroup: '',
-  runAsNonRoot: false, readOnlyRootFilesystem: false, allowPrivilegeEscalation: true,
-  replicas: 1, updateStrategy: 'RollingUpdate', maxSurge: '1', maxUnavailable: '0',
-  serviceName: 'my-app-headless', daemonSetUpdateStrategy: 'RollingUpdate',
-  schedule: '0 * * * *', concurrencyPolicy: 'Forbid', restartPolicy: 'OnFailure',
-  successfulJobsHistoryLimit: 3, failedJobsHistoryLimit: 1, activeDeadlineSeconds: '',
-  nodeSelector: [], tolerations: [], labels: [], annotations: [],
-  podLabels: [], podAnnotations: [], hostNetwork: false, dnsPolicy: 'ClusterFirst',
-  useShellWrapper: false,
-});
+const defaultWorkload = (): K8sWorkload => {
+  const appName = 'my-app';
+  return {
+    id: uid(), workloadType: 'Deployment',
+    appName, namespace: 'default',
+    imagePullSecrets: [],
+    containers: [defaultContainer('main')],
+    initContainers: [],
+    fsGroup: '',
+    replicas: 1, updateStrategy: 'RollingUpdate', maxSurge: '1', maxUnavailable: '0',
+    serviceName: appName + '-headless', daemonSetUpdateStrategy: 'RollingUpdate',
+    schedule: '0 * * * *', concurrencyPolicy: 'Forbid', restartPolicy: 'OnFailure',
+    successfulJobsHistoryLimit: 3, failedJobsHistoryLimit: 1, activeDeadlineSeconds: '',
+    nodeSelector: [], tolerations: [], labels: [], annotations: [],
+    podLabels: [], podAnnotations: [], hostNetwork: false, dnsPolicy: 'ClusterFirst',
+  };
+};
 
 // ── Network: Service ────────────────────────────────────────────────────────
 export interface K8sServiceDef {
@@ -248,16 +285,23 @@ export interface KubernetesState {
   addWorkload: () => void;
   removeWorkload: (id: string) => void;
   updateWorkload: (id: string, patch: Partial<K8sWorkload>) => void;
-  updateWorkloadProbe: (id: string, pk: 'livenessProbe' | 'readinessProbe' | 'startupProbe', field: keyof K8sProbe, value: any) => void;
-  addWorkloadEnv: (id: string) => void;
-  removeWorkloadEnv: (id: string, idx: number) => void;
-  updateWorkloadEnv: (id: string, idx: number, patch: Partial<K8sWorkloadEnv>) => void;
-  addWorkloadEnvFrom: (id: string) => void;
-  removeWorkloadEnvFrom: (id: string, idx: number) => void;
-  updateWorkloadEnvFrom: (id: string, idx: number, patch: Partial<K8sEnvFrom>) => void;
-  addWorkloadVol: (id: string) => void;
-  removeWorkloadVol: (id: string, volId: string) => void;
-  updateWorkloadVol: (id: string, volId: string, patch: Partial<K8sVolumeMount>) => void;
+  
+  // Container CRUD
+  addContainer: (workloadId: string, isInit: boolean) => void;
+  removeContainer: (workloadId: string, containerId: string, isInit: boolean) => void;
+  updateContainer: (workloadId: string, containerId: string, isInit: boolean, patch: Partial<K8sContainer>) => void;
+  updateContainerProbe: (workloadId: string, containerId: string, isInit: boolean, pk: 'livenessProbe' | 'readinessProbe' | 'startupProbe', field: keyof K8sProbe, value: any) => void;
+  addContainerEnv: (workloadId: string, containerId: string, isInit: boolean) => void;
+  removeContainerEnv: (workloadId: string, containerId: string, isInit: boolean, idx: number) => void;
+  updateContainerEnv: (workloadId: string, containerId: string, isInit: boolean, idx: number, patch: Partial<K8sWorkloadEnv>) => void;
+  addContainerEnvFrom: (workloadId: string, containerId: string, isInit: boolean) => void;
+  removeContainerEnvFrom: (workloadId: string, containerId: string, isInit: boolean, idx: number) => void;
+  updateContainerEnvFrom: (workloadId: string, containerId: string, isInit: boolean, idx: number, patch: Partial<K8sEnvFrom>) => void;
+  addContainerVol: (workloadId: string, containerId: string, isInit: boolean) => void;
+  removeContainerVol: (workloadId: string, containerId: string, isInit: boolean, volId: string) => void;
+  updateContainerVol: (workloadId: string, containerId: string, isInit: boolean, volId: string, patch: Partial<K8sVolumeMount>) => void;
+
+  // Workload Resource CRUD (Pod level)
   addWorkloadNS: (id: string) => void;
   removeWorkloadNS: (id: string, idx: number) => void;
   updateWorkloadNS: (id: string, idx: number, field: 'key' | 'value', value: string) => void;
@@ -327,86 +371,173 @@ export const useKubernetesStore = create<KubernetesState>()((set) => ({
   activeServiceId: null, activeIngressId: null,
   activePvcId: null, activeConfigMapId: null, activeSecretId: null, activePvId: null, activeStorageClassId: null,
 
-  setSection: (s) => set({ activeSection: s }),
-  setNamespace: (ns) => set({ globalNamespace: ns }),
-  setActiveWorkloadId: (id) => set({ activeWorkloadId: id }),
-  setActiveServiceId: (id) => set({ activeServiceId: id }),
-  setActiveIngressId: (id) => set({ activeIngressId: id }),
-  setActivePvcId: (id) => set({ activePvcId: id }),
-  setActiveConfigMapId: (id) => set({ activeConfigMapId: id }),
-  setActiveSecretId: (id) => set({ activeSecretId: id }),
-  setActivePvId: (id) => set({ activePvId: id }),
-  setActiveStorageClassId: (id) => set({ activeStorageClassId: id }),
+  setSection: (s: K8sSection) => set({ activeSection: s }),
+  setNamespace: (ns: string) => set({ globalNamespace: ns }),
+  setActiveWorkloadId: (id: string | null) => set({ activeWorkloadId: id }),
+  setActiveServiceId: (id: string | null) => set({ activeServiceId: id }),
+  setActiveIngressId: (id: string | null) => set({ activeIngressId: id }),
+  setActivePvcId: (id: string | null) => set({ activePvcId: id }),
+  setActiveConfigMapId: (id: string | null) => set({ activeConfigMapId: id }),
+  setActiveSecretId: (id: string | null) => set({ activeSecretId: id }),
+  setActivePvId: (id: string | null) => set({ activePvId: id }),
+  setActiveStorageClassId: (id: string | null) => set({ activeStorageClassId: id }),
 
   // ── Workload ──
   addWorkload: () => set((s) => { const w = defaultWorkload(); return { workloads: [...s.workloads, w], activeWorkloadId: w.id }; }),
-  removeWorkload: (id) => set((s) => ({ workloads: s.workloads.filter(w => w.id !== id), activeWorkloadId: s.activeWorkloadId === id ? (s.workloads[0]?.id ?? null) : s.activeWorkloadId })),
-  updateWorkload: (id, patch) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, ...patch } : w) })),
-  updateWorkloadProbe: (id, pk, field, value) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, [pk]: { ...w[pk], [field]: value } } : w) })),
-  addWorkloadEnv: (id) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, envs: [...w.envs, { id: uid(), name: '', type: 'value', value: '', refName: '', refKey: '', optional: false }] } : w) })),
-  removeWorkloadEnv: (id, idx) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, envs: w.envs.filter((_, i) => i !== idx) } : w) })),
-  updateWorkloadEnv: (id, idx, patch) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, envs: w.envs.map((e, i) => i === idx ? { ...e, ...patch } : e) } : w) })),
-  addWorkloadEnvFrom: (id) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, envFrom: [...(w.envFrom || []), { id: uid(), type: 'configMap', name: '', prefix: '' }] } : w) })),
-  removeWorkloadEnvFrom: (id, idx) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, envFrom: (w.envFrom || []).filter((_, i) => i !== idx) } : w) })),
-  updateWorkloadEnvFrom: (id, idx, patch) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, envFrom: (w.envFrom || []).map((e, i) => i === idx ? { ...e, ...patch } : e) } : w) })),
-  addWorkloadVol: (id) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, volumeMounts: [...w.volumeMounts, { id: uid(), name: '', mountPath: '', subPath: '', readOnly: false, sourceType: 'emptyDir', hostPathValue: '', resourceRef: '' }] } : w) })),
-  removeWorkloadVol: (id, volId) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, volumeMounts: w.volumeMounts.filter(v => v.id !== volId) } : w) })),
-  updateWorkloadVol: (id, volId, patch) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, volumeMounts: w.volumeMounts.map(v => v.id === volId ? { ...v, ...patch } : v) } : w) })),
-  addWorkloadNS: (id) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, nodeSelector: [...w.nodeSelector, { key: '', value: '' }] } : w) })),
-  removeWorkloadNS: (id, idx) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, nodeSelector: w.nodeSelector.filter((_, i) => i !== idx) } : w) })),
-  updateWorkloadNS: (id, idx, field, value) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, nodeSelector: w.nodeSelector.map((e, i) => i === idx ? { ...e, [field]: value } : e) } : w) })),
-  addWorkloadTol: (id) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, tolerations: [...w.tolerations, { key: '', operator: 'Equal', value: '', effect: '' }] } : w) })),
-  removeWorkloadTol: (id, idx) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, tolerations: w.tolerations.filter((_, i) => i !== idx) } : w) })),
-  updateWorkloadTol: (id, idx, patch) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, tolerations: w.tolerations.map((t, i) => i === idx ? { ...t, ...patch } : t) } : w) })),
+  removeWorkload: (id: string) => set((s) => ({ workloads: s.workloads.filter(w => w.id !== id), activeWorkloadId: s.activeWorkloadId === id ? (s.workloads[0]?.id ?? null) : s.activeWorkloadId })),
+  updateWorkload: (id: string, patch: Partial<K8sWorkload>) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, ...patch } : w) })),
+  
+  // ── Container CRUD ──
+  addContainer: (wid: string, isInit: boolean) => set((s) => ({
+    workloads: s.workloads.map(w => {
+      if (w.id !== wid) return w;
+      const newList = isInit ? [...w.initContainers, defaultContainer(`init-${w.initContainers.length + 1}`)] : [...w.containers, defaultContainer(`container-${w.containers.length + 1}`)];
+      return isInit ? { ...w, initContainers: newList } : { ...w, containers: newList };
+    })
+  })),
+  removeContainer: (wid: string, cid: string, isInit: boolean) => set((s) => ({
+    workloads: s.workloads.map(w => {
+      if (w.id !== wid) return w;
+      const key = isInit ? 'initContainers' : 'containers';
+      const filtered = w[key].filter(c => c.id !== cid);
+      if (filtered.length === 0 && !isInit) return w; // Keep at least one main container
+      return { ...w, [key]: filtered };
+    })
+  })),
+  updateContainer: (wid: string, cid: string, isInit: boolean, patch: Partial<K8sContainer>) => set((s) => ({
+    workloads: s.workloads.map(w => {
+      if (w.id !== wid) return w;
+      const key = isInit ? 'initContainers' : 'containers';
+      return { ...w, [key]: w[key].map(c => c.id === cid ? { ...c, ...patch } : c) };
+    })
+  })),
+  updateContainerProbe: (wid: string, cid: string, isInit: boolean, pk: 'livenessProbe' | 'readinessProbe' | 'startupProbe', field: keyof K8sProbe, value: any) => set((s) => ({
+    workloads: s.workloads.map(w => {
+      if (w.id !== wid) return w;
+      const key = isInit ? 'initContainers' : 'containers';
+      return { ...w, [key]: w[key].map(c => c.id === cid ? { ...c, [pk]: { ...(c[pk] as K8sProbe), [field]: value } } : c) };
+    })
+  })),
+  addContainerEnv: (wid: string, cid: string, isInit: boolean) => set((s) => ({
+    workloads: s.workloads.map(w => {
+      if (w.id !== wid) return w;
+      const key = isInit ? 'initContainers' : 'containers';
+      return { ...w, [key]: w[key].map(c => c.id === cid ? { ...c, envs: [...c.envs, { id: uid(), name: '', type: 'value', value: '', refName: '', refKey: '', optional: false }] } : c) };
+    })
+  })),
+  removeContainerEnv: (wid: string, cid: string, isInit: boolean, idx: number) => set((s) => ({
+    workloads: s.workloads.map(w => {
+      if (w.id !== wid) return w;
+      const key = isInit ? 'initContainers' : 'containers';
+      return { ...w, [key]: w[key].map(c => c.id === cid ? { ...c, envs: c.envs.filter((_, i) => i !== idx) } : c) };
+    })
+  })),
+  updateContainerEnv: (wid: string, cid: string, isInit: boolean, idx: number, patch: Partial<K8sWorkloadEnv>) => set((s) => ({
+    workloads: s.workloads.map(w => {
+      if (w.id !== wid) return w;
+      const key = isInit ? 'initContainers' : 'containers';
+      return { ...w, [key]: w[key].map(c => c.id === cid ? { ...c, envs: c.envs.map((e, i) => i === idx ? { ...e, ...patch } : e) } : c) };
+    })
+  })),
+  addContainerEnvFrom: (wid: string, cid: string, isInit: boolean) => set((s) => ({
+    workloads: s.workloads.map(w => {
+      if (w.id !== wid) return w;
+      const key = isInit ? 'initContainers' : 'containers';
+      return { ...w, [key]: w[key].map(c => c.id === cid ? { ...c, envFrom: [...(c.envFrom || []), { id: uid(), type: 'configMap', name: '', prefix: '' }] } : c) };
+    })
+  })),
+  removeContainerEnvFrom: (wid: string, cid: string, isInit: boolean, idx: number) => set((s) => ({
+    workloads: s.workloads.map(w => {
+      if (w.id !== wid) return w;
+      const key = isInit ? 'initContainers' : 'containers';
+      return { ...w, [key]: w[key].map(c => c.id === cid ? { ...c, envFrom: (c.envFrom || []).filter((_, i) => i !== idx) } : c) };
+    })
+  })),
+  updateContainerEnvFrom: (wid: string, cid: string, isInit: boolean, idx: number, patch: Partial<K8sEnvFrom>) => set((s) => ({
+    workloads: s.workloads.map(w => {
+      if (w.id !== wid) return w;
+      const key = isInit ? 'initContainers' : 'containers';
+      return { ...w, [key]: w[key].map(c => c.id === cid ? { ...c, envFrom: (c.envFrom || []).map((e, i) => i === idx ? { ...e, ...patch } : e) } : c) };
+    })
+  })),
+  addContainerVol: (wid: string, cid: string, isInit: boolean) => set((s) => ({
+    workloads: s.workloads.map(w => {
+      if (w.id !== wid) return w;
+      const key = isInit ? 'initContainers' : 'containers';
+      return { ...w, [key]: w[key].map(c => c.id === cid ? { ...c, volumeMounts: [...c.volumeMounts, { id: uid(), name: '', mountPath: '', subPath: '', readOnly: false, sourceType: 'emptyDir', hostPathValue: '', resourceRef: '' }] } : c) };
+    })
+  })),
+  removeContainerVol: (wid: string, cid: string, isInit: boolean, volId: string) => set((s) => ({
+    workloads: s.workloads.map(w => {
+      if (w.id !== wid) return w;
+      const key = isInit ? 'initContainers' : 'containers';
+      return { ...w, [key]: w[key].map(c => c.id === cid ? { ...c, volumeMounts: c.volumeMounts.filter(v => v.id !== volId) } : c) };
+    })
+  })),
+  updateContainerVol: (wid: string, cid: string, isInit: boolean, volId: string, patch: Partial<K8sVolumeMount>) => set((s) => ({
+    workloads: s.workloads.map(w => {
+      if (w.id !== wid) return w;
+      const key = isInit ? 'initContainers' : 'containers';
+      return { ...w, [key]: w[key].map(c => c.id === cid ? { ...c, volumeMounts: c.volumeMounts.map(v => v.id === volId ? { ...v, ...patch } : v) } : c) };
+    })
+  })),
+
+  // ── Pod-level Resource CRUD ──
+  addWorkloadNS: (id: string) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, nodeSelector: [...w.nodeSelector, { key: '', value: '' }] } : w) })),
+  removeWorkloadNS: (id: string, idx: number) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, nodeSelector: w.nodeSelector.filter((_, i) => i !== idx) } : w) })),
+  updateWorkloadNS: (id: string, idx: number, field: 'key' | 'value', value: string) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, nodeSelector: w.nodeSelector.map((e, i) => i === idx ? { ...e, [field]: value } : e) } : w) })),
+  addWorkloadTol: (id: string) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, tolerations: [...w.tolerations, { key: '', operator: 'Equal', value: '', effect: '' }] } : w) })),
+  removeWorkloadTol: (id: string, idx: number) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, tolerations: w.tolerations.filter((_, i) => i !== idx) } : w) })),
+  updateWorkloadTol: (id: string, idx: number, patch: Partial<K8sToleration>) => set((s) => ({ workloads: s.workloads.map(w => w.id === id ? { ...w, tolerations: w.tolerations.map((t, i) => i === idx ? { ...t, ...patch } : t) } : w) })),
 
   // ── Service ──
   addService: () => set((s) => { const svc = defaultService(); return { services: [...s.services, svc], activeServiceId: svc.id }; }),
-  removeService: (id) => set((s) => ({ services: s.services.filter(v => v.id !== id), activeServiceId: s.activeServiceId === id ? null : s.activeServiceId })),
-  updateService: (id, patch) => set((s) => ({ services: s.services.map(v => v.id === id ? { ...v, ...patch } : v) })),
+  removeService: (id: string) => set((s) => ({ services: s.services.filter(v => v.id !== id), activeServiceId: s.activeServiceId === id ? null : s.activeServiceId })),
+  updateService: (id: string, patch: Partial<K8sServiceDef>) => set((s) => ({ services: s.services.map(v => v.id === id ? { ...v, ...patch } : v) })),
 
   // ── Ingress ──
   addIngress: () => set((s) => { const ing = defaultIngress(); return { ingresses: [...s.ingresses, ing], activeIngressId: ing.id }; }),
-  removeIngress: (id) => set((s) => ({ ingresses: s.ingresses.filter(v => v.id !== id), activeIngressId: s.activeIngressId === id ? null : s.activeIngressId })),
-  updateIngress: (id, patch) => set((s) => ({ ingresses: s.ingresses.map(v => v.id === id ? { ...v, ...patch } : v) })),
-  addIngressRule: (ingressId) => set((s) => ({ ingresses: s.ingresses.map(ing => ing.id === ingressId ? { ...ing, rules: [...ing.rules, { id: uid(), host: '', path: '/', pathType: 'Prefix', serviceName: '', servicePort: '80' }] } : ing) })),
-  removeIngressRule: (ingressId, ruleId) => set((s) => ({ ingresses: s.ingresses.map(ing => ing.id === ingressId ? { ...ing, rules: ing.rules.filter(r => r.id !== ruleId) } : ing) })),
-  updateIngressRule: (ingressId, ruleId, patch) => set((s) => ({ ingresses: s.ingresses.map(ing => ing.id === ingressId ? { ...ing, rules: ing.rules.map(r => r.id === ruleId ? { ...r, ...patch } : r) } : ing) })),
+  removeIngress: (id: string) => set((s) => ({ ingresses: s.ingresses.filter(v => v.id !== id), activeIngressId: s.activeIngressId === id ? null : s.activeIngressId })),
+  updateIngress: (id: string, patch: Partial<K8sIngressDef>) => set((s) => ({ ingresses: s.ingresses.map(v => v.id === id ? { ...v, ...patch } : v) })),
+  addIngressRule: (ingressId: string) => set((s) => ({ ingresses: s.ingresses.map(ing => ing.id === ingressId ? { ...ing, rules: [...ing.rules, { id: uid(), host: '', path: '/', pathType: 'Prefix', serviceName: '', servicePort: '80' }] } : ing) })),
+  removeIngressRule: (ingressId: string, ruleId: string) => set((s) => ({ ingresses: s.ingresses.map(ing => ing.id === ingressId ? { ...ing, rules: ing.rules.filter(r => r.id !== ruleId) } : ing) })),
+  updateIngressRule: (ingressId: string, ruleId: string, patch: Partial<K8sIngressRule>) => set((s) => ({ ingresses: s.ingresses.map(ing => ing.id === ingressId ? { ...ing, rules: ing.rules.map(r => r.id === ruleId ? { ...r, ...patch } : r) } : ing) })),
 
   // ── PVC ──
   addPvc: () => set((s) => { const p = defaultPvc(); return { pvcs: [...s.pvcs, p], activePvcId: p.id }; }),
-  removePvc: (id) => set((s) => ({ pvcs: s.pvcs.filter(v => v.id !== id), activePvcId: s.activePvcId === id ? null : s.activePvcId })),
-  updatePvc: (id, patch) => set((s) => ({ pvcs: s.pvcs.map(v => v.id === id ? { ...v, ...patch } : v) })),
+  removePvc: (id: string) => set((s) => ({ pvcs: s.pvcs.filter(v => v.id !== id), activePvcId: s.activePvcId === id ? null : s.activePvcId })),
+  updatePvc: (id: string, patch: Partial<K8sPvcDef>) => set((s) => ({ pvcs: s.pvcs.map(v => v.id === id ? { ...v, ...patch } : v) })),
 
   // ── ConfigMap ──
   addConfigMap: () => set((s) => { const c = defaultConfigMap(); return { configMaps: [...s.configMaps, c], activeConfigMapId: c.id }; }),
-  removeConfigMap: (id) => set((s) => ({ configMaps: s.configMaps.filter(v => v.id !== id), activeConfigMapId: s.activeConfigMapId === id ? null : s.activeConfigMapId })),
-  updateConfigMap: (id, patch) => set((s) => ({ configMaps: s.configMaps.map(v => v.id === id ? { ...v, ...patch } : v) })),
-  addConfigMapData: (id) => set((s) => ({ configMaps: s.configMaps.map(v => v.id === id ? { ...v, data: [...v.data, { key: '', value: '' }] } : v) })),
-  removeConfigMapData: (id, idx) => set((s) => ({ configMaps: s.configMaps.map(v => v.id === id ? { ...v, data: v.data.filter((_, i) => i !== idx) } : v) })),
-  updateConfigMapData: (id, idx, field, value) => set((s) => ({ configMaps: s.configMaps.map(v => v.id === id ? { ...v, data: v.data.map((d, i) => i === idx ? { ...d, [field]: value } : d) } : v) })),
+  removeConfigMap: (id: string) => set((s) => ({ configMaps: s.configMaps.filter(v => v.id !== id), activeConfigMapId: s.activeConfigMapId === id ? null : s.activeConfigMapId })),
+  updateConfigMap: (id: string, patch: Partial<K8sConfigMapDef>) => set((s) => ({ configMaps: s.configMaps.map(v => v.id === id ? { ...v, ...patch } : v) })),
+  addConfigMapData: (id: string) => set((s) => ({ configMaps: s.configMaps.map(v => v.id === id ? { ...v, data: [...v.data, { key: '', value: '' }] } : v) })),
+  removeConfigMapData: (id: string, idx: number) => set((s) => ({ configMaps: s.configMaps.map(v => v.id === id ? { ...v, data: v.data.filter((_, i) => i !== idx) } : v) })),
+  updateConfigMapData: (id: string, idx: number, field: 'key' | 'value', value: string) => set((s) => ({ configMaps: s.configMaps.map(v => v.id === id ? { ...v, data: v.data.map((d, i) => i === idx ? { ...d, [field]: value } : d) } : v) })),
 
   // ── Secret ──
   addSecret: () => set((s) => { const sec = defaultSecret(); return { secrets: [...s.secrets, sec], activeSecretId: sec.id }; }),
-  removeSecret: (id) => set((s) => ({ secrets: s.secrets.filter(v => v.id !== id), activeSecretId: s.activeSecretId === id ? null : s.activeSecretId })),
-  updateSecret: (id, patch) => set((s) => ({ secrets: s.secrets.map(v => v.id === id ? { ...v, ...patch } : v) })),
-  addSecretData: (id) => set((s) => ({ secrets: s.secrets.map(v => v.id === id ? { ...v, data: [...v.data, { key: '', value: '' }] } : v) })),
-  removeSecretData: (id, idx) => set((s) => ({ secrets: s.secrets.map(v => v.id === id ? { ...v, data: v.data.filter((_, i) => i !== idx) } : v) })),
-  updateSecretData: (id, idx, field, value) => set((s) => ({ secrets: s.secrets.map(v => v.id === id ? { ...v, data: v.data.map((d, i) => i === idx ? { ...d, [field]: value } : d) } : v) })),
+  removeSecret: (id: string) => set((s) => ({ secrets: s.secrets.filter(v => v.id !== id), activeSecretId: s.activeSecretId === id ? null : s.activeSecretId })),
+  updateSecret: (id: string, patch: Partial<K8sSecretDef>) => set((s) => ({ secrets: s.secrets.map(v => v.id === id ? { ...v, ...patch } : v) })),
+  addSecretData: (id: string) => set((s) => ({ secrets: s.secrets.map(v => v.id === id ? { ...v, data: [...v.data, { key: '', value: '' }] } : v) })),
+  removeSecretData: (id: string, idx: number) => set((s) => ({ secrets: s.secrets.map(v => v.id === id ? { ...v, data: v.data.filter((_, i) => i !== idx) } : v) })),
+  updateSecretData: (id: string, idx: number, field: 'key' | 'value', value: string) => set((s) => ({ secrets: s.secrets.map(v => v.id === id ? { ...v, data: v.data.map((d, i) => i === idx ? { ...d, [field]: value } : d) } : v) })),
 
   // ── PV ──
   addPv: () => set((s) => { const pv = defaultPv(); return { pvs: [...s.pvs, pv], activePvId: pv.id }; }),
-  removePv: (id) => set((s) => ({ pvs: s.pvs.filter(p => p.id !== id), activePvId: s.activePvId === id ? null : s.activePvId })),
-  updatePv: (id, patch) => set((s) => ({ pvs: s.pvs.map(p => p.id === id ? { ...p, ...patch } : p) })),
+  removePv: (id: string) => set((s) => ({ pvs: s.pvs.filter(p => p.id !== id), activePvId: s.activePvId === id ? null : s.activePvId })),
+  updatePv: (id: string, patch: Partial<K8sPvDef>) => set((s) => ({ pvs: s.pvs.map(p => p.id === id ? { ...p, ...patch } : p) })),
 
   // ── StorageClass ──
   addStorageClass: () => set((s) => { const sc = defaultStorageClass(); return { storageClasses: [...s.storageClasses, sc], activeStorageClassId: sc.id }; }),
-  removeStorageClass: (id) => set((s) => ({ storageClasses: s.storageClasses.filter(v => v.id !== id), activeStorageClassId: s.activeStorageClassId === id ? null : s.activeStorageClassId })),
-  updateStorageClass: (id, patch) => set((s) => ({ storageClasses: s.storageClasses.map(v => v.id === id ? { ...v, ...patch } : v) })),
-  addStorageClassParam: (id) => set((s) => {
+  removeStorageClass: (id: string) => set((s) => ({ storageClasses: s.storageClasses.filter(v => v.id !== id), activeStorageClassId: s.activeStorageClassId === id ? null : s.activeStorageClassId })),
+  updateStorageClass: (id: string, patch: Partial<K8sStorageClass>) => set((s) => ({ storageClasses: s.storageClasses.map(v => v.id === id ? { ...v, ...patch } : v) })),
+  addStorageClassParam: (id: string) => set((s) => {
     return { storageClasses: s.storageClasses.map(v => v.id === id ? { ...v, parameters: [...v.parameters, { id: uid(), key: '', value: '' }] } : v) };
   }),
-  removeStorageClassParam: (id, idx) => set((s) => ({ storageClasses: s.storageClasses.map(v => v.id === id ? { ...v, parameters: v.parameters.filter((_, i) => i !== idx) } : v) })),
-  updateStorageClassParam: (id, idx, field, value) => set((s) => ({ storageClasses: s.storageClasses.map(v => v.id === id ? { ...v, parameters: v.parameters.map((p, i) => i === idx ? { ...p, [field]: value } : p) } : v) })),
+  removeStorageClassParam: (id: string, idx: number) => set((s) => ({ storageClasses: s.storageClasses.map(v => v.id === id ? { ...v, parameters: v.parameters.filter((_, i) => i !== idx) } : v) })),
+  updateStorageClassParam: (id: string, idx: number, field: 'key' | 'value', value: string) => set((s) => ({ storageClasses: s.storageClasses.map(v => v.id === id ? { ...v, parameters: v.parameters.map((p, i) => i === idx ? { ...p, [field]: value } : p) } : v) })),
   reset: () => set({
     workloads: [],
     services: [],

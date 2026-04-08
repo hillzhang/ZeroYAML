@@ -483,91 +483,90 @@ ${renderStartCommands() || 'CMD ["./main"]'}`;
       return p;
     };
 
-    const buildContainer = (w: any, ind: string) => {
-      let c = `${ind}- name: ${sn(w.appName)}-container\n${ind}  image: ${w.image || 'nginx:alpine'}\n${ind}  imagePullPolicy: ${w.imagePullPolicy || 'IfNotPresent'}`;
-      if (w.containerPort) c += `\n${ind}  ports:\n${ind}  - containerPort: ${w.containerPort || 80}`;
+    const buildContainer = (c: any, ind: string) => {
+      let yaml = `${ind}- name: ${sn(c.name)}\n${ind}  image: ${c.image || 'nginx:alpine'}\n${ind}  imagePullPolicy: ${c.imagePullPolicy || 'IfNotPresent'}`;
+      if (c.containerPort) yaml += `\n${ind}  ports:\n${ind}  - containerPort: ${Number(c.containerPort) || 80}`;
 
-      const cmdObj = w;
-      if (cmdObj.useShellWrapper) {
-        const cmd = cmdObj.command?.trim();
-        const args = cmdObj.args?.trim();
+      if (c.useShellWrapper) {
+        const cmd = c.command?.trim();
+        const args = c.args?.trim();
         if (cmd && args) {
-          c += `\n${ind}  command: ["sh", "-ec"]`;
-          c += `\n${ind}  args: ["${cmd.replace(/"/g, '\\"')} ${args.replace(/"/g, '\\"')}"]`;
+          yaml += `\n${ind}  command: ["sh", "-ec"]`;
+          yaml += `\n${ind}  args: ["${cmd.replace(/"/g, '\\"')} ${args.replace(/"/g, '\\"')}"]`;
         } else if (cmd) {
-          c += `\n${ind}  command: ["sh", "-ec", "${cmd.replace(/"/g, '\\"')}"]`;
+          yaml += `\n${ind}  command: ["sh", "-ec", "${cmd.replace(/"/g, '\\"')}"]`;
         } else if (args) {
-          c += `\n${ind}  command: ["sh", "-ec"]`;
-          c += `\n${ind}  args: ["${args.replace(/"/g, '\\"')}"]`;
+          yaml += `\n${ind}  command: ["sh", "-ec"]`;
+          yaml += `\n${ind}  args: ["${args.replace(/"/g, '\\"')}"]`;
         }
       } else {
-        if (cmdObj.command?.trim()) {
-          const parts = cmdObj.command.trim().split(/\s+/).filter(Boolean);
+        if (c.command?.trim()) {
+          const parts = c.command.trim().split(/\s+/).filter(Boolean);
           if (parts.length) {
-            c += `\n${ind}  command:`;
-            parts.forEach((p: string) => c += `\n${ind}  - ${p}`);
+            yaml += `\n${ind}  command:`;
+            parts.forEach((p: string) => yaml += `\n${ind}  - "${p.replace(/"/g, '\\"')}"`);
           }
         }
-        if (cmdObj.args?.trim()) {
-          const parts = cmdObj.args.trim().split(/\s+/).filter(Boolean);
+        if (c.args?.trim()) {
+          const parts = c.args.trim().split(/\s+/).filter(Boolean);
           if (parts.length) {
-            c += `\n${ind}  args:`;
-            parts.forEach((p: string) => c += `\n${ind}  - ${p}`);
+            yaml += `\n${ind}  args:`;
+            parts.forEach((p: string) => yaml += `\n${ind}  - "${p.replace(/"/g, '\\"')}"`);
           }
         }
       }
 
-      const venvs = w.envs?.filter((e: any) => e.name) || [];
+      const venvs = c.envs?.filter((e: any) => e.name) || [];
       if (venvs.length) {
-        c += `\n${ind}  env:`;
+        yaml += `\n${ind}  env:`;
         venvs.forEach((e: any) => {
-          c += `\n${ind}  - name: ${e.name}`;
-          if (e.type === 'value') c += `\n${ind}    value: "${e.value}"`;
-          else c += `\n${ind}    valueFrom:\n${ind}      ${e.type}:\n${ind}        name: ${e.refName}\n${ind}        key: ${e.refKey}`;
+          yaml += `\n${ind}  - name: ${e.name}`;
+          if (e.type === 'value') yaml += `\n${ind}    value: "${e.value}"`;
+          else yaml += `\n${ind}    valueFrom:\n${ind}      ${e.type}:\n${ind}        name: ${e.refName}\n${ind}        key: ${e.refKey}`;
         });
       }
 
-      if (w.envFrom?.length) {
-        c += `\n${ind}  envFrom:`;
-        w.envFrom.forEach((ef: any) => {
-          c += `\n${ind}  - ${ef.type}Ref:\n${ind}      name: ${ef.name}`;
-          if (ef.prefix) c += `\n${ind}    prefix: ${ef.prefix}`;
+      if (c.envFrom?.length) {
+        yaml += `\n${ind}  envFrom:`;
+        c.envFrom.forEach((ef: any) => {
+          yaml += `\n${ind}  - ${ef.type}Ref:\n${ind}      name: ${ef.name}`;
+          if (ef.prefix) yaml += `\n${ind}    prefix: ${ef.prefix}`;
         });
       }
 
-      const vvols = (w.volumeMounts?.filter((v: any) => v.name && v.mountPath) || []);
+      const vvols = (c.volumeMounts?.filter((v: any) => v.name && v.mountPath) || []);
       if (vvols.length) {
-        c += `\n${ind}  volumeMounts:`;
+        yaml += `\n${ind}  volumeMounts:`;
         vvols.forEach((v: any) => {
-          c += `\n${ind}  - name: ${v.name}\n${ind}    mountPath: ${v.mountPath}${v.subPath ? `\n${ind}    subPath: ${v.subPath}` : ''}${v.readOnly ? `\n${ind}    readOnly: true` : ''}`;
+          yaml += `\n${ind}  - name: ${v.name}\n${ind}    mountPath: ${v.mountPath}${v.subPath ? `\n${ind}    subPath: ${v.subPath}` : ''}${v.readOnly ? `\n${ind}    readOnly: true` : ''}`;
         });
       }
 
-      if (w.cpuReq || w.memReq || w.cpuLimit || w.memLimit) {
-        c += `\n${ind}  resources:\n${ind}    requests:`;
-        if (w.cpuReq) c += `\n${ind}      cpu: "${w.cpuReq}"`;
-        if (w.memReq) c += `\n${ind}      memory: "${w.memReq}"`;
-        c += `\n${ind}    limits:`;
-        if (w.cpuLimit) c += `\n${ind}      cpu: "${w.cpuLimit}"`;
-        if (w.memLimit) c += `\n${ind}      memory: "${w.memLimit}"`;
+      if (c.cpuReq || c.memReq || c.cpuLimit || c.memLimit) {
+        yaml += `\n${ind}  resources:\n${ind}    requests:`;
+        if (c.cpuReq) yaml += `\n${ind}      cpu: "${c.cpuReq}"`;
+        if (c.memReq) yaml += `\n${ind}      memory: "${c.memReq}"`;
+        yaml += `\n${ind}    limits:`;
+        if (c.cpuLimit) yaml += `\n${ind}      cpu: "${c.cpuLimit}"`;
+        if (c.memLimit) yaml += `\n${ind}      memory: "${c.memLimit}"`;
       }
 
-      const hasSec = w.runAsUser || w.runAsGroup || w.runAsNonRoot || w.readOnlyRootFilesystem || !w.allowPrivilegeEscalation;
+      const hasSec = c.runAsUser || c.runAsGroup || c.runAsNonRoot || c.readOnlyRootFilesystem || (c.allowPrivilegeEscalation === false);
       if (hasSec) {
-        c += `\n${ind}  securityContext:`;
-        if (w.runAsUser) c += `\n${ind}    runAsUser: ${w.runAsUser}`;
-        if (w.runAsGroup) c += `\n${ind}    runAsGroup: ${w.runAsGroup}`;
-        if (w.runAsNonRoot) c += `\n${ind}    runAsNonRoot: true`;
-        if (w.readOnlyRootFilesystem) c += `\n${ind}    readOnlyRootFilesystem: true`;
-        if (!w.allowPrivilegeEscalation) c += `\n${ind}    allowPrivilegeEscalation: false`;
+        yaml += `\n${ind}  securityContext:`;
+        if (c.runAsUser) yaml += `\n${ind}    runAsUser: ${c.runAsUser}`;
+        if (c.runAsGroup) yaml += `\n${ind}    runAsGroup: ${c.runAsGroup}`;
+        if (c.runAsNonRoot) yaml += `\n${ind}    runAsNonRoot: true`;
+        if (c.readOnlyRootFilesystem) yaml += `\n${ind}    readOnlyRootFilesystem: true`;
+        if (c.allowPrivilegeEscalation === false) yaml += `\n${ind}    allowPrivilegeEscalation: false`;
       }
 
       const pi = `${ind}  `;
-      if (w.livenessProbe?.enabled) c += `\n${pi}livenessProbe:${buildProbe(w.livenessProbe, pi)}`;
-      if (w.readinessProbe?.enabled) c += `\n${pi}readinessProbe:${buildProbe(w.readinessProbe, pi)}`;
-      if (w.startupProbe?.enabled) c += `\n${pi}startupProbe:${buildProbe(w.startupProbe, pi)}`;
+      if (c.livenessProbe?.enabled) yaml += `\n${ind}  livenessProbe:${buildProbe(c.livenessProbe, pi)}`;
+      if (c.readinessProbe?.enabled) yaml += `\n${ind}  readinessProbe:${buildProbe(c.readinessProbe, pi)}`;
+      if (c.startupProbe?.enabled) yaml += `\n${ind}  startupProbe:${buildProbe(c.startupProbe, pi)}`;
 
-      return c;
+      return yaml;
     };
 
     const buildPodSpec = (w: any, ind: string) => {
@@ -597,11 +596,29 @@ ${renderStartCommands() || 'CMD ["./main"]'}`;
       if (w.fsGroup || w.runAsNonRoot) { s += `\n${si}securityContext:`; if (w.fsGroup) s += `\n${si}  fsGroup: ${w.fsGroup}`; if (w.runAsNonRoot) s += `\n${si}  runAsNonRoot: true`; }
       if (w.workloadType === 'CronJob' || w.workloadType === 'Job') s += `\n${si}restartPolicy: ${w.restartPolicy || 'OnFailure'}`;
       
-      s += `\n${si}containers:\n${buildContainer(w, si)}`;
-      const vvols = w.volumeMounts.filter((v: any) => v.name && v.mountPath);
-      if (vvols.length) {
+      if (w.initContainers && w.initContainers.length > 0) {
+        s += `\n${si}initContainers:`;
+        w.initContainers.forEach((ic: any) => {
+          s += `\n${buildContainer(ic, si)}`;
+        });
+      }
+
+      s += `\n${si}containers:`;
+      w.containers.forEach((c: any) => {
+        s += `\n${buildContainer(c, si)}`;
+      });
+
+      // Volume collection from all containers
+      const allVolMounts = [...(w.initContainers || []), ...(w.containers || [])].flatMap(c => c.volumeMounts || []);
+      const uniqueVols: Record<string, any> = {};
+      allVolMounts.forEach(v => {
+        if (v.name && !uniqueVols[v.name]) uniqueVols[v.name] = v;
+      });
+
+      const vList = Object.values(uniqueVols);
+      if (vList.length > 0) {
         s += `\n${si}volumes:`;
-        vvols.forEach((v: any) => {
+        vList.forEach((v: any) => {
           s += `\n${si}- name: ${v.name}`;
           if (v.sourceType === 'emptyDir') s += `\n${si}  emptyDir: {}`;
           if (v.sourceType === 'hostPath') s += `\n${si}  hostPath:\n${si}    path: ${v.hostPathValue || '/tmp'}`;
