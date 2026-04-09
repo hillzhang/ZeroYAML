@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
+import { KubernetesTopology } from '@/components/KubernetesTopology';
 
 // ── Shared styles ────────────────────────────────────────────────────────────
 const inp = "w-full bg-white dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-xl py-2 px-4 text-sm font-bold focus:outline-none focus:border-blue-500 focus:ring-4 ring-blue-500/5 transition-all text-gray-900 dark:text-gray-100 placeholder:text-gray-400 shadow-sm hover:border-gray-300 dark:hover:border-gray-700 h-[42px]";
@@ -2167,6 +2168,7 @@ function StorageSection() {
 export function KubernetesTab() {
   const { t } = useTranslation();
   const { resetOverride } = useAppStore();
+  const [isTopologyOpen, setIsTopologyOpen] = useState(false);
   const {
     activeSection, setSection, workloads, activeWorkloadId, setActiveWorkloadId, addWorkload, removeWorkload,
     globalNamespace, setNamespace,
@@ -2204,6 +2206,10 @@ export function KubernetesTab() {
             <button onClick={syncAllNamespaces}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-bold tracking-normal shadow-sm transition-all active:scale-95">
               <RefreshCw className="w-4 h-4" /> {t.k8s.syncAll}
+            </button>
+            <button onClick={() => setIsTopologyOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 rounded-lg text-xs font-bold tracking-normal shadow-sm transition-all active:scale-95">
+              <Zap className="w-4 h-4" /> {t.k8s.topology}
             </button>
           </div>
         </div>
@@ -2281,6 +2287,8 @@ export function KubernetesTab() {
           </Section>
         </div>
       )}
+
+      {isTopologyOpen && <KubernetesTopology onClose={() => setIsTopologyOpen(false)} />}
     </div>
   );
 }

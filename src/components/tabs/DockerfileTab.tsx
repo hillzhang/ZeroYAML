@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useDockerfileStore } from '@/store/useDockerfileStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
+import { DockerfileFlow } from '@/components/DockerfileFlow';
 import { Checkbox } from '@/components/ui/Checkbox';
 import {
   Box, Info, Settings, Plus, Trash2, ChevronDown, Rocket,
@@ -104,6 +105,7 @@ function MetadataGroup({ title, items, onUpdate, colorTheme = "blue", icon: Icon
 
 export function DockerfileTab() {
   const { t } = useTranslation();
+  const [showFlow, setShowFlow] = useState(false);
   const { activeTooltip, setActiveTooltip, resetOverride } = useAppStore();
   const {
     appName, setAppName, baseImage, setBaseImage, workdir, setWorkdir, port, setPort,
@@ -125,8 +127,34 @@ export function DockerfileTab() {
 
   return (
     <div className="animate-in fade-in duration-700 flex flex-col pb-20 pt-4">
+      {/* Global Header Actions */}
+      <div className="flex items-center justify-between mb-8 px-2">
+        <div>
+          <h2 className="text-xl font-black text-gray-800 dark:text-gray-100 tracking-tighter flex items-center gap-3">
+             <div className="w-1.5 h-6 bg-blue-500 rounded-full" />
+             {t.tabs.dockerfile}
+          </h2>
+          <p className="text-[10px] font-bold text-gray-400 mt-1 ml-4 tracking-widest leading-none opacity-60">Config & Layer Orchestration</p>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setShowFlow(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-indigo-500/10 text-indigo-500 hover:bg-indigo-500 hover:text-white text-[11px] font-black transition-all tracking-wider border border-indigo-500/20 group shadow-sm active:scale-95 ring-4 ring-indigo-500/0 hover:ring-indigo-500/10"
+          >
+            <Layers className="w-4 h-4 group-hover:rotate-12 transition-transform duration-500" />
+            {t.preview.buildFlow}
+          </button>
+        </div>
+      </div>
+
       {/* 1. Base Config */}
-      <Section title={`1. ${t.dockerfile.coreConfig}`} icon={<Rocket className="w-4 h-4" />} theme="blue" badge="CORE DEFINITION">
+      <Section 
+        title={`1. ${t.dockerfile.coreConfig}`} 
+        icon={<Rocket className="w-4 h-4" />} 
+        theme="blue" 
+        badge="Core Definition"
+      >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="relative group">
             <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-all">
@@ -234,7 +262,7 @@ export function DockerfileTab() {
       </Section>
 
       {/* 2. Variables & Metadata */}
-      <Section title={`2. ${t.dockerfile.varsMetadata}`} icon={<Tag className="w-4 h-4" />} theme="teal" badge="METADATA & VARS">
+      <Section title={`2. ${t.dockerfile.varsMetadata}`} icon={<Tag className="w-4 h-4" />} theme="teal" badge="Metadata & Vars">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <MetadataGroup title={t.dockerfile.envVars} items={envVars} onUpdate={setEnvVars} colorTheme="teal" icon={Zap} />
           <MetadataGroup title={t.dockerfile.buildArgs} items={args} onUpdate={setArgs} colorTheme="orange" icon={Settings} />
@@ -245,7 +273,7 @@ export function DockerfileTab() {
       </Section>
 
       {/* 3. Build Flow */}
-      <Section title={`3. ${t.dockerfile.buildFlow}`} icon={<Hammer className="w-4 h-4" />} theme="orange" badge="BUILD FLOW">
+      <Section title={`3. ${t.dockerfile.buildFlow}`} icon={<Hammer className="w-4 h-4" />} theme="orange" badge="Build Flow">
         <div className="space-y-10">
           {/* RUN Block */}
           <div className="p-8 bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 rounded-[2.5rem] shadow-inner relative overflow-hidden group">
@@ -464,6 +492,8 @@ export function DockerfileTab() {
           </button>
         ))}
       </div>
+
+      {showFlow && <DockerfileFlow onClose={() => setShowFlow(false)} />}
     </div>
   );
 }
