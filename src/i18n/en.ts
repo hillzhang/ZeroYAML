@@ -214,6 +214,7 @@ export const en: Translation = {
     selectAll: "Select All",
     deselectAll: "Deselect All",
     bulkDeleteConfirm: "Are you sure you want to delete {count} templates?",
+    bulkDownload: "Batch Download",
   },
   editor: {
     confirmResetDockerfile: "Are you sure you want to clear the Dockerfile configuration and reset?",

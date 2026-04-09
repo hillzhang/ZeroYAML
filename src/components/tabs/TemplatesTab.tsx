@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Trash2, Download, Search, Filter, Clock, Box, Rocket, Layers, Zap, FolderHeart, ArrowRight, Eye, X, Code, Settings2, Edit3, Check, FolderInput, Plus, CheckSquare, Square, ChevronDown } from 'lucide-react';
+import { Trash2, Download, Search, Filter, Clock, Box, Rocket, Layers, Zap, FolderHeart, ArrowRight, Eye, X, Code, Settings2, Edit3, Check, FolderInput, Plus, CheckSquare, Square, ChevronDown, ListChecks } from 'lucide-react';
 import { createPortal } from 'react-dom';
+import JSZip from 'jszip';
 import { useTemplateStore, Template, TemplateType } from '@/store/useTemplateStore';
 import { useAppStore } from '@/store/useAppStore';
 import { useDockerfileStore } from '@/store/useDockerfileStore';
@@ -24,6 +25,7 @@ export function TemplatesTab() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkMoving, setIsBulkMoving] = useState(false);
   const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
+  const [isBatchMode, setIsBatchMode] = useState(false);
 
   React.useEffect(() => {
     setActiveCategory('all');
@@ -52,6 +54,39 @@ export function TemplatesTab() {
     const link = document.createElement('a');
     link.href = url;
     link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleBulkDownload = async () => {
+    const zip = new JSZip();
+    const selectedTemplates = templates.filter(t => selectedIds.includes(t.id));
+
+    selectedTemplates.forEach(tpl => {
+      let content = '';
+      let filename = '';
+
+      if (tpl.type === 'dockerfile') {
+        content = generateDockerfile(tpl.data, t);
+        filename = `dockerfile/${tpl.name}.dockerfile`;
+      } else if (tpl.type === 'compose') {
+        content = generateCompose(tpl.data, t);
+        filename = `compose/${tpl.name}.yaml`;
+      } else if (tpl.type === 'kubernetes') {
+        content = generateKubernetes(tpl.data, t, true);
+        filename = `kubernetes/${tpl.name}.yaml`;
+      }
+
+      zip.file(filename, content);
+    });
+
+    const blob = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ZeroYAML-Templates-${new Date().toISOString().split('T')[0]}.zip`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -439,7 +474,7 @@ export function TemplatesTab() {
       {CategoryManageModal}
 
       {/* 🚀 FLOAT ACTION BAR */}
-      {selectedIds.length > 0 && (
+      {isBatchMode && selectedIds.length > 0 && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 duration-500">
           <div className="bg-gray-900 dark:bg-[#1C2128] text-white px-8 py-4 rounded-[2.5rem] shadow-2xl flex items-center gap-8 border border-white/10 backdrop-blur-xl">
              <div className="flex items-center gap-3 pr-8 border-r border-white/10">
@@ -448,6 +483,14 @@ export function TemplatesTab() {
              </div>
              
              <div className="flex items-center gap-4">
+                <button 
+                  onClick={handleBulkDownload}
+                  className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-[1.5rem] font-black text-xs transition-all shadow-lg active:scale-95 uppercase tracking-widest"
+                >
+                  <Download className="w-4 h-4" />
+                  {t.templates.bulkDownload}
+                </button>
+
                 <div className="relative">
                    <button 
                      onClick={() => setIsBulkMoving(!isBulkMoving)}
@@ -496,7 +539,10 @@ export function TemplatesTab() {
                 </button>
 
                 <button 
-                  onClick={() => setSelectedIds([])}
+                  onClick={() => {
+                    setSelectedIds([]);
+                    setIsBulkMoving(false);
+                  }}
                   className="p-2 hover:bg-white/10 rounded-xl text-gray-400 transition-colors"
                 >
                   <X className="w-5 h-5" />
@@ -610,6 +656,24 @@ export function TemplatesTab() {
              </button>
            ))}
         </div>
+
+         <div className="flex items-center gap-2">
+            <button 
+              onClick={() => {
+                setIsBatchMode(!isBatchMode);
+                setSelectedIds([]);
+                setIsBulkMoving(false);
+              }}
+              className={`px-4 py-2 rounded-xl transition-all group border shadow-sm active:scale-95 flex items-center gap-2 ${
+                isBatchMode 
+                  ? 'bg-blue-600 text-white border-blue-600' 
+                  : 'text-blue-500 bg-white dark:bg-[#0D1117] border-gray-200 dark:border-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20'
+              }`}
+            >
+               <ListChecks className="w-4 h-4" />
+               <span className="text-[10px] font-black uppercase tracking-tight">{t.templates.bulkActions}</span>
+            </button>
+         </div>
       </div>
 
       {/* 📂 CATEGORIES */}
@@ -663,21 +727,31 @@ export function TemplatesTab() {
         </div>
       )}
 
-      {filteredTemplates.length > 0 && (
-         <div className="flex items-center gap-3">
-            <button 
-              onClick={() => {
-                if (selectedIds.length === filteredTemplates.length) {
-                  setSelectedIds([]);
-                } else {
-                  setSelectedIds(filteredTemplates.map(t => t.id));
-                }
-              }}
-              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#0D1117] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl text-[11px] font-black text-gray-500 dark:text-gray-400 transition-all border border-gray-100 dark:border-gray-800 hover:border-blue-500/30 shadow-sm active:scale-95"
-            >
-               {selectedIds.length === filteredTemplates.length ? <CheckSquare className="w-4 h-4 text-blue-500" /> : <Square className="w-4 h-4" />}
-               {selectedIds.length === filteredTemplates.length ? t.templates.deselectAll : t.templates.selectAll}
-            </button>
+      {isBatchMode && filteredTemplates.length > 0 && (
+         <div className="flex items-center justify-between px-6 py-4 bg-gray-50/50 dark:bg-gray-800/20 rounded-[2rem] border border-gray-100 dark:border-gray-800 animate-in fade-in slide-in-from-top-4 duration-500">
+            <div className="flex items-center gap-4">
+               <button 
+                 onClick={() => {
+                   if (selectedIds.length === filteredTemplates.length) {
+                     setSelectedIds([]);
+                   } else {
+                     setSelectedIds(filteredTemplates.map(t => t.id));
+                   }
+                 }}
+                 className="flex items-center gap-2.5 px-4 py-2 hover:bg-white dark:hover:bg-[#0D1117] rounded-xl text-xs font-black tracking-tight text-gray-500 dark:text-gray-400 transition-all active:scale-95 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-sm"
+               >
+                  {selectedIds.length === filteredTemplates.length ? <CheckSquare className="w-5 h-5 text-blue-500" /> : <Square className="w-5 h-5" />}
+                  {selectedIds.length === filteredTemplates.length ? t.templates.deselectAll : t.templates.selectAll}
+               </button>
+               <div className="h-4 w-px bg-gray-200 dark:bg-gray-800" />
+               <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest leading-none">
+                  {t.templates.selectedItems.replace('{count}', selectedIds.length.toString())}
+               </p>
+            </div>
+            <div className="flex items-center gap-2">
+               <div className={`w-2 h-2 rounded-full animate-pulse ${selectedIds.length > 0 ? 'bg-blue-500' : 'bg-gray-300 dark:bg-gray-700'}`} />
+               <span className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-tight">{t.templates.bulkActions}</span>
+            </div>
          </div>
       )}
       {filteredTemplates.length === 0 ? (
@@ -703,21 +777,23 @@ export function TemplatesTab() {
 
               <div className="flex items-start justify-between gap-4 relative z-10">
                 <div className="flex gap-5 items-center">
-                   <button 
-                     onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedIds(prev => 
-                          prev.includes(tpl.id) ? prev.filter(id => id !== tpl.id) : [...prev, tpl.id]
-                        );
-                     }}
-                     className={`flex-shrink-0 p-3 rounded-2xl transition-all ${
-                        selectedIds.includes(tpl.id) 
-                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
-                          : 'bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 hover:bg-blue-50 hover:text-blue-500'
-                     }`}
-                   >
-                      {selectedIds.includes(tpl.id) ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
-                   </button>
+                   {isBatchMode && (
+                     <button 
+                       onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedIds(prev => 
+                            prev.includes(tpl.id) ? prev.filter(id => id !== tpl.id) : [...prev, tpl.id]
+                          );
+                       }}
+                       className={`flex-shrink-0 p-3 rounded-2xl animate-in zoom-in transition-all ${
+                          selectedIds.includes(tpl.id) 
+                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                            : 'bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 hover:bg-blue-50 hover:text-blue-500'
+                       }`}
+                     >
+                        {selectedIds.includes(tpl.id) ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
+                     </button>
+                   )}
                    <div className={`flex-shrink-0 p-4 rounded-3xl bg-gradient-to-br ${getColor(tpl.type)} text-white shadow-xl`}>
                       {getIcon(tpl.type)}
                    </div>
