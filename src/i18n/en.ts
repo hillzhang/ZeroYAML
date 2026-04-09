@@ -209,6 +209,11 @@ export const en: Translation = {
     categoryRenamed: "Category renamed",
     selectCategory: "Select Category",
     moveToCategory: "Move to Category",
+    bulkActions: "Bulk Actions",
+    selectedItems: "{count} items selected",
+    selectAll: "Select All",
+    deselectAll: "Deselect All",
+    bulkDeleteConfirm: "Are you sure you want to delete {count} templates?",
   },
   editor: {
     confirmResetDockerfile: "Are you sure you want to clear the Dockerfile configuration and reset?",

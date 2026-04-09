@@ -22,6 +22,8 @@ interface TemplateState {
   deleteCategory: (type: TemplateType, name: string) => void;
   renameCategory: (type: TemplateType, oldName: string, newName: string) => void;
   updateTemplateCategory: (id: string, category: string | undefined) => void;
+  deleteTemplates: (ids: string[]) => void;
+  bulkUpdateCategory: (ids: string[], category: string | undefined) => void;
 }
 
 export const useTemplateStore = create<TemplateState>()(
@@ -102,6 +104,18 @@ export const useTemplateStore = create<TemplateState>()(
           
           return { categories: newCategories, templates: newTemplates };
         });
+      },
+      
+      deleteTemplates: (ids) => {
+        set((state) => ({
+          templates: state.templates.filter((t) => !ids.includes(t.id)),
+        }));
+      },
+
+      bulkUpdateCategory: (ids, category) => {
+        set((state) => ({
+          templates: state.templates.map(t => ids.includes(t.id) ? { ...t, category } : t)
+        }));
       }
     }),
     {

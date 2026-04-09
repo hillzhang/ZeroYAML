@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2, Download, Search, Filter, Clock, Box, Rocket, Layers, Zap, FolderHeart, ArrowRight, Eye, X, Code, Settings2, Edit3, Check, FolderInput, Plus } from 'lucide-react';
+import { Trash2, Download, Search, Filter, Clock, Box, Rocket, Layers, Zap, FolderHeart, ArrowRight, Eye, X, Code, Settings2, Edit3, Check, FolderInput, Plus, CheckSquare, Square, ChevronDown } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useTemplateStore, Template, TemplateType } from '@/store/useTemplateStore';
 import { useAppStore } from '@/store/useAppStore';
@@ -12,7 +12,7 @@ import { generateDockerfile, generateCompose, generateKubernetes } from '@/utils
 export function TemplatesTab() {
   const { t } = useTranslation();
   const { setActiveTab } = useAppStore();
-  const { templates, deleteTemplate, categories, renameCategory, deleteCategory, updateTemplateCategory, addCategory } = useTemplateStore();
+  const { templates, deleteTemplate, categories, renameCategory, deleteCategory, updateTemplateCategory, addCategory, deleteTemplates, bulkUpdateCategory } = useTemplateStore();
   
   const [filterType, setFilterType] = useState<TemplateType | 'all'>('all');
   const [activeCategory, setActiveCategory] = useState<string>('all');
@@ -20,6 +20,10 @@ export function TemplatesTab() {
   const [editingCategory, setEditingCategory] = useState<{oldName: string, newName: string} | null>(null);
   const [movingTemplateId, setMovingTemplateId] = useState<string | null>(null);
   const [newCategoryInModal, setNewCategoryInModal] = useState('');
+  
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkMoving, setIsBulkMoving] = useState(false);
+  const [bulkDeleteConfirm, setBulkDeleteConfirm] = useState(false);
 
   React.useEffect(() => {
     setActiveCategory('all');
@@ -429,10 +433,114 @@ export function TemplatesTab() {
   );
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 relative">
       {PreviewModal}
       {DeleteConfirmModal}
       {CategoryManageModal}
+
+      {/* 🚀 FLOAT ACTION BAR */}
+      {selectedIds.length > 0 && (
+        <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 duration-500">
+          <div className="bg-gray-900 dark:bg-[#1C2128] text-white px-8 py-4 rounded-[2.5rem] shadow-2xl flex items-center gap-8 border border-white/10 backdrop-blur-xl">
+             <div className="flex items-center gap-3 pr-8 border-r border-white/10">
+                <CheckSquare className="w-5 h-5 text-blue-400" />
+                <span className="text-sm font-black tracking-tight">{t.templates.selectedItems.replace('{count}', selectedIds.length.toString())}</span>
+             </div>
+             
+             <div className="flex items-center gap-4">
+                <div className="relative">
+                   <button 
+                     onClick={() => setIsBulkMoving(!isBulkMoving)}
+                     className="flex items-center gap-2 px-4 py-2 hover:bg-white/10 rounded-xl font-bold text-xs transition-colors"
+                   >
+                     <FolderInput className="w-4 h-4" />
+                     {t.templates.moveToCategory}
+                     <ChevronDown className={`w-3 h-3 transition-transform ${isBulkMoving ? 'rotate-180' : ''}`} />
+                   </button>
+                   
+                   {isBulkMoving && (
+                     <div className="absolute bottom-full mb-3 right-0 w-48 bg-white dark:bg-[#0D1117] border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl py-2 overflow-hidden animate-in fade-in slide-in-from-bottom-2">
+                        <button 
+                          onClick={() => {
+                            bulkUpdateCategory(selectedIds, undefined);
+                            setSelectedIds([]);
+                            setIsBulkMoving(false);
+                          }}
+                          className="w-full px-4 py-2.5 text-left text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        >
+                           {t.templates.uncategorized}
+                        </button>
+                        {(filterType !== 'all' ? categories[filterType] || [] : []).map(cat => (
+                          <button 
+                            key={cat}
+                            onClick={() => {
+                              bulkUpdateCategory(selectedIds, cat);
+                              setSelectedIds([]);
+                              setIsBulkMoving(false);
+                            }}
+                            className="w-full px-4 py-2.5 text-left text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                          >
+                             {cat}
+                          </button>
+                        ))}
+                     </div>
+                   )}
+                </div>
+
+                <button 
+                  onClick={() => setBulkDeleteConfirm(true)}
+                  className="flex items-center gap-2 px-4 py-2 text-red-400 hover:bg-red-400/10 rounded-xl font-bold text-xs transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {t.common.delete}
+                </button>
+
+                <button 
+                  onClick={() => setSelectedIds([])}
+                  className="p-2 hover:bg-white/10 rounded-xl text-gray-400 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+             </div>
+          </div>
+        </div>
+      )}
+
+      {/* 🗑 BATCH DELETE MODAL */}
+      {bulkDeleteConfirm && createPortal(
+        <div className="fixed inset-0 z-[1001] flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-[#0D1117] w-full max-w-sm rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 p-8 text-center animate-in zoom-in-95 duration-200">
+            <div className="w-20 h-20 bg-red-50 dark:bg-red-900/20 rounded-3xl flex items-center justify-center mx-auto mb-6 text-red-500">
+              <Trash2 className="w-10 h-10" />
+            </div>
+            <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
+              {t.common.confirm}
+            </h3>
+            <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-8 leading-relaxed">
+              {t.templates.bulkDeleteConfirm.replace('{count}', selectedIds.length.toString())}
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={() => setBulkDeleteConfirm(false)}
+                className="flex-1 py-3 text-sm font-black text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+              >
+                {t.common.cancel}
+              </button>
+              <button 
+                onClick={() => {
+                  deleteTemplates(selectedIds);
+                  setSelectedIds([]);
+                  setBulkDeleteConfirm(false);
+                }}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-500 text-white rounded-2xl font-black text-[10px] tracking-widest shadow-lg shadow-red-600/20 active:scale-95 transition-all"
+              >
+                {t.common.delete}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
 
       {/* 🌟 HERO HEADER */}
       <div className="relative overflow-hidden rounded-[2.5rem] bg-gradient-to-br from-blue-600 to-indigo-800 p-10 text-white shadow-2xl shadow-blue-500/20">
@@ -554,6 +662,24 @@ export function TemplatesTab() {
           </button>
         </div>
       )}
+
+      {filteredTemplates.length > 0 && (
+         <div className="flex items-center gap-3">
+            <button 
+              onClick={() => {
+                if (selectedIds.length === filteredTemplates.length) {
+                  setSelectedIds([]);
+                } else {
+                  setSelectedIds(filteredTemplates.map(t => t.id));
+                }
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#0D1117] hover:bg-gray-50 dark:hover:bg-gray-800 rounded-xl text-[11px] font-black text-gray-500 dark:text-gray-400 transition-all border border-gray-100 dark:border-gray-800 hover:border-blue-500/30 shadow-sm active:scale-95"
+            >
+               {selectedIds.length === filteredTemplates.length ? <CheckSquare className="w-4 h-4 text-blue-500" /> : <Square className="w-4 h-4" />}
+               {selectedIds.length === filteredTemplates.length ? t.templates.deselectAll : t.templates.selectAll}
+            </button>
+         </div>
+      )}
       {filteredTemplates.length === 0 ? (
         <div className="py-32 flex flex-col items-center justify-center bg-gray-50/50 dark:bg-gray-900/20 rounded-[3rem] border-2 border-dashed border-gray-100 dark:border-gray-800/80 group">
           <div className="relative mb-6">
@@ -576,7 +702,22 @@ export function TemplatesTab() {
               <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${getColor(tpl.type)} opacity-0 group-hover:opacity-[0.05] blur-3xl transition-opacity duration-700 pointer-events-none`} />
 
               <div className="flex items-start justify-between gap-4 relative z-10">
-                <div className="flex gap-5">
+                <div className="flex gap-5 items-center">
+                   <button 
+                     onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedIds(prev => 
+                          prev.includes(tpl.id) ? prev.filter(id => id !== tpl.id) : [...prev, tpl.id]
+                        );
+                     }}
+                     className={`flex-shrink-0 p-3 rounded-2xl transition-all ${
+                        selectedIds.includes(tpl.id) 
+                          ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20' 
+                          : 'bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 hover:bg-blue-50 hover:text-blue-500'
+                     }`}
+                   >
+                      {selectedIds.includes(tpl.id) ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
+                   </button>
                    <div className={`flex-shrink-0 p-4 rounded-3xl bg-gradient-to-br ${getColor(tpl.type)} text-white shadow-xl`}>
                       {getIcon(tpl.type)}
                    </div>

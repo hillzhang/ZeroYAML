@@ -207,6 +207,11 @@ export const zh = {
     categoryRenamed: "分类已重命名",
     selectCategory: "选择分类",
     moveToCategory: "更改分类",
+    bulkActions: "批量操作",
+    selectedItems: "已选择 {count} 项",
+    selectAll: "全选",
+    deselectAll: "取消全选",
+    bulkDeleteConfirm: "确定要删除选中的 {count} 个模板吗？",
   },
   editor: {
     confirmResetDockerfile: "确定要清空 Dockerfile 配置并重置吗？",
