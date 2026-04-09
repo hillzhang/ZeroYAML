@@ -1,13 +1,15 @@
 "use client";
 
-import { Layers, Rocket, Zap } from "lucide-react";
+import { Layers, Rocket, Zap, FolderHeart } from "lucide-react";
 import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ComposeTab } from '../components/tabs/ComposeTab';
 import { DockerfileTab } from '../components/tabs/DockerfileTab';
 import { KubernetesTab } from '../components/tabs/KubernetesTab';
+import { TemplatesTab } from '../components/tabs/TemplatesTab';
 import { CodeViewer } from '../components/preview/CodeViewer';
 import { ThemeSwitch } from '../components/ThemeSwitch';
+import { TemplateManager } from '../components/TemplateManager';
 
 /**
  * 🎨 GITHUB ICON COMPONENT
@@ -31,6 +33,7 @@ export default function ZeroYAMLApp() {
   const { t, language, setLanguage } = useTranslation();
 
   const tabs = [
+    { id: 'templates', label: t.templates.title, icon: FolderHeart },
     { id: 'dockerfile', label: t.tabs.dockerfile, icon: Rocket },
     { id: 'compose', label: t.tabs.compose, icon: Layers },
     { id: 'kubernetes', label: t.tabs.kubernetes, icon: Zap },
@@ -38,7 +41,7 @@ export default function ZeroYAMLApp() {
 
   return (
     <div 
-      className="min-h-screen bg-white dark:bg-[#0D1117] text-gray-900 dark:text-gray-200 font-sans flex flex-col selection:bg-blue-100 dark:selection:bg-blue-900 selection:text-blue-700 dark:selection:text-blue-300"
+      className="h-screen bg-white dark:bg-[#0D1117] text-gray-900 dark:text-gray-200 font-sans flex flex-col overflow-hidden selection:bg-blue-100 dark:selection:bg-blue-900 selection:text-blue-700 dark:selection:text-blue-300"
       onClick={() => setActiveTooltip(null)}
     >
       {/* 🧊 PREMIUM HEADER */}
@@ -66,7 +69,7 @@ export default function ZeroYAMLApp() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`
-                  flex items-center gap-2 px-6 py-2 rounded-xl text-[11px] font-black uppercase tracking-widest transition-all
+                  flex items-center gap-2 px-6 py-2 rounded-xl text-[12px] font-black tracking-tight transition-all
                   ${isActive 
                     ? 'bg-white dark:bg-[#1C2128] text-blue-600 dark:text-blue-400 shadow-sm border border-gray-200/50 dark:border-gray-700/50' 
                     : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
@@ -98,6 +101,8 @@ export default function ZeroYAMLApp() {
           </div>
 
           <div className="flex items-center gap-4 text-gray-400 dark:text-gray-600">
+             <TemplateManager />
+             <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-800" />
              <a 
                href="https://github.com/hillzhang/ZeroYAML" 
                target="_blank" 
@@ -114,18 +119,23 @@ export default function ZeroYAMLApp() {
       </header>
 
       {/* 📦 MAIN VIEWPORT */}
-      <main className="flex-1 flex overflow-hidden">
+      <main className="h-[calc(100vh-64px)] flex overflow-hidden">
         {/* 左侧：可视化配置层 */}
-        <section className="w-[45%] min-w-[520px] bg-white dark:bg-[#0D1117] overflow-y-auto pb-32">
-          <div className="p-8 max-w-4xl mx-auto">
-             {activeTab === 'compose' ? <ComposeTab /> : activeTab === 'dockerfile' ? <DockerfileTab /> : <KubernetesTab />}
+        <section className={`${activeTab === 'templates' ? 'w-full' : 'w-[45%] min-w-[520px]'} bg-white dark:bg-[#0D1117] overflow-y-auto pb-32 transition-all duration-300`}>
+          <div className="p-8 max-w-7xl mx-auto">
+             {activeTab === 'templates' ? <TemplatesTab /> : 
+              activeTab === 'compose' ? <ComposeTab /> : 
+              activeTab === 'dockerfile' ? <DockerfileTab /> : 
+              <KubernetesTab />}
           </div>
         </section>
 
         {/* 右侧：代码实时预览层 */}
-        <div className="flex-1 bg-gray-50 dark:bg-[#1E1E1E] flex flex-col">
-          <CodeViewer />
-        </div>
+        {activeTab !== 'templates' && (
+          <div className="flex-1 bg-gray-50 dark:bg-[#1E1E1E] flex flex-col">
+            <CodeViewer />
+          </div>
+        )}
       </main>
     </div>
   );

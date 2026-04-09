@@ -991,7 +991,7 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                 </div>
                 <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{t.k8s.podRuntimeNet}</p>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-900/60 rounded-xl border border-gray-200 dark:border-gray-800 shadow-sm transition-all hover:border-purple-200 dark:hover:border-purple-900/30">
                   <div className="flex flex-col">
@@ -1007,9 +1007,9 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                     <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium leading-tight mt-0.5">{t.k8s.dnsPolicyHint}</span>
                   </div>
                   <div className="relative min-w-[140px]">
-                    <select 
-                      value={wl.dnsPolicy} 
-                      onChange={e => up({ dnsPolicy: e.target.value })} 
+                    <select
+                      value={wl.dnsPolicy}
+                      onChange={e => up({ dnsPolicy: e.target.value })}
                       className="w-full bg-purple-50/50 dark:bg-purple-900/20 text-xs font-bold text-purple-700 dark:text-purple-300 border-none rounded-lg px-3 py-1.5 appearance-none cursor-pointer focus:ring-2 focus:ring-purple-500/20">
                       <option value="ClusterFirst">ClusterFirst</option>
                       <option value="ClusterFirstWithHostNet">ClusterFirstWithHostNet</option>
@@ -1368,108 +1368,116 @@ function NetworkSection() {
           <button onClick={addService} className={`${btnSm} border-green-300 dark:border-green-700 text-green-600 dark:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/20`}><Plus className="w-3 h-3" />{t.network.new}</button>
         </div>
         {services.length === 0 && <p className="text-xs text-gray-400 italic px-1">{t.network.noService}</p>}
-        {services.map(s => <ResRow key={s.id} label={s.name} sub={`${s.type} · ${s.port}→${s.targetPort}`} theme="green" active={s.id === activeServiceId} onClick={() => { setActiveServiceId(s.id); setActiveIngressId(null); }} onDelete={() => removeService(s.id)} />)}
-      </div>
-
-      {svc && (
-        <div className="border-2 border-green-100 dark:border-green-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] shadow-xl shadow-green-500/5 animate-in fade-in slide-in-from-top-2 duration-300">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-bold text-green-600 dark:text-green-400 tracking-normal">{t.k8s.edit} Service</p>
-            <div className="flex gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-              <div className="w-1.5 h-1.5 rounded-full bg-green-500/50"></div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2 space-y-3">
-              <div>
-                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
-                  {t.k8s.nameLabel}
-                </p>
-                <input type="text" value={svc.name} onChange={e => updateService(svc.id, { name: e.target.value })} className={inp} />
-              </div>
-              <div>
-                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
-                  {t.k8s.namespaceLabel}
-                </p>
-                <input type="text" value={svc.namespace} onChange={e => updateService(svc.id, { namespace: e.target.value })} className={inp} />
-              </div>
-            </div>
-
-            <div className="col-span-2 mt-1">
-              <MetadataEditor
-                labels={svc.labels} annotations={svc.annotations}
-                onUpdateLabels={(v: any) => updateService(svc.id, { labels: v })}
-                onUpdateAnnotations={(v: any) => updateService(svc.id, { annotations: v })}
-                theme="green"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
-                {t.k8s.typeLabel}
-              </p>
-              <div className="relative group">
-                <select value={svc.type} onChange={e => updateService(svc.id, { type: e.target.value as any })} className={`${inp} font-bold appearance-none pr-8`}>
-                  <option value="ClusterIP">ClusterIP</option>
-                  <option value="NodePort">NodePort</option>
-                  <option value="LoadBalancer">LoadBalancer</option>
-                  <option value="Headless">Headless (None)</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 pointer-events-none transition-colors" />
-              </div>
-            </div>
-            <div>
-              <ResourceSelector
-                label={t.k8s.selectorLabel}
-                value={svc.selectorApp}
-                onChange={v => updateService(svc.id, { selectorApp: v })}
-                options={workloads.map(w => ({ id: w.id, name: w.appName }))}
-                placeholder={t.k8s.selectWorkload}
-                inputClassName={inp}
-              />
-            </div>
-            <div className="col-span-2">
-              <div className="flex items-end gap-3 p-3 bg-gray-50/50 dark:bg-black/20 rounded-[1.2rem] border border-gray-100 dark:border-gray-800/50">
-                <div className="flex-1">
-                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
-                    {t.k8s.servicePortLabel}
-                  </p>
-                  <input type="text" placeholder="80" value={svc.port} onChange={e => updateService(svc.id, { port: e.target.value })} className={`${inpSm} font-mono text-center !h-9 shadow-sm`} />
-                </div>
-
-                <div className="pb-2.5 flex flex-col items-center">
-                  <div className="w-6 h-6 rounded-full bg-green-500/10 dark:bg-green-500/20 flex items-center justify-center">
-                    <ArrowRightLeft className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+        {services.map(s => (
+          <div key={s.id} className="mb-3 space-y-3">
+            <ResRow
+              label={s.name}
+              sub={`${s.type} · ${s.port}→${s.targetPort}`}
+              theme="green"
+              active={s.id === activeServiceId}
+              onClick={() => { setActiveServiceId(s.id === activeServiceId ? null : s.id); setActiveIngressId(null); }}
+              onDelete={() => removeService(s.id)}
+            />
+            {s.id === activeServiceId && (
+              <div className="border-2 border-green-100 dark:border-green-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] shadow-xl shadow-green-500/5 animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold text-green-600 dark:text-green-400 tracking-normal">{t.k8s.edit} Service</p>
+                  <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500/50"></div>
                   </div>
                 </div>
-
-                <div className="flex-1">
-                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
-                    {t.k8s.targetPortLabel}
-                  </p>
-                  <input type="text" placeholder="80" value={svc.targetPort} onChange={e => updateService(svc.id, { targetPort: e.target.value })} className={`${inpSm} font-mono text-center !h-9 shadow-sm`} />
-                </div>
-
-                {svc.type === 'NodePort' && (
-                  <>
-                    <div className="pb-2.5 px-1">
-                      <div className="w-px h-8 bg-gray-200 dark:bg-gray-800" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="text-[12px] text-orange-600 dark:text-orange-400 font-bold tracking-normal mb-2.5 ml-1">
-                        {t.k8s.nodePortLabel}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2 space-y-3">
+                    <div>
+                      <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                        {t.k8s.nameLabel}
                       </p>
-                      <input type="text" placeholder="30000" value={svc.nodePort} onChange={e => updateService(svc.id, { nodePort: e.target.value })} className={`${inpSm} font-mono text-center border-orange-200 dark:border-orange-900/40 !h-9 bg-orange-50/30 dark:bg-orange-900/10 shadow-sm`} />
+                      <input type="text" value={s.name} onChange={e => updateService(s.id, { name: e.target.value })} className={inp} />
                     </div>
-                  </>
-                )}
+                    <div>
+                      <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                        {t.k8s.namespaceLabel}
+                      </p>
+                      <input type="text" value={s.namespace} onChange={e => updateService(s.id, { namespace: e.target.value })} className={inp} />
+                    </div>
+                  </div>
+
+                  <div className="col-span-2 mt-1">
+                    <MetadataEditor
+                      labels={s.labels} annotations={s.annotations}
+                      onUpdateLabels={(v: any) => updateService(s.id, { labels: v })}
+                      onUpdateAnnotations={(v: any) => updateService(s.id, { annotations: v })}
+                      theme="green"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
+                      {t.k8s.typeLabel}
+                    </p>
+                    <div className="relative group">
+                      <select value={s.type} onChange={e => updateService(s.id, { type: e.target.value as any })} className={`${inp} font-bold appearance-none pr-8`}>
+                        <option value="ClusterIP">ClusterIP</option>
+                        <option value="NodePort">NodePort</option>
+                        <option value="LoadBalancer">LoadBalancer</option>
+                        <option value="Headless">Headless (None)</option>
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 pointer-events-none transition-colors" />
+                    </div>
+                  </div>
+                  <div>
+                    <ResourceSelector
+                      label={t.k8s.selectorLabel}
+                      value={s.selectorApp}
+                      onChange={v => updateService(s.id, { selectorApp: v })}
+                      options={workloads.map(w => ({ id: w.id, name: w.appName }))}
+                      placeholder={t.k8s.selectWorkload}
+                      inputClassName={inp}
+                    />
+                  </div>
+                  <div className="col-span-2">
+                    <div className="flex items-end gap-3 p-3 bg-gray-50/50 dark:bg-black/20 rounded-[1.2rem] border border-gray-100 dark:border-gray-800/50">
+                      <div className="flex-1">
+                        <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                          {t.k8s.servicePortLabel}
+                        </p>
+                        <input type="text" placeholder="80" value={s.port} onChange={e => updateService(s.id, { port: e.target.value })} className={`${inpSm} font-mono text-center !h-9 shadow-sm`} />
+                      </div>
+
+                      <div className="pb-2.5 flex flex-col items-center">
+                        <div className="w-6 h-6 rounded-full bg-green-500/10 dark:bg-green-500/20 flex items-center justify-center">
+                          <ArrowRightLeft className="w-3.5 h-3.5 text-green-600 dark:text-green-400" />
+                        </div>
+                      </div>
+
+                      <div className="flex-1">
+                        <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                          {t.k8s.targetPortLabel}
+                        </p>
+                        <input type="text" placeholder="80" value={s.targetPort} onChange={e => updateService(s.id, { targetPort: e.target.value })} className={`${inpSm} font-mono text-center !h-9 shadow-sm`} />
+                      </div>
+
+                      {s.type === 'NodePort' && (
+                        <>
+                          <div className="pb-2.5 px-1">
+                            <div className="w-px h-8 bg-gray-200 dark:bg-gray-800" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-[12px] text-orange-600 dark:text-orange-400 font-bold tracking-normal mb-2.5 ml-1">
+                              {t.k8s.nodePortLabel}
+                            </p>
+                            <input type="text" placeholder="30000" value={s.nodePort} onChange={e => updateService(s.id, { nodePort: e.target.value })} className={`${inpSm} font-mono text-center border-orange-200 dark:border-orange-900/40 !h-9 bg-orange-50/30 dark:bg-orange-900/10 shadow-sm`} />
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
           </div>
-
-
-        </div>
-      )}
+        ))}
+      </div>
 
       {/* Ingresses */}
       <div>
@@ -1478,96 +1486,104 @@ function NetworkSection() {
           <button onClick={addIngress} className={`${btnSm} border-purple-300 dark:border-purple-700 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20`}><Plus className="w-3 h-3" />{t.network.new}</button>
         </div>
         {ingresses.length === 0 && <p className="text-xs text-gray-400 italic px-1">{t.network.noIngress}</p>}
-        {ingresses.map(i => <ResRow key={i.id} label={i.name} sub={`${i.rules.length} ${t.network.rule}`} theme="purple" active={i.id === activeIngressId} onClick={() => { setActiveIngressId(i.id); setActiveServiceId(null); }} onDelete={() => removeIngress(i.id)} />)}
+        {ingresses.map(i => (
+          <div key={i.id} className="mb-3 space-y-3">
+            <ResRow
+              label={i.name}
+              sub={`${i.rules.length} ${t.network.rule}`}
+              theme="purple"
+              active={i.id === activeIngressId}
+              onClick={() => { setActiveIngressId(i.id === activeIngressId ? null : i.id); setActiveServiceId(null); }}
+              onDelete={() => removeIngress(i.id)}
+            />
+            {i.id === activeIngressId && (
+              <div className="border-2 border-purple-100 dark:border-purple-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] shadow-xl shadow-purple-500/5 duration-300 animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold text-purple-600 dark:text-purple-400 tracking-normal">{t.k8s.edit} Ingress</p>
+                  <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-purple-500/50"></div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                      {t.k8s.nameLabel}
+                    </p>
+                    <input type="text" value={i.name} onChange={e => updateIngress(i.id, { name: e.target.value })} className={inp} />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                      {t.k8s.ingressClassLabel}
+                    </p>
+                    <input type="text" placeholder="nginx" value={i.ingressClassName} onChange={e => updateIngress(i.id, { ingressClassName: e.target.value })} className={inp} />
+                  </div>
+                  <div className="col-span-2">
+                    <MetadataEditor
+                      labels={i.labels} annotations={i.annotations}
+                      onUpdateLabels={(v: any) => updateIngress(i.id, { labels: v })}
+                      onUpdateAnnotations={(v: any) => updateIngress(i.id, { annotations: v })}
+                      theme="purple"
+                    />
+                  </div>
+                </div>
+                <Checkbox checked={i.tls} onChange={v => updateIngress(i.id, { tls: v })} label={t.k8s.enableTls} />
+                {i.tls && (
+                  <div className="animate-in fade-in slide-in-from-top-1">
+                    <ResourceSelector
+                      label={t.k8s.tlsSecretLabel}
+                      value={i.tlsSecret}
+                      onChange={v => updateIngress(i.id, { tlsSecret: v })}
+                      options={secrets.map(s => ({ id: s.id, name: s.name }))}
+                      placeholder={t.k8s.listSelect}
+                      manualPlaceholder="Secret Name"
+                      inputClassName={inp}
+                    />
+                  </div>
+                )}
+                <p className="text-[12px] text-gray-600 dark:text-gray-300 font-bold tracking-normal py-2 border-t border-gray-100 dark:border-gray-800">
+                  {t.k8s.rulesLabel}
+                </p>
+                {i.rules.map(r => (
+                  <div key={r.id} className="flex gap-2 flex-wrap items-end p-3 bg-gray-50/50 dark:bg-black/20 rounded-xl border border-gray-100 dark:border-gray-800/50">
+                    <div className="flex-1 min-w-28 space-y-1.5">
+                      <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.hostLabel}</p>
+                      <input type="text" placeholder="example.com" value={r.host} onChange={e => updateIngressRule(i.id, r.id, { host: e.target.value })} className={inpSm} />
+                    </div>
+                    <div className="w-32 space-y-1.5">
+                      <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.pathLabel}</p>
+                      <input type="text" placeholder="/" value={r.path} onChange={e => updateIngressRule(i.id, r.id, { path: e.target.value })} className={inpSm} />
+                    </div>
+                    <div className="flex-1 min-w-[12rem]">
+                      <ResourceSelector
+                        label={t.k8s.targetServiceLabel}
+                        value={r.serviceName}
+                        onChange={val => {
+                          const targetSvc = services.find(s => s.name === val);
+                          const patch: any = { serviceName: val };
+                          if (targetSvc) patch.servicePort = targetSvc.port;
+                          updateIngressRule(i.id, r.id, patch);
+                        }}
+                        options={services.map(s => ({ id: s.id, name: s.name }))}
+                        placeholder={t.k8s.listSelect}
+                        manualPlaceholder="Service NAME"
+                      />
+                    </div>
+                    <div className="w-24 space-y-1.5">
+                      <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.portLabel}</p>
+                      <input type="text" placeholder="80" value={r.servicePort} onChange={e => updateIngressRule(i.id, r.id, { servicePort: e.target.value })} className={`${inpSm} font-mono`} />
+                    </div>
+                    <button onClick={() => removeIngressRule(i.id, r.id)} className="text-gray-300 hover:text-red-400 transition-colors p-1.5 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+                <button onClick={() => addIngressRule(i.id)} className="text-xs text-purple-500 font-medium">+ {t.common.add} {t.network.rule}</button>
+              </div>
+            )}
+          </div>
+        ))}
       </div>
-
-      {ing && (
-        <div className="border-2 border-purple-100 dark:border-purple-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] shadow-xl shadow-purple-500/5 duration-300 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-bold text-purple-600 dark:text-purple-400 tracking-normal">{t.k8s.edit} Ingress</p>
-            <div className="flex gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-purple-500 animate-pulse"></div>
-              <div className="w-1.5 h-1.5 rounded-full bg-purple-500/50"></div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
-                {t.k8s.nameLabel}
-              </p>
-              <input type="text" value={ing.name} onChange={e => updateIngress(ing.id, { name: e.target.value })} className={inp} />
-            </div>
-            <div>
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
-                {t.k8s.ingressClassLabel}
-              </p>
-              <input type="text" placeholder="nginx" value={ing.ingressClassName} onChange={e => updateIngress(ing.id, { ingressClassName: e.target.value })} className={inp} />
-            </div>
-            <div className="col-span-2">
-              <MetadataEditor
-                labels={ing.labels} annotations={ing.annotations}
-                onUpdateLabels={(v: any) => updateIngress(ing.id, { labels: v })}
-                onUpdateAnnotations={(v: any) => updateIngress(ing.id, { annotations: v })}
-                theme="purple"
-              />
-            </div>
-          </div>
-          <Checkbox checked={ing.tls} onChange={v => updateIngress(ing.id, { tls: v })} label={t.k8s.enableTls} />
-          {ing.tls && (
-            <div className="animate-in fade-in slide-in-from-top-1">
-              <ResourceSelector
-                label={t.k8s.tlsSecretLabel}
-                value={ing.tlsSecret}
-                onChange={v => updateIngress(ing.id, { tlsSecret: v })}
-                options={secrets.map(s => ({ id: s.id, name: s.name }))}
-                placeholder={t.k8s.listSelect}
-                manualPlaceholder="Secret Name"
-                inputClassName={inp}
-              />
-            </div>
-          )}
-          <p className="text-[12px] text-gray-600 dark:text-gray-300 font-bold tracking-normal py-2 border-t border-gray-100 dark:border-gray-800">
-            {t.k8s.rulesLabel}
-          </p>
-          {ing.rules.map(r => (
-            <div key={r.id} className="flex gap-2 flex-wrap items-end p-3 bg-gray-50/50 dark:bg-black/20 rounded-xl border border-gray-100 dark:border-gray-800/50">
-              <div className="flex-1 min-w-28 space-y-1.5">
-                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.hostLabel}</p>
-                <input type="text" placeholder="example.com" value={r.host} onChange={e => updateIngressRule(ing.id, r.id, { host: e.target.value })} className={inpSm} />
-              </div>
-              <div className="w-32 space-y-1.5">
-                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.pathLabel}</p>
-                <input type="text" placeholder="/" value={r.path} onChange={e => updateIngressRule(ing.id, r.id, { path: e.target.value })} className={inpSm} />
-              </div>
-              <div className="flex-1 min-w-[12rem]">
-                <ResourceSelector
-                  label={t.k8s.targetServiceLabel}
-                  value={r.serviceName}
-                  onChange={val => {
-                    const targetSvc = services.find(s => s.name === val);
-                    const patch: any = { serviceName: val };
-                    if (targetSvc) patch.servicePort = targetSvc.port;
-                    updateIngressRule(ing.id, r.id, patch);
-                  }}
-                  options={services.map(s => ({ id: s.id, name: s.name }))}
-                  placeholder={t.k8s.listSelect}
-                  manualPlaceholder="Service NAME"
-                />
-              </div>
-              <div className="w-24 space-y-1.5">
-                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.portLabel}</p>
-                <input type="text" placeholder="80" value={r.servicePort} onChange={e => updateIngressRule(ing.id, r.id, { servicePort: e.target.value })} className={`${inpSm} font-mono`} />
-              </div>
-              <button onClick={() => removeIngressRule(ing.id, r.id)} className="text-gray-300 hover:text-red-400 transition-colors p-1.5 hover:bg-red-50 dark:hover:bg-red-900/10 rounded-lg">
-                <Trash2 className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          ))}
-          <button onClick={() => addIngressRule(ing.id)} className="text-xs text-purple-500 font-medium">+ {t.common.add} {t.network.rule}</button>
-
-
-        </div>
-      )}
     </div>
   );
 }
@@ -1602,64 +1618,63 @@ function StorageSection() {
         </div>
         {storageClasses.length === 0 && <p className="text-xs text-gray-400 italic px-1">{t.storage.noSc}</p>}
         {storageClasses.map(item => (
-          <ResRow
-            key={item.id}
-            label={item.name}
-            sub={item.provisioner}
-            active={item.id === activeStorageClassId}
-            onClick={() => {
-              setActiveStorageClassId(item.id);
-              setActivePvcId(null); setActiveConfigMapId(null); setActiveSecretId(null); setActivePvId(null);
-            }}
-            onDelete={() => removeStorageClass(item.id)}
-            theme="orange"
-          />
+          <div key={item.id} className="mb-2 space-y-3">
+            <ResRow
+              label={item.name}
+              sub={item.provisioner}
+              active={item.id === activeStorageClassId}
+              onClick={() => {
+                setActiveStorageClassId(item.id === activeStorageClassId ? null : item.id);
+                setActivePvcId(null); setActiveConfigMapId(null); setActiveSecretId(null); setActivePvId(null);
+              }}
+              onDelete={() => removeStorageClass(item.id)}
+              theme="orange"
+            />
+            {item.id === activeStorageClassId && (
+              <div className="border-2 border-orange-100 dark:border-orange-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] shadow-xl shadow-orange-500/5 duration-300 animate-in fade-in slide-in-from-top-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold text-orange-600 dark:text-orange-400 tracking-normal">{t.k8s.edit} StorageClass</p>
+                  <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-orange-500/50"></div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.common.name}</p><input type="text" value={item.name} onChange={e => updateStorageClass(item.id, { name: e.target.value })} className={inp} /></div>
+
+                  <div className="col-span-2 mb-2">
+                    <MetadataEditor
+                      labels={item.labels} annotations={item.annotations}
+                      onUpdateLabels={(v: any) => updateStorageClass(item.id, { labels: v })}
+                      onUpdateAnnotations={(v: any) => updateStorageClass(item.id, { annotations: v })}
+                      theme="orange"
+                    />
+                  </div>
+
+                  <div className="col-span-2"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">Provisioner</p><input type="text" placeholder="kubernetes.io/aws-ebs" value={item.provisioner} onChange={e => updateStorageClass(item.id, { provisioner: e.target.value })} className={inp} /></div>
+                  <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.k8s.restartPolicy}</p><select value={item.reclaimPolicy} onChange={e => updateStorageClass(item.id, { reclaimPolicy: e.target.value as any })} className={inp}><option value="Delete">Delete</option><option value="Retain">Retain</option></select></div>
+                  <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">Binding Mode</p><select value={item.volumeBindingMode} onChange={e => updateStorageClass(item.id, { volumeBindingMode: e.target.value as any })} className={inp}><option value="Immediate">Immediate</option><option value="WaitForFirstConsumer">WaitForFirstConsumer</option></select></div>
+                  <div className="col-span-2"><Checkbox checked={item.allowVolumeExpansion} onChange={v => updateStorageClass(item.id, { allowVolumeExpansion: v })} label="Allow Volume Expansion" /></div>
+                </div>
+
+                <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                  <p className="text-[10px] font-bold text-gray-400 mb-2">Parameters (驱动参数)</p>
+                  <div className="space-y-2">
+                    {item.parameters.map((p, i) => (
+                      <div key={p.id} className="flex gap-2 items-center">
+                        <input type="text" placeholder="key" value={p.key} onChange={e => updateStorageClassParam(item.id, i, 'key', e.target.value)} className={inpSm} />
+                        <input type="text" placeholder="value" value={p.value} onChange={e => updateStorageClassParam(item.id, i, 'value', e.target.value)} className={inpSm} />
+                        <button onClick={() => removeStorageClassParam(item.id, i)} className="text-gray-300 hover:text-red-400 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                      </div>
+                    ))}
+                    <button onClick={() => addStorageClassParam(item.id)} className="text-[10px] text-blue-500 hover:text-blue-400 font-bold">+ {t.common.add} Parameter</button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         ))}
       </div>
-      {sc && (
-        <div className="border-2 border-orange-100 dark:border-orange-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] shadow-xl shadow-orange-500/5 duration-300 animate-in fade-in slide-in-from-top-2">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-bold text-orange-600 dark:text-orange-400 tracking-normal">{t.k8s.edit} StorageClass</p>
-            <div className="flex gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></div>
-              <div className="w-1.5 h-1.5 rounded-full bg-orange-500/50"></div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.common.name}</p><input type="text" value={sc.name} onChange={e => updateStorageClass(sc.id, { name: e.target.value })} className={inp} /></div>
-
-            <div className="col-span-2 mb-2">
-              <MetadataEditor
-                labels={sc.labels} annotations={sc.annotations}
-                onUpdateLabels={(v: any) => updateStorageClass(sc.id, { labels: v })}
-                onUpdateAnnotations={(v: any) => updateStorageClass(sc.id, { annotations: v })}
-                theme="orange"
-              />
-            </div>
-
-            <div className="col-span-2"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">Provisioner</p><input type="text" placeholder="kubernetes.io/aws-ebs" value={sc.provisioner} onChange={e => updateStorageClass(sc.id, { provisioner: e.target.value })} className={inp} /></div>
-            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.k8s.restartPolicy}</p><select value={sc.reclaimPolicy} onChange={e => updateStorageClass(sc.id, { reclaimPolicy: e.target.value as any })} className={inp}><option value="Delete">Delete</option><option value="Retain">Retain</option></select></div>
-            <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">Binding Mode</p><select value={sc.volumeBindingMode} onChange={e => updateStorageClass(sc.id, { volumeBindingMode: e.target.value as any })} className={inp}><option value="Immediate">Immediate</option><option value="WaitForFirstConsumer">WaitForFirstConsumer</option></select></div>
-            <div className="col-span-2"><Checkbox checked={sc.allowVolumeExpansion} onChange={v => updateStorageClass(sc.id, { allowVolumeExpansion: v })} label="Allow Volume Expansion" /></div>
-          </div>
-
-          <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-            <p className="text-[10px] font-bold text-gray-400 mb-2">Parameters (驱动参数)</p>
-            <div className="space-y-2">
-              {sc.parameters.map((p, i) => (
-                <div key={p.id} className="flex gap-2 items-center">
-                  <input type="text" placeholder="key" value={p.key} onChange={e => updateStorageClassParam(sc.id, i, 'key', e.target.value)} className={inpSm} />
-                  <input type="text" placeholder="value" value={p.value} onChange={e => updateStorageClassParam(sc.id, i, 'value', e.target.value)} className={inpSm} />
-                  <button onClick={() => removeStorageClassParam(sc.id, i)} className="text-gray-300 hover:text-red-400 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
-                </div>
-              ))}
-              <button onClick={() => addStorageClassParam(sc.id)} className="text-[10px] text-blue-500 hover:text-blue-400 font-bold">+ {t.common.add} Parameter</button>
-            </div>
-          </div>
-
-
-        </div>
-      )}
       {/* PVs (Cluster-wide) */}
       <div>
         <div className="flex items-center justify-between mb-2">
@@ -1667,133 +1682,145 @@ function StorageSection() {
           <button onClick={addPv} className={`${btnSm} border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400`}><Plus className="w-3 h-3" />{t.network.new}</button>
         </div>
         {pvs.length === 0 && <p className="text-xs text-gray-400 italic px-1">-- {t.k8s.noVolumes} --</p>}
-        {pvs.map(p => <ResRow key={p.id} label={p.name} sub={`${p.capacity} · ${p.accessMode}`} theme="slate" active={p.id === activePvId} onClick={() => { setActivePvId(p.id); setActivePvcId(null); setActiveConfigMapId(null); setActiveSecretId(null); setActiveStorageClassId(null); }} onDelete={() => removePv(p.id)} />)}
-      </div>
-      {pv && (
-        <div className="border-2 border-slate-100 dark:border-slate-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] duration-300 animate-in fade-in slide-in-from-top-2 shadow-xl shadow-slate-500/5">
-          <div className="flex items-center justify-between">
-            <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.k8s.edit} PersistentVolume</p>
-            <div className="flex gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-pulse"></div>
-              <div className="w-1.5 h-1.5 rounded-full bg-slate-500/50"></div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="col-span-2">
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
-                {t.k8s.nameLabel}
-              </p>
-              <input type="text" value={pv.name} onChange={e => updatePv(pv.id, { name: e.target.value })} className={inp} />
-            </div>
-            <div className="col-span-2">
-              <MetadataEditor
-                labels={pv.labels} annotations={pv.annotations}
-                onUpdateLabels={(v: any) => updatePv(pv.id, { labels: v })}
-                onUpdateAnnotations={(v: any) => updatePv(pv.id, { annotations: v })}
-                theme="slate"
-              />
-            </div>
-            <div className="space-y-1.5">
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
-                {t.k8s.capacityLabel}
-              </p>
-              {(() => {
-                const valStr = String(pv.capacity || "");
-                const match = valStr.match(/^(\d+)(.*)$/);
-                const numPart = match ? match[1] : valStr;
-                const unitPart = match ? match[2] : (valStr ? "" : "Gi");
-                const units = ['Mi', 'Gi', 'Ti', 'Pi'];
-                return (
-                  <div className="flex gap-1.5 items-stretch h-[42px]">
-                    <input type="text" placeholder="10" value={numPart}
-                      onChange={e => updatePv(pv.id, { capacity: e.target.value + unitPart })}
-                      className={`${inp} flex-1 !h-full font-mono text-center shadow-sm`} />
-                    <div className="relative group min-w-[70px]">
-                      <select value={unitPart} onChange={e => updatePv(pv.id, { capacity: numPart + e.target.value })}
-                        className="w-full bg-gray-50/50 dark:bg-black/20 border border-gray-200 dark:border-gray-800 rounded-xl font-bold text-[11px] h-full pl-2.5 pr-6 appearance-none cursor-pointer hover:border-blue-200 transition-all focus:outline-none">
-                        {units.map(u => <option key={u} value={u}>{u}</option>)}
+        {pvs.map(item => (
+          <div key={item.id} className="mb-2 space-y-3">
+            <ResRow
+              label={item.name}
+              sub={`${item.capacity} · ${item.accessMode}`}
+              theme="slate"
+              active={item.id === activePvId}
+              onClick={() => {
+                setActivePvId(item.id === activePvId ? null : item.id);
+                setActivePvcId(null); setActiveConfigMapId(null); setActiveSecretId(null); setActiveStorageClassId(null);
+              }}
+              onDelete={() => removePv(item.id)}
+            />
+            {item.id === activePvId && (
+              <div className="border-2 border-slate-100 dark:border-slate-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] duration-300 animate-in fade-in slide-in-from-top-2 shadow-xl shadow-slate-500/5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.k8s.edit} PersistentVolume</p>
+                  <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-500 animate-pulse"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-slate-500/50"></div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                      {t.k8s.nameLabel}
+                    </p>
+                    <input type="text" value={item.name} onChange={e => updatePv(item.id, { name: e.target.value })} className={inp} />
+                  </div>
+                  <div className="col-span-2">
+                    <MetadataEditor
+                      labels={item.labels} annotations={item.annotations}
+                      onUpdateLabels={(v: any) => updatePv(item.id, { labels: v })}
+                      onUpdateAnnotations={(v: any) => updatePv(item.id, { annotations: v })}
+                      theme="slate"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
+                      {t.k8s.capacityLabel}
+                    </p>
+                    {(() => {
+                      const valStr = String(item.capacity || "");
+                      const match = valStr.match(/^(\d+)(.*)$/);
+                      const numPart = match ? match[1] : valStr;
+                      const unitPart = match ? match[2] : (valStr ? "" : "Gi");
+                      const units = ['Mi', 'Gi', 'Ti', 'Pi'];
+                      return (
+                        <div className="flex gap-1.5 items-stretch h-[42px]">
+                          <input type="text" placeholder="10" value={numPart}
+                            onChange={e => updatePv(item.id, { capacity: e.target.value + unitPart })}
+                            className={`${inp} flex-1 !h-full font-mono text-center shadow-sm`} />
+                          <div className="relative group min-w-[70px]">
+                            <select value={unitPart} onChange={e => updatePv(item.id, { capacity: numPart + e.target.value })}
+                              className="w-full bg-gray-50/50 dark:bg-black/20 border border-gray-200 dark:border-gray-800 rounded-xl font-bold text-[11px] h-full pl-2.5 pr-6 appearance-none cursor-pointer hover:border-blue-200 transition-all focus:outline-none">
+                              {units.map(u => <option key={u} value={u}>{u}</option>)}
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
+                      {t.k8s.accessModeLabel}
+                    </p>
+                    <div className="relative group">
+                      <select value={item.accessMode} onChange={e => updatePv(item.id, { accessMode: e.target.value as any })} className={`${inp} font-bold appearance-none pr-8`}>
+                        <option value="ReadWriteOnce">ReadWriteOnce</option>
+                        <option value="ReadWriteMany">ReadWriteMany</option>
+                        <option value="ReadOnlyMany">ReadOnlyMany</option>
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 pointer-events-none transition-colors" />
                     </div>
                   </div>
-                );
-              })()}
-            </div>
-            <div className="space-y-1.5">
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
-                {t.k8s.accessModeLabel}
-              </p>
-              <div className="relative group">
-                <select value={pv.accessMode} onChange={e => updatePv(pv.id, { accessMode: e.target.value as any })} className={`${inp} font-bold appearance-none pr-8`}>
-                  <option value="ReadWriteOnce">ReadWriteOnce</option>
-                  <option value="ReadWriteMany">ReadWriteMany</option>
-                  <option value="ReadOnlyMany">ReadOnlyMany</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 pointer-events-none transition-colors" />
+                  <div className="space-y-1.5">
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
+                      {t.k8s.reclaimPolicyLabel}
+                    </p>
+                    <div className="relative group">
+                      <select value={item.reclaimPolicy} onChange={e => updatePv(item.id, { reclaimPolicy: e.target.value as any })} className={`${inp} font-bold appearance-none pr-8`}>
+                        <option value="Retain">Retain</option>
+                        <option value="Delete">Delete</option>
+                        <option value="Recycle">Recycle</option>
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 pointer-events-none transition-colors" />
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
+                      {t.k8s.scLabel}
+                    </p>
+                    <div className="relative group">
+                      <select value={item.storageClass} onChange={e => updatePv(item.id, { storageClass: e.target.value })} className={`${inp} font-bold appearance-none pr-8`}>
+                        <option value="">-- Standard (None) --</option>
+                        {storageClasses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 pointer-events-none transition-colors" />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                  <p className="text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 ml-0.5">{t.storage.storageSource}</p>
+                  <div className="flex gap-2 items-start">
+                    <div className="relative group w-36 shrink-0">
+                      <select value={item.sourceType} onChange={e => updatePv(item.id, { sourceType: e.target.value as any })} className={`${inpSm} font-bold appearance-none pr-8 bg-gray-50/50`}>
+                        <option value="hostPath">HostPath</option>
+                        <option value="nfs">NFS</option>
+                        <option value="local">Local</option>
+                        <option value="csi">CSI</option>
+                      </select>
+                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors" />
+                    </div>
+
+                    <div className="flex-1 flex gap-2">
+                      {item.sourceType === 'hostPath' && <input type="text" placeholder={t.storage.pathPlaceholder} value={item.hostPath} onChange={e => updatePv(item.id, { hostPath: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />}
+                      {item.sourceType === 'local' && <input type="text" placeholder={t.storage.localPathPlaceholder} value={item.hostPath} onChange={e => updatePv(item.id, { hostPath: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />}
+                      {item.sourceType === 'nfs' && (
+                        <>
+                          <input type="text" placeholder={t.storage.nfsServerPlaceholder} value={item.nfsServer} onChange={e => updatePv(item.id, { nfsServer: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />
+                          <input type="text" placeholder={t.storage.nfsPathPlaceholder} value={item.nfsPath} onChange={e => updatePv(item.id, { nfsPath: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />
+                        </>
+                      )}
+                      {item.sourceType === 'csi' && (
+                        <>
+                          <input type="text" placeholder={t.storage.csiDriverPlaceholder} value={item.csiDriver} onChange={e => updatePv(item.id, { csiDriver: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />
+                          <input type="text" placeholder={t.storage.vHandlePlaceholder} value={item.csiHandle} onChange={e => updatePv(item.id, { csiHandle: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="space-y-1.5">
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
-                {t.k8s.reclaimPolicyLabel}
-              </p>
-              <div className="relative group">
-                <select value={pv.reclaimPolicy} onChange={e => updatePv(pv.id, { reclaimPolicy: e.target.value as any })} className={`${inp} font-bold appearance-none pr-8`}>
-                  <option value="Retain">Retain</option>
-                  <option value="Delete">Delete</option>
-                  <option value="Recycle">Recycle</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 pointer-events-none transition-colors" />
-              </div>
-            </div>
-            <div className="space-y-1.5">
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">
-                {t.k8s.scLabel}
-              </p>
-              <div className="relative group">
-                <select value={pv.storageClass} onChange={e => updatePv(pv.id, { storageClass: e.target.value })} className={`${inp} font-bold appearance-none pr-8`}>
-                  <option value="">-- Standard (None) --</option>
-                  {storageClasses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 pointer-events-none transition-colors" />
-              </div>
-            </div>
+            )}
           </div>
-
-
-
-          <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-            <p className="text-[12px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 ml-0.5">{t.storage.storageSource}</p>
-            <div className="flex gap-2 items-start">
-              <div className="relative group w-36 shrink-0">
-                <select value={pv.sourceType} onChange={e => updatePv(pv.id, { sourceType: e.target.value as any })} className={`${inpSm} font-bold appearance-none pr-8 bg-gray-50/50`}>
-                  <option value="hostPath">HostPath</option>
-                  <option value="nfs">NFS</option>
-                  <option value="local">Local</option>
-                  <option value="csi">CSI</option>
-                </select>
-                <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none group-hover:text-blue-500 transition-colors" />
-              </div>
-
-              <div className="flex-1 flex gap-2">
-                {pv.sourceType === 'hostPath' && <input type="text" placeholder={t.storage.pathPlaceholder} value={pv.hostPath} onChange={e => updatePv(pv.id, { hostPath: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />}
-                {pv.sourceType === 'local' && <input type="text" placeholder={t.storage.localPathPlaceholder} value={pv.hostPath} onChange={e => updatePv(pv.id, { hostPath: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />}
-                {pv.sourceType === 'nfs' && (
-                  <>
-                    <input type="text" placeholder={t.storage.nfsServerPlaceholder} value={pv.nfsServer} onChange={e => updatePv(pv.id, { nfsServer: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />
-                    <input type="text" placeholder={t.storage.nfsPathPlaceholder} value={pv.nfsPath} onChange={e => updatePv(pv.id, { nfsPath: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />
-                  </>
-                )}
-                {pv.sourceType === 'csi' && (
-                  <>
-                    <input type="text" placeholder={t.storage.csiDriverPlaceholder} value={pv.csiDriver} onChange={e => updatePv(pv.id, { csiDriver: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />
-                    <input type="text" placeholder={t.storage.vHandlePlaceholder} value={pv.csiHandle} onChange={e => updatePv(pv.id, { csiHandle: e.target.value })} className={`${inpSm} flex-1 shadow-inner`} />
-                  </>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+        ))}
+      </div>
 
       {/* PVCs */}
       <div>
@@ -1802,110 +1829,123 @@ function StorageSection() {
           <button onClick={addPvc} className={`${btnSm} border-indigo-300 dark:border-indigo-700 text-indigo-600 dark:text-indigo-400`}><Plus className="w-3 h-3" />{t.network.new}</button>
         </div>
         {pvcs.length === 0 && <p className="text-xs text-gray-400 italic px-1">{t.storage.noPvc}</p>}
-        {pvcs.map(p => <ResRow key={p.id} label={p.name} sub={`${p.storage} · ${p.accessMode}`} theme="indigo" active={p.id === activePvcId} onClick={() => { setActivePvcId(p.id); setActiveConfigMapId(null); setActiveSecretId(null); setActiveStorageClassId(null); }} onDelete={() => removePvc(p.id)} />)}
-      </div>
-      {pvc && (
-        <div className="border-2 border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] duration-300 animate-in fade-in slide-in-from-top-2 shadow-xl shadow-indigo-500/5">
-          <div className="flex items-center justify-between">
-            <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.k8s.edit} PVC</p>
-            <div className="flex gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
-              <div className="w-1.5 h-1.5 rounded-full bg-indigo-500/50"></div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
-                {t.k8s.nameLabel}
-              </p>
-              <input type="text" value={pvc.name} onChange={e => updatePvc(pvc.id, { name: e.target.value })} className={inp} />
-            </div>
-            <div>
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
-                {t.k8s.namespaceLabel}
-              </p>
-              <input type="text" value={pvc.namespace} onChange={e => updatePvc(pvc.id, { namespace: e.target.value })} className={inp} />
-            </div>
-            <div className="col-span-2">
-              <MetadataEditor
-                labels={pvc.labels} annotations={pvc.annotations}
-                onUpdateLabels={(v: any) => updatePvc(pvc.id, { labels: v })}
-                onUpdateAnnotations={(v: any) => updatePvc(pvc.id, { annotations: v })}
-                theme="indigo"
-              />
-            </div>
-            <div>
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
-                {t.k8s.storageLabel}
-              </p>
-              {(() => {
-                const valStr = String(pvc.storage || "");
-                const match = valStr.match(/^(\d+)(.*)$/);
-                const numPart = match ? match[1] : valStr;
-                const unitPart = match ? match[2] : (valStr ? "" : "Gi");
-                const units = ['Mi', 'Gi', 'Ti', 'Pi'];
-                return (
-                  <div className="flex gap-1.5 items-stretch h-[36px]">
-                    <input type="text" placeholder="1" value={numPart}
-                      onChange={e => updatePvc(pvc.id, { storage: e.target.value + unitPart })}
-                      className={`${inp} flex-1 !h-full font-mono text-center shadow-sm`} />
-                    <div className="relative group min-w-[70px]">
-                      <select value={unitPart} onChange={e => updatePvc(pvc.id, { storage: numPart + e.target.value })}
-                        className="w-full bg-gray-50/50 dark:bg-black/20 border border-gray-200 dark:border-gray-800 rounded-xl font-bold text-[11px] h-full pl-2.5 pr-6 appearance-none cursor-pointer hover:border-blue-200 transition-all focus:outline-none">
-                        {units.map(u => <option key={u} value={u}>{u}</option>)}
+        {pvcs.map(item => (
+          <div key={item.id} className="mb-2 space-y-3">
+            <ResRow
+              label={item.name}
+              sub={`${item.storage} · ${item.accessMode}`}
+              theme="indigo"
+              active={item.id === activePvcId}
+              onClick={() => {
+                setActivePvcId(item.id === activePvcId ? null : item.id);
+                setActiveConfigMapId(null); setActiveSecretId(null); setActiveStorageClassId(null); setActivePvId(null);
+              }}
+              onDelete={() => removePvc(item.id)}
+            />
+            {item.id === activePvcId && (
+              <div className="border-2 border-indigo-100 dark:border-indigo-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] duration-300 animate-in fade-in slide-in-from-top-2 shadow-xl shadow-indigo-500/5">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs font-bold text-indigo-600 dark:text-indigo-400 tracking-normal">{t.k8s.edit} PVC</p>
+                  <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-indigo-500/50"></div>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                      {t.k8s.nameLabel}
+                    </p>
+                    <input type="text" value={item.name} onChange={e => updatePvc(item.id, { name: e.target.value })} className={inp} />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                      {t.k8s.namespaceLabel}
+                    </p>
+                    <input type="text" value={item.namespace} onChange={e => updatePvc(item.id, { namespace: e.target.value })} className={inp} />
+                  </div>
+                  <div className="col-span-2">
+                    <MetadataEditor
+                      labels={item.labels} annotations={item.annotations}
+                      onUpdateLabels={(v: any) => updatePvc(item.id, { labels: v })}
+                      onUpdateAnnotations={(v: any) => updatePvc(item.id, { annotations: v })}
+                      theme="indigo"
+                    />
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                      {t.k8s.storageLabel}
+                    </p>
+                    {(() => {
+                      const valStr = String(item.storage || "");
+                      const match = valStr.match(/^(\d+)(.*)$/);
+                      const numPart = match ? match[1] : valStr;
+                      const unitPart = match ? match[2] : (valStr ? "" : "Gi");
+                      const units = ['Mi', 'Gi', 'Ti', 'Pi'];
+                      return (
+                        <div className="flex gap-1.5 items-stretch h-[36px]">
+                          <input type="text" placeholder="1" value={numPart}
+                            onChange={e => updatePvc(item.id, { storage: e.target.value + unitPart })}
+                            className={`${inp} flex-1 !h-full font-mono text-center shadow-sm`} />
+                          <div className="relative group min-w-[70px]">
+                            <select value={unitPart} onChange={e => updatePvc(item.id, { storage: numPart + e.target.value })}
+                              className="w-full bg-gray-50/50 dark:bg-black/20 border border-gray-200 dark:border-gray-800 rounded-xl font-bold text-[11px] h-full pl-2.5 pr-6 appearance-none cursor-pointer hover:border-blue-200 transition-all focus:outline-none">
+                              {units.map(u => <option key={u} value={u}>{u}</option>)}
+                            </select>
+                            <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                  <div>
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                      {t.k8s.accessModeLabel}
+                    </p>
+                    <div className="relative group">
+                      <select value={item.accessMode} onChange={e => updatePvc(item.id, { accessMode: e.target.value as any })} className={`${inp} font-bold appearance-none pr-8`}>
+                        <option value="ReadWriteOnce">ReadWriteOnce</option>
+                        <option value="ReadWriteMany">ReadWriteMany</option>
+                        <option value="ReadOnlyMany">ReadOnlyMany</option>
                       </select>
-                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-gray-400" />
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 pointer-events-none transition-colors" />
                     </div>
                   </div>
-                );
-              })()}
-            </div>
-            <div>
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
-                {t.k8s.accessModeLabel}
-              </p>
-              <div className="relative group">
-                <select value={pvc.accessMode} onChange={e => updatePvc(pvc.id, { accessMode: e.target.value as any })} className={`${inp} font-bold appearance-none pr-8`}>
-                  <option value="ReadWriteOnce">ReadWriteOnce</option>
-                  <option value="ReadWriteMany">ReadWriteMany</option>
-                  <option value="ReadOnlyMany">ReadOnlyMany</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 pointer-events-none transition-colors" />
+                  <div className="col-span-2">
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
+                      {t.k8s.scLabel}
+                    </p>
+                    <div className="relative group">
+                      <select value={item.storageClass} onChange={e => updatePvc(item.id, { storageClass: e.target.value })} className={`${inp} font-bold appearance-none pr-8`}>
+                        <option value="">-- Cluster Default --</option>
+                        {storageClasses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
+                      </select>
+                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 pointer-events-none transition-colors" />
+                    </div>
+                  </div>
+                  <div className="">
+                    <ResourceSelector
+                      label="Selector PV (Optional)"
+                      value={item.volumeName}
+                      onChange={val => {
+                        const selectedPv = pvs.find(p => p.name === val);
+                        if (selectedPv) {
+                          updatePvc(item.id, { volumeName: val, storage: selectedPv.capacity, accessMode: selectedPv.accessMode, storageClass: selectedPv.storageClass });
+                        } else {
+                          updatePvc(item.id, { volumeName: val });
+                        }
+                      }}
+                      options={pvs.map(p => ({ id: p.id, name: p.name, info: p.capacity }))}
+                      placeholder="-- Dynamic Provisioning --"
+                      manualPlaceholder="PV NAME"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
-            <div className="col-span-2">
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
-                {t.k8s.scLabel}
-              </p>
-              <div className="relative group">
-                <select value={pvc.storageClass} onChange={e => updatePvc(pvc.id, { storageClass: e.target.value })} className={`${inp} font-bold appearance-none pr-8`}>
-                  <option value="">-- Cluster Default --</option>
-                  {storageClasses.map(s => <option key={s.id} value={s.name}>{s.name}</option>)}
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-hover:text-blue-500 pointer-events-none transition-colors" />
-              </div>
-            </div>
-            <div className="">
-              <ResourceSelector
-                label="Selector PV (Optional)"
-                value={pvc.volumeName}
-                onChange={val => {
-                  const selectedPv = pvs.find(p => p.name === val);
-                  if (selectedPv) {
-                    updatePvc(pvc.id, { volumeName: val, storage: selectedPv.capacity, accessMode: selectedPv.accessMode, storageClass: selectedPv.storageClass });
-                  } else {
-                    updatePvc(pvc.id, { volumeName: val });
-                  }
-                }}
-                options={pvs.map(p => ({ id: p.id, name: p.name, info: p.capacity }))}
-                placeholder="-- Dynamic Provisioning --"
-                manualPlaceholder="PV NAME"
-              />
-            </div>
+            )}
           </div>
-
-        </div>
-      )}
+        ))}
+      </div>
 
       {/* ConfigMaps */}
       <div>
@@ -1914,52 +1954,66 @@ function StorageSection() {
           <button onClick={addConfigMap} className={`${btnSm} border-teal-300 dark:border-teal-700 text-teal-600 dark:text-teal-400`}><Plus className="w-3 h-3" />{t.network.new}</button>
         </div>
         {configMaps.length === 0 && <p className="text-xs text-gray-400 italic px-1">-- {t.k8s.noConfigMaps} --</p>}
-        {configMaps.map(c => <ResRow key={c.id} label={c.name} sub={`data: ${c.data.length} ${t.common.itemUnit}`} theme="teal" active={c.id === activeConfigMapId} onClick={() => { setActiveConfigMapId(c.id); setActivePvcId(null); setActiveSecretId(null); setActiveStorageClassId(null); }} onDelete={() => removeConfigMap(c.id)} />)}
-      </div>
-      {cm && (
-        <div className="border-2 border-teal-100 dark:border-teal-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] duration-300 animate-in fade-in slide-in-from-top-2 shadow-xl shadow-teal-500/5">
-          <div className="flex items-center justify-between">
-            <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.common.edit} ConfigMap</p>
-            <div className="flex gap-1">
-              <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></div>
-              <div className="w-1.5 h-1.5 rounded-full bg-teal-500/50"></div>
-            </div>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.common.name}</p><input type="text" value={cm.name} onChange={e => updateConfigMap(cm.id, { name: e.target.value })} className={inp} /></div>
-            <div className="space-y-1.5"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.namespace}</p><input type="text" value={cm.namespace} onChange={e => updateConfigMap(cm.id, { namespace: e.target.value })} className={inp} /></div>
-            <div className="col-span-2">
-              <MetadataEditor
-                labels={cm.labels} annotations={cm.annotations}
-                onUpdateLabels={(v: any) => updateConfigMap(cm.id, { labels: v })}
-                onUpdateAnnotations={(v: any) => updateConfigMap(cm.id, { annotations: v })}
-                theme="teal"
-              />
-            </div>
-          </div>
-          <p className="text-xs text-gray-500">{t.storage.cm} Data</p>
-          <div className="space-y-3">
-            {cm.data.map((d, i) => (
-              <div key={i} className="p-3 bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-lg space-y-2">
-                <div className="flex justify-between items-center mb-2">
-                  <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">
-                    <FileText className="w-3.5 h-3.5" />{t.storage.key}
+        {configMaps.map(item => (
+          <div key={item.id} className="mb-2 space-y-3">
+            <ResRow
+              label={item.name}
+              sub={`data: ${item.data.length} ${t.common.itemUnit}`}
+              theme="teal"
+              active={item.id === activeConfigMapId}
+              onClick={() => {
+                setActiveConfigMapId(item.id === activeConfigMapId ? null : item.id);
+                setActivePvcId(null); setActiveSecretId(null); setActiveStorageClassId(null); setActivePvId(null);
+              }}
+              onDelete={() => removeConfigMap(item.id)}
+            />
+            {item.id === activeConfigMapId && (
+              <div className="border-2 border-teal-100 dark:border-teal-900/30 rounded-2xl p-5 space-y-4 bg-white dark:bg-[#0E1117] duration-300 animate-in fade-in slide-in-from-top-2 shadow-xl shadow-teal-500/5">
+                <div className="flex items-center justify-between">
+                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.common.edit} ConfigMap</p>
+                  <div className="flex gap-1">
+                    <div className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></div>
+                    <div className="w-1.5 h-1.5 rounded-full bg-teal-500/50"></div>
                   </div>
-                  <button onClick={() => removeConfigMapData(cm.id, i)} className="text-gray-400 hover:text-red-400 p-0.5"><Trash2 className="w-3.5 h-3.5" /></button>
                 </div>
-                <input type="text" placeholder="config.yaml / db_host..." value={d.key}
-                  onChange={e => updateConfigMapData(cm.id, i, 'key', e.target.value)}
-                  className={inpSm} />
-                <div className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.value}</div>
-                <textarea placeholder={t.storage.valuePlaceholder} value={d.value}
-                  onChange={e => updateConfigMapData(cm.id, i, 'value', e.target.value)}
-                  className={`w-full block min-h-[100px] max-h-[400px] bg-white dark:bg-[#1C2128] border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 text-sm focus:outline-none focus:border-teal-500 font-mono transition`} />
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.common.name}</p><input type="text" value={item.name} onChange={e => updateConfigMap(item.id, { name: e.target.value })} className={inp} /></div>
+                  <div className="space-y-1.5"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.k8s.namespace}</p><input type="text" value={item.namespace} onChange={e => updateConfigMap(item.id, { namespace: e.target.value })} className={inp} /></div>
+                  <div className="col-span-2">
+                    <MetadataEditor
+                      labels={item.labels} annotations={item.annotations}
+                      onUpdateLabels={(v: any) => updateConfigMap(item.id, { labels: v })}
+                      onUpdateAnnotations={(v: any) => updateConfigMap(item.id, { annotations: v })}
+                      theme="teal"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500">{t.storage.cm} Data</p>
+                <div className="space-y-3">
+                  {item.data.map((d, i) => (
+                    <div key={i} className="p-3 bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-lg space-y-2">
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">
+                          <FileText className="w-3.5 h-3.5" />{t.storage.key}
+                        </div>
+                        <button onClick={() => removeConfigMapData(item.id, i)} className="text-gray-400 hover:text-red-400 p-0.5"><Trash2 className="w-3.5 h-3.5" /></button>
+                      </div>
+                      <input type="text" placeholder="config.yaml / db_host..." value={d.key}
+                        onChange={e => updateConfigMapData(item.id, i, 'key', e.target.value)}
+                        className={inpSm} />
+                      <div className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.value}</div>
+                      <textarea placeholder={t.storage.valuePlaceholder} value={d.value}
+                        onChange={e => updateConfigMapData(item.id, i, 'value', e.target.value)}
+                        className={`w-full block min-h-[100px] max-h-[400px] bg-white dark:bg-[#1C2128] border border-gray-300 dark:border-gray-700 rounded-md py-2 px-3 text-sm focus:outline-none focus:border-teal-500 font-mono transition`} />
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => addConfigMapData(item.id)} className="text-[10px] text-blue-500 font-bold">+ {t.common.add} Item</button>
               </div>
-            ))}
+            )}
           </div>
-          <button onClick={() => addConfigMapData(cm.id)} className="text-[10px] text-blue-500 font-bold">+ {t.common.add} Item</button>
-        </div>
-      )}
+        ))}
+      </div>
 
       {/* Secrets */}
       <div>
@@ -1968,132 +2022,143 @@ function StorageSection() {
           <button onClick={addSecret} className={`${btnSm} border-amber-300 dark:border-amber-700 text-amber-600 dark:text-amber-400`}><Plus className="w-3 h-3" />{t.network.new}</button>
         </div>
         {secrets.length === 0 && <p className="text-xs text-gray-400 italic px-1">-- {t.k8s.noSecrets} --</p>}
-        {secrets.map(s => <ResRow key={s.id} label={s.name} sub={`type: ${s.secretType} · ${s.data.length} ${t.common.itemUnit}`} active={s.id === activeSecretId} onClick={() => { setActiveSecretId(s.id); setActivePvcId(null); setActiveConfigMapId(null); }} onDelete={() => removeSecret(s.id)} />)}
-      </div>
-      {sec && (
-        <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3 bg-white dark:bg-[#0E1117]">
-          <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.common.edit} Secret</p>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.common.name}</p><input type="text" value={sec.name} onChange={e => updateSecret(sec.id, { name: e.target.value })} className={inp} /></div>
-            <div className="space-y-1.5">
-              <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.storage.type}</p>
-              <select value={sec.secretType} onChange={e => updateSecret(sec.id, { secretType: e.target.value })} className={inp}>
-                <option value="Opaque">Opaque (Custom/Generic)</option>
-                <option value="kubernetes.io/dockerconfigjson">kubernetes.io/dockerconfigjson (Docker Registry)</option>
-                <option value="kubernetes.io/tls">kubernetes.io/tls (SSL/TLS Certificate)</option>
-                <option value="kubernetes.io/basic-auth">kubernetes.io/basic-auth (Basic Auth)</option>
-                <option value="kubernetes.io/ssh-auth">kubernetes.io/ssh-auth (SSH Key)</option>
-                <option value="kubernetes.io/service-account-token">service-account-token</option>
-              </select>
-            </div>
-            <div className="col-span-2">
-              <MetadataEditor
-                labels={sec.labels} annotations={sec.annotations}
-                onUpdateLabels={(v: any) => updateSecret(sec.id, { labels: v })}
-                onUpdateAnnotations={(v: any) => updateSecret(sec.id, { annotations: v })}
-                theme="amber"
-              />
-            </div>
-          </div>
-          {/* Specialized UI Helpers for different Secret Types */}
-          {(() => {
-            if (sec.secretType === 'kubernetes.io/dockerconfigjson') {
-              return (
-                <div className="p-4 bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl space-y-3">
-                  <p className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" />{t.storage.registryHelper} (.dockerconfigjson)</p>
-                  <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.registryUrl}</p><input type="text" placeholder="https://index.docker.io/v1/" defaultValue="https://index.docker.io/v1/" id="docker-registry" className={inpSm} /></div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.username}</p><input type="text" placeholder="admin" id="docker-user" className={inpSm} /></div>
-                    <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.password}</p><input type="password" placeholder="******" id="docker-pass" className={inpSm} /></div>
+        {secrets.map(item => (
+          <div key={item.id} className="mb-2 space-y-3">
+            <ResRow
+              label={item.name}
+              sub={`type: ${item.secretType} · ${item.data.length} ${t.common.itemUnit}`}
+              active={item.id === activeSecretId}
+              onClick={() => {
+                setActiveSecretId(item.id === activeSecretId ? null : item.id);
+                setActivePvcId(null); setActiveConfigMapId(null); setActiveStorageClassId(null); setActivePvId(null);
+              }}
+              onDelete={() => removeSecret(item.id)}
+            />
+            {item.id === activeSecretId && (
+              <div className="border border-gray-200 dark:border-gray-800 rounded-xl p-4 space-y-3 bg-white dark:bg-[#0E1117] animate-in fade-in slide-in-from-top-2 duration-300">
+                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.common.edit} Secret</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5"><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.common.name}</p><input type="text" value={item.name} onChange={e => updateSecret(item.id, { name: e.target.value })} className={inp} /></div>
+                  <div className="space-y-1.5">
+                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal ml-1 h-5 flex items-center">{t.storage.type}</p>
+                    <select value={item.secretType} onChange={e => updateSecret(item.id, { secretType: e.target.value })} className={inp}>
+                      <option value="Opaque">Opaque (Custom/Generic)</option>
+                      <option value="kubernetes.io/dockerconfigjson">kubernetes.io/dockerconfigjson (Docker Registry)</option>
+                      <option value="kubernetes.io/tls">kubernetes.io/tls (SSL/TLS Certificate)</option>
+                      <option value="kubernetes.io/basic-auth">kubernetes.io/basic-auth (Basic Auth)</option>
+                      <option value="kubernetes.io/ssh-auth">kubernetes.io/ssh-auth (SSH Key)</option>
+                      <option value="kubernetes.io/service-account-token">service-account-token</option>
+                    </select>
                   </div>
-                  <button onClick={() => {
-                    const reg = (document.getElementById('docker-registry') as HTMLInputElement).value || 'https://index.docker.io/v1/';
-                    const user = (document.getElementById('docker-user') as HTMLInputElement).value;
-                    const pass = (document.getElementById('docker-pass') as HTMLInputElement).value;
-                    if (!user || !pass) return;
-                    const auth = btoa(`${user}:${pass}`);
-                    const config = JSON.stringify({ auths: { [reg]: { auth: btoa(`${user}:${pass}`) } } }, null, 2);
-                    updateSecret(sec.id, { data: [{ key: '.dockerconfigjson', value: config }] });
-                    alert(t.storage.applied);
-                  }} className="w-full py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all">{t.storage.generate}</button>
-                </div>
-              );
-            }
-            if (sec.secretType === 'kubernetes.io/tls') {
-              return (
-                <div className="p-4 bg-purple-50/50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl space-y-3">
-                  <p className="text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" />{t.storage.tlsHelper} (tls.crt / tls.key)</p>
-                  <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.tlsCrt}</p><textarea id="tls-crt" className={`${inpSm} h-24 font-mono text-[10px]`} placeholder="-----BEGIN CERTIFICATE-----" /></div>
-                  <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.tlsKey}</p><textarea id="tls-key" className={`${inpSm} h-24 font-mono text-[10px]`} placeholder="-----BEGIN PRIVATE KEY-----" /></div>
-                  <button onClick={() => {
-                    const crt = (document.getElementById('tls-crt') as HTMLTextAreaElement).value;
-                    const key = (document.getElementById('tls-key') as HTMLTextAreaElement).value;
-                    if (!crt || !key) return;
-                    updateSecret(sec.id, { data: [{ key: 'tls.crt', value: crt }, { key: 'tls.key', value: key }] });
-                    alert(t.storage.applied);
-                  }} className="w-full py-1.5 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 shadow-sm transition-all">{t.storage.apply}</button>
-                </div>
-              );
-            }
-            if (sec.secretType === 'kubernetes.io/basic-auth') {
-              return (
-                <div className="p-4 bg-teal-50/50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl space-y-3">
-                  <p className="text-xs font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5" />{t.storage.basicAuthHelper}</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.username}</p><input type="text" id="ba-user" className={inpSm} placeholder="admin" /></div>
-                    <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.password}</p><input type="password" id="ba-pass" className={inpSm} placeholder="******" /></div>
+                  <div className="col-span-2">
+                    <MetadataEditor
+                      labels={item.labels} annotations={item.annotations}
+                      onUpdateLabels={(v: any) => updateSecret(item.id, { labels: v })}
+                      onUpdateAnnotations={(v: any) => updateSecret(item.id, { annotations: v })}
+                      theme="amber"
+                    />
                   </div>
-                  <button onClick={() => {
-                    const user = (document.getElementById('ba-user') as HTMLInputElement).value;
-                    const pass = (document.getElementById('ba-pass') as HTMLInputElement).value;
-                    if (!user || !pass) return;
-                    updateSecret(sec.id, { data: [{ key: 'username', value: user }, { key: 'password', value: pass }] });
-                    alert(t.storage.applied);
-                  }} className="w-full py-1.5 bg-teal-600 text-white text-xs font-bold rounded-lg hover:bg-teal-700 shadow-sm transition-all">{t.storage.apply}</button>
                 </div>
-              );
-            }
-            if (sec.secretType === 'kubernetes.io/ssh-auth') {
-              return (
-                <div className="p-4 bg-slate-50/50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
-                  <p className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5" />{t.storage.sshHelper}</p>
-                  <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.sshKey}</p><textarea id="ssh-key" className={`${inpSm} h-32 font-mono text-[10px]`} placeholder="-----BEGIN OPENSSH PRIVATE KEY-----" /></div>
-                  <button onClick={() => {
-                    const key = (document.getElementById('ssh-key') as HTMLTextAreaElement).value;
-                    if (!key) return;
-                    updateSecret(sec.id, { data: [{ key: 'ssh-privatekey', value: key }] });
-                    alert(t.storage.applied);
-                  }} className="w-full py-1.5 bg-slate-600 text-white text-xs font-bold rounded-lg hover:bg-slate-700 shadow-sm transition-all">{t.storage.apply}</button>
-                </div>
-              );
-            }
-
-            return (
-              <>
-                <p className="text-xs text-gray-500">{t.storage.dataItems}</p>
-                <div className="space-y-3">
-                  {sec.data.map((d, i) => (
-                    <div key={i} className="p-3 bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-lg space-y-2">
-                      <div className="flex justify-between items-center mb-2">
-                        <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">
-                          <KeyRound className="w-3.5 h-3.5" />{t.storage.key}
+                {/* Specialized UI Helpers for different Secret Types */}
+                {(() => {
+                  if (item.secretType === 'kubernetes.io/dockerconfigjson') {
+                    return (
+                      <div className="p-4 bg-blue-50/50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl space-y-3">
+                        <p className="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5"><Globe className="w-3.5 h-3.5" />{t.storage.registryHelper} (.dockerconfigjson)</p>
+                        <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.registryUrl}</p><input type="text" placeholder="https://index.docker.io/v1/" defaultValue="https://index.docker.io/v1/" id="docker-registry" className={inpSm} /></div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.username}</p><input type="text" placeholder="admin" id="docker-user" className={inpSm} /></div>
+                          <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.password}</p><input type="password" placeholder="******" id="docker-pass" className={inpSm} /></div>
                         </div>
-                        <button onClick={() => removeSecretData(sec.id, i)} className="text-gray-400 hover:text-red-400 p-0.5"><Trash2 className="w-3.5 h-3.5" /></button>
+                        <button onClick={() => {
+                          const reg = (document.getElementById('docker-registry') as HTMLInputElement).value || 'https://index.docker.io/v1/';
+                          const user = (document.getElementById('docker-user') as HTMLInputElement).value;
+                          const pass = (document.getElementById('docker-pass') as HTMLInputElement).value;
+                          if (!user || !pass) return;
+                          const auth = btoa(`${user}:${pass}`);
+                          const config = JSON.stringify({ auths: { [reg]: { auth: btoa(`${user}:${pass}`) } } }, null, 2);
+                          updateSecret(item.id, { data: [{ key: '.dockerconfigjson', value: config }] });
+                          alert(t.storage.applied);
+                        }} className="w-full py-1.5 bg-blue-600 text-white text-xs font-bold rounded-lg hover:bg-blue-700 shadow-sm transition-all">{t.storage.generate}</button>
                       </div>
-                      <input type="text" placeholder="key..." value={d.key} onChange={e => updateSecretData(sec.id, i, 'key', e.target.value)} className={inpSm} />
-                      <div className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.plaintextValue}</div>
-                      <textarea placeholder={t.storage.valuePlaceholder} value={d.value} onChange={e => updateSecretData(sec.id, i, 'value', e.target.value)} className={`${inpSm} h-16 font-mono text-[11px]`} />
-                    </div>
-                  ))}
-                </div>
-                <button onClick={() => addSecretData(sec.id)} className="text-xs text-amber-500 font-medium py-1.5 hover:underline">+ {t.common.add} Item</button>
-              </>
-            );
-          })()}
+                    );
+                  }
+                  if (item.secretType === 'kubernetes.io/tls') {
+                    return (
+                      <div className="p-4 bg-purple-50/50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl space-y-3">
+                        <p className="text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5" />{t.storage.tlsHelper} (tls.crt / tls.key)</p>
+                        <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.tlsCrt}</p><textarea id="tls-crt" className={`${inpSm} h-24 font-mono text-[10px]`} placeholder="-----BEGIN CERTIFICATE-----" /></div>
+                        <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.tlsKey}</p><textarea id="tls-key" className={`${inpSm} h-24 font-mono text-[10px]`} placeholder="-----BEGIN PRIVATE KEY-----" /></div>
+                        <button onClick={() => {
+                          const crt = (document.getElementById('tls-crt') as HTMLTextAreaElement).value;
+                          const key = (document.getElementById('tls-key') as HTMLTextAreaElement).value;
+                          if (!crt || !key) return;
+                          updateSecret(item.id, { data: [{ key: 'tls.crt', value: crt }, { key: 'tls.key', value: key }] });
+                          alert(t.storage.applied);
+                        }} className="w-full py-1.5 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 shadow-sm transition-all">{t.storage.apply}</button>
+                      </div>
+                    );
+                  }
+                  if (item.secretType === 'kubernetes.io/basic-auth') {
+                    return (
+                      <div className="p-4 bg-teal-50/50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 rounded-xl space-y-3">
+                        <p className="text-xs font-bold text-teal-600 dark:text-teal-400 flex items-center gap-1.5"><UserCheck className="w-3.5 h-3.5" />{t.storage.basicAuthHelper}</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.username}</p><input type="text" id="ba-user" className={inpSm} placeholder="admin" /></div>
+                          <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.password}</p><input type="password" id="ba-pass" className={inpSm} placeholder="******" /></div>
+                        </div>
+                        <button onClick={() => {
+                          const user = (document.getElementById('ba-user') as HTMLInputElement).value;
+                          const pass = (document.getElementById('ba-pass') as HTMLInputElement).value;
+                          if (!user || !pass) return;
+                          updateSecret(item.id, { data: [{ key: 'username', value: user }, { key: 'password', value: pass }] });
+                          alert(t.storage.applied);
+                        }} className="w-full py-1.5 bg-teal-600 text-white text-xs font-bold rounded-lg hover:bg-teal-700 shadow-sm transition-all">{t.storage.apply}</button>
+                      </div>
+                    );
+                  }
+                  if (item.secretType === 'kubernetes.io/ssh-auth') {
+                    return (
+                      <div className="p-4 bg-slate-50/50 dark:bg-slate-900/20 border border-slate-200 dark:border-slate-800 rounded-xl space-y-3">
+                        <p className="text-xs font-bold text-slate-600 dark:text-slate-400 flex items-center gap-1.5"><Cpu className="w-3.5 h-3.5" />{t.storage.sshHelper}</p>
+                        <div><p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.sshKey}</p><textarea id="ssh-key" className={`${inpSm} h-32 font-mono text-[10px]`} placeholder="-----BEGIN OPENSSH PRIVATE KEY-----" /></div>
+                        <button onClick={() => {
+                          const key = (document.getElementById('ssh-key') as HTMLTextAreaElement).value;
+                          if (!key) return;
+                          updateSecret(item.id, { data: [{ key: 'ssh-privatekey', value: key }] });
+                          alert(t.storage.applied);
+                        }} className="w-full py-1.5 bg-slate-600 text-white text-xs font-bold rounded-lg hover:bg-slate-700 shadow-sm transition-all">{t.storage.apply}</button>
+                      </div>
+                    );
+                  }
 
-
-        </div>
-      )}
+                  return (
+                    <>
+                      <p className="text-xs text-gray-500">{t.storage.dataItems}</p>
+                      <div className="space-y-3">
+                        {item.data.map((d, i) => (
+                          <div key={i} className="p-3 bg-gray-50/50 dark:bg-gray-900/30 border border-gray-200 dark:border-gray-800 rounded-lg space-y-2">
+                            <div className="flex justify-between items-center mb-2">
+                              <div className="flex items-center gap-1.5 text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal">
+                                <KeyRound className="w-3.5 h-3.5" />{t.storage.key}
+                              </div>
+                              <button onClick={() => removeSecretData(item.id, i)} className="text-gray-400 hover:text-red-400 p-0.5"><Trash2 className="w-3.5 h-3.5" /></button>
+                            </div>
+                            <input type="text" placeholder="key..." value={d.key} onChange={e => updateSecretData(item.id, i, 'key', e.target.value)} className={inpSm} />
+                            <div className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.storage.plaintextValue}</div>
+                            <textarea placeholder={t.storage.valuePlaceholder} value={d.value} onChange={e => updateSecretData(item.id, i, 'value', e.target.value)} className={`${inpSm} h-16 font-mono text-[11px]`} />
+                          </div>
+                        ))}
+                      </div>
+                      <button onClick={() => addSecretData(item.id)} className="text-xs text-amber-500 font-medium py-1.5 hover:underline">+ {t.common.add} Item</button>
+                    </>
+                  );
+                })()}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
@@ -2168,29 +2233,31 @@ export function KubernetesTab() {
             <button onClick={addWorkload} className={`${btnSm} border-blue-300 dark:border-blue-700 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20`}><Plus className="w-3 h-3" />{t.network.newWorkload}</button>
           </div>
 
-          <div className="space-y-2 mb-4">
+          <div className="space-y-3 mb-4">
             {workloads.map(w => {
               const ICONS: Record<string, React.ReactNode> = { Deployment: <Layers className="w-3.5 h-3.5" />, StatefulSet: <Server className="w-3.5 h-3.5" />, DaemonSet: <RefreshCw className="w-3.5 h-3.5" />, CronJob: <Clock className="w-3.5 h-3.5" /> };
+              const isActive = w.id === activeWorkloadId;
               return (
-                <div key={w.id} onClick={() => setActiveWorkloadId(w.id)}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl border-2 cursor-pointer transition-all ${w.id === activeWorkloadId ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-800 hover:border-gray-400'}`}>
-                  <div className="flex items-center gap-2.5">
-                    <span className={w.id === activeWorkloadId ? 'text-blue-500' : 'text-gray-400'}>{ICONS[w.workloadType]}</span>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-800 dark:text-gray-200">{w.appName}</p>
-                      <p className="text-xs text-gray-500 dark:text-gray-400">{w.workloadType} · {w.containers[0]?.image || 'No image'}</p>
+                <div key={w.id} className="space-y-3">
+                  <div onClick={() => setActiveWorkloadId(isActive ? null : w.id)}
+                    className={`flex items-center justify-between px-3 py-2.5 rounded-xl border-2 cursor-pointer transition-all ${isActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md' : 'border-gray-200 dark:border-gray-800 hover:border-gray-400 bg-white dark:bg-[#0D1117]'}`}>
+                    <div className="flex items-center gap-2.5">
+                      <span className={isActive ? 'text-blue-500' : 'text-gray-400'}>{ICONS[w.workloadType]}</span>
+                      <div>
+                        <p className="text-sm font-bold text-gray-800 dark:text-gray-100">{w.appName}</p>
+                        <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">{w.workloadType} · {w.containers[0]?.image || 'No image'}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <ChevronDown className={`w-4 h-4 text-blue-400 transition-transform duration-300 ${isActive ? 'rotate-180' : ''}`} />
+                      <button onClick={e => { e.stopPropagation(); removeWorkload(w.id); }} className="text-gray-300 hover:text-red-400 transition p-1 hover:bg-white dark:hover:bg-gray-800 rounded-lg"><Trash2 className="w-3.5 h-3.5" /></button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {w.id === activeWorkloadId && <ChevronDown className="w-4 h-4 text-blue-400" />}
-                    <button onClick={e => { e.stopPropagation(); removeWorkload(w.id); }} className="text-gray-300 hover:text-red-400 transition"><Trash2 className="w-3.5 h-3.5" /></button>
-                  </div>
+                  {isActive && <WorkloadEditor wl={w} />}
                 </div>
               );
             })}
           </div>
-
-          {activeWl && <WorkloadEditor wl={activeWl} />}
           {!activeWl && workloads.length > 0 && (
             <div className="text-center py-10 text-gray-500 dark:text-gray-400 text-sm font-medium">{t.k8s.selectWorkload}</div>
           )}

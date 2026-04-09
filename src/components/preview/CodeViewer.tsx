@@ -10,6 +10,7 @@ import { useComposeStore } from '@/store/useComposeStore';
 import { useDockerfileStore } from '@/store/useDockerfileStore';
 import { useKubernetesStore } from '@/store/useKubernetesStore';
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 export function CodeViewer() {
   const { t, language } = useTranslation();
@@ -23,10 +24,26 @@ export function CodeViewer() {
   const [mounted, setMounted] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | null>(null);
+  const [confirmState, setConfirmState] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+    actionLabel: string;
+    isDanger?: boolean;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {},
+    actionLabel: ''
+  });
 
   useEffect(() => setMounted(true), []);
 
-  const currentOverride = overrides[activeTab];
+  if (activeTab === 'templates') return null;
+
+  const currentOverride = overrides[activeTab as 'dockerfile' | 'compose' | 'kubernetes'];
   const generatedCode = activeTab === 'kubernetes' ? kubernetesYamlContent : activeTab === 'compose' ? composeYamlContent : dockerfileContent;
 
   // Logic: Show manual code if override is ENABLED. Otherwise show generated code.
@@ -45,14 +62,20 @@ export function CodeViewer() {
   };
 
   const handleRestoreAuto = () => {
-    const confirmMsg = language === 'zh' 
+    const msg = language === 'zh' 
       ? "确定要恢复自动同步吗？您手动修改的所有内容将会被覆盖消失。" 
       : "Are you sure you want to restore auto-sync? All your manual modifications will be overwritten.";
     
-    if (window.confirm(confirmMsg)) {
-      setOverrideEnabled(activeTab, false);
-      setOverrideEditing(activeTab, false);
-    }
+    setConfirmState({
+      isOpen: true,
+      title: t.common.restoreAuto,
+      message: msg,
+      actionLabel: t.common.confirm,
+      onConfirm: () => {
+        setOverrideEnabled(activeTab, false);
+        setOverrideEditing(activeTab, false);
+      }
+    });
   };
 
   const handleGlobalReset = () => {
@@ -62,13 +85,19 @@ export function CodeViewer() {
         ? t.editor.confirmResetCompose 
         : t.editor.confirmResetKubernetes;
     
-    if (window.confirm(`${msg}\n${t.editor.resetWarning}`)) {
-      if (activeTab === 'dockerfile') dockerfileReset();
-      else if (activeTab === 'compose') composeReset();
-      else if (activeTab === 'kubernetes') kubernetesReset();
-      
-      resetOverride(activeTab);
-    }
+    setConfirmState({
+      isOpen: true,
+      title: t.common.newClear,
+      message: `${msg}\n${t.editor.resetWarning}`,
+      isDanger: true,
+      actionLabel: t.common.confirm,
+      onConfirm: () => {
+        if (activeTab === 'dockerfile') dockerfileReset();
+        else if (activeTab === 'compose') composeReset();
+        else if (activeTab === 'kubernetes') kubernetesReset();
+        resetOverride(activeTab);
+      }
+    });
   };
 
   const handleEditorChange = (value: string | undefined) => {
@@ -111,8 +140,43 @@ export function CodeViewer() {
     ? (isFullStack ? 'k8s-full-stack.yaml' : 'kubernetes.yaml')
     : (activeTab === 'compose' ? 'docker-compose.yml' : 'Dockerfile');
 
+  const ConfirmModal = confirmState.isOpen && createPortal(
+    <div className="fixed inset-0 z-[1001] flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-300">
+      <div className="bg-white dark:bg-[#0D1117] w-full max-w-sm rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 p-8 text-center animate-in zoom-in-95 duration-200">
+        <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 ${confirmState.isDanger ? 'bg-red-50 dark:bg-red-900/20 text-red-500' : 'bg-blue-50 dark:bg-blue-900/20 text-blue-500'}`}>
+          {confirmState.isDanger ? <AlertTriangle className="w-10 h-10" /> : <RotateCcw className="w-10 h-10" />}
+        </div>
+        <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tight mb-2">
+          {confirmState.title}
+        </h3>
+        <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-8 leading-relaxed whitespace-pre-line">
+          {confirmState.message}
+        </p>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => setConfirmState(s => ({ ...s, isOpen: false }))}
+            className="flex-1 py-3 text-sm font-black tracking-widest text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
+          >
+            {t.common.cancel}
+          </button>
+          <button 
+            onClick={() => {
+              confirmState.onConfirm();
+              setConfirmState(s => ({ ...s, isOpen: false }));
+            }}
+            className={`flex-1 py-3 text-white rounded-2xl font-black text-[10px] tracking-widest shadow-lg active:scale-95 transition-all ${confirmState.isDanger ? 'bg-red-600 hover:bg-red-500 shadow-red-600/20' : 'bg-blue-600 hover:bg-blue-500 shadow-blue-600/20'}`}
+          >
+            {confirmState.actionLabel}
+          </button>
+        </div>
+      </div>
+    </div>,
+    document.body
+  );
+
   return (
     <div className={`flex-1 flex flex-col bg-white dark:bg-[#0D1117] relative border-l border-gray-200 dark:border-gray-800 ${currentOverride.isEnabled ? 'shadow-[inset_0_0_80px_rgba(59,130,246,0.08)]' : ''}`}>
+      {ConfirmModal}
       {/* Header Toolbar */}
       <div className="bg-white/80 dark:bg-[#161B22]/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 p-3 h-16 flex justify-between items-center px-6 relative z-10 shadow-sm transition-all duration-300">
         <div className="flex items-center gap-6 text-gray-500 dark:text-gray-400">

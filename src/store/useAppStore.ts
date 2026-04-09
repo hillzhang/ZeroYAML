@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 
 interface AppState {
-  activeTab: 'dockerfile' | 'compose' | 'kubernetes';
+  activeTab: 'dockerfile' | 'compose' | 'kubernetes' | 'templates';
   activeTooltip: string | null;
   activeMenu: string;
   isFullStack: boolean;
