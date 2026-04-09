@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Trash2, Download, Search, Filter, Clock, Box, Rocket, Layers, Zap, FolderHeart, ArrowRight, Eye, X, Code, Settings2, Edit3, Check, FolderInput } from 'lucide-react';
+import { Trash2, Download, Search, Filter, Clock, Box, Rocket, Layers, Zap, FolderHeart, ArrowRight, Eye, X, Code, Settings2, Edit3, Check, FolderInput, Plus } from 'lucide-react';
 import { createPortal } from 'react-dom';
 import { useTemplateStore, Template, TemplateType } from '@/store/useTemplateStore';
 import { useAppStore } from '@/store/useAppStore';
@@ -12,13 +12,14 @@ import { generateDockerfile, generateCompose, generateKubernetes } from '@/utils
 export function TemplatesTab() {
   const { t } = useTranslation();
   const { setActiveTab } = useAppStore();
-  const { templates, deleteTemplate, categories, renameCategory, deleteCategory, updateTemplateCategory } = useTemplateStore();
+  const { templates, deleteTemplate, categories, renameCategory, deleteCategory, updateTemplateCategory, addCategory } = useTemplateStore();
   
   const [filterType, setFilterType] = useState<TemplateType | 'all'>('all');
   const [activeCategory, setActiveCategory] = useState<string>('all');
   const [isManagingCategories, setIsManagingCategories] = useState(false);
   const [editingCategory, setEditingCategory] = useState<{oldName: string, newName: string} | null>(null);
   const [movingTemplateId, setMovingTemplateId] = useState<string | null>(null);
+  const [newCategoryInModal, setNewCategoryInModal] = useState('');
 
   React.useEffect(() => {
     setActiveCategory('all');
@@ -320,64 +321,100 @@ export function TemplatesTab() {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
-           {(categories[filterType] || []).length === 0 ? (
-             <div className="py-12 text-center text-gray-400 font-medium">
-                No categories found for this type.
-             </div>
-           ) : (
-             (categories[filterType] || []).map(cat => (
-               <div key={cat} className="flex items-center gap-2 group/cat p-2 bg-gray-50 dark:bg-gray-800/40 rounded-2xl border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all">
-                  {editingCategory?.oldName === cat ? (
-                    <div className="flex-1 flex gap-2">
-                       <input 
-                         autoFocus
-                         value={editingCategory.newName}
-                         onChange={(e) => setEditingCategory({ ...editingCategory, newName: e.target.value })}
-                         onKeyDown={(e) => {
-                           if (e.key === 'Enter' && editingCategory.newName.trim() && editingCategory.newName !== cat) {
-                             renameCategory(filterType as any, cat, editingCategory.newName.trim());
-                             setEditingCategory(null);
-                           } else if (e.key === 'Escape') {
-                             setEditingCategory(null);
-                           }
-                         }}
-                         className="flex-1 px-4 py-2 bg-white dark:bg-[#0D1117] border border-blue-500 rounded-xl text-sm outline-none dark:text-white"
-                       />
-                       <button 
-                         onClick={() => {
-                           if (editingCategory.newName.trim() && editingCategory.newName !== cat) {
-                             renameCategory(filterType as any, cat, editingCategory.newName.trim());
-                           }
-                           setEditingCategory(null);
-                         }}
-                         className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/20"
-                       >
-                          <Check className="w-4 h-4" />
-                       </button>
-                    </div>
-                  ) : (
-                    <>
-                       <span className="flex-1 px-4 py-2 font-bold text-gray-700 dark:text-gray-200 text-sm">{cat}</span>
-                       <div className="flex items-center gap-1 opacity-0 group-hover/cat:opacity-100 transition-opacity">
+        <div className="flex-1 overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+           {/* 🆕 QUICK ADD IN MODAL */}
+           <div className="p-4 bg-blue-50/50 dark:bg-blue-900/10 rounded-3xl border border-blue-100/50 dark:border-blue-900/30">
+              <p className="text-[10px] font-black text-blue-500 uppercase tracking-widest mb-3 ml-1">{t.templates.createCategory}</p>
+              <div className="flex gap-2">
+                 <input 
+                   type="text" 
+                   value={newCategoryInModal}
+                   onChange={(e) => setNewCategoryInModal(e.target.value)}
+                   onKeyDown={(e) => {
+                     if (e.key === 'Enter' && newCategoryInModal.trim()) {
+                       addCategory(filterType as any, newCategoryInModal.trim());
+                       setNewCategoryInModal('');
+                     }
+                   }}
+                   placeholder={t.templates.newCategoryPlaceholder}
+                   className="flex-1 px-4 py-2 bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 rounded-xl text-sm outline-none focus:border-blue-500 transition-all dark:text-white"
+                 />
+                 <button 
+                   onClick={() => {
+                     if (newCategoryInModal.trim()) {
+                       addCategory(filterType as any, newCategoryInModal.trim());
+                       setNewCategoryInModal('');
+                     }
+                   }}
+                   className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/20 active:scale-95 transition-all"
+                 >
+                    <Plus className="w-5 h-5" />
+                 </button>
+              </div>
+           </div>
+
+           <div className="space-y-2">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">{t.templates.list}</p>
+              {(categories[filterType] || []).length === 0 ? (
+                <div className="py-12 text-center bg-gray-50/50 dark:bg-gray-800/10 rounded-3xl border border-dashed border-gray-200 dark:border-gray-800">
+                   <p className="text-sm font-bold text-gray-400">No categories found</p>
+                </div>
+              ) : (
+                (categories[filterType] || []).map(cat => (
+                  <div key={cat} className="flex items-center gap-2 group/cat p-2 bg-white dark:bg-[#0D1117] hover:bg-gray-50 dark:hover:bg-gray-800/40 rounded-2xl border border-gray-100 dark:border-gray-800 transition-all shadow-sm">
+                     {editingCategory?.oldName === cat ? (
+                       <div className="flex-1 flex gap-2 p-1">
+                          <input 
+                            autoFocus
+                            value={editingCategory.newName}
+                            onChange={(e) => setEditingCategory({ ...editingCategory, newName: e.target.value })}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && editingCategory.newName.trim() && editingCategory.newName !== cat) {
+                                renameCategory(filterType as any, cat, editingCategory.newName.trim());
+                                setEditingCategory(null);
+                              } else if (e.key === 'Escape') {
+                                setEditingCategory(null);
+                              }
+                            }}
+                            className="flex-1 px-4 py-2 bg-gray-50 dark:bg-gray-900 border border-blue-500 rounded-xl text-sm outline-none dark:text-white"
+                          />
                           <button 
-                            onClick={() => setEditingCategory({ oldName: cat, newName: cat })}
-                            className="p-2.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-xl transition-all"
+                            onClick={() => {
+                              if (editingCategory.newName.trim() && editingCategory.newName !== cat) {
+                                renameCategory(filterType as any, cat, editingCategory.newName.trim());
+                              }
+                              setEditingCategory(null);
+                            }}
+                            className="p-2 bg-blue-600 text-white rounded-xl shadow-lg shadow-blue-600/20"
                           >
-                             <Edit3 className="w-4 h-4" />
-                          </button>
-                          <button 
-                            onClick={() => deleteCategory(filterType as any, cat)}
-                            className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all"
-                          >
-                             <Trash2 className="w-4 h-4" />
+                             <Check className="w-4 h-4" />
                           </button>
                        </div>
-                    </>
-                  )}
-               </div>
-             ))
-           )}
+                     ) : (
+                       <>
+                          <span className="flex-1 px-4 py-2 font-bold text-gray-700 dark:text-gray-200 text-sm truncate">{cat}</span>
+                          <div className="flex items-center gap-1 opacity-0 group-hover/cat:opacity-100 transition-opacity">
+                             <button 
+                               onClick={() => setEditingCategory({ oldName: cat, newName: cat })}
+                               className="p-2.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950/30 rounded-xl transition-all"
+                               title={t.common.edit}
+                             >
+                                <Edit3 className="w-4 h-4" />
+                             </button>
+                             <button 
+                               onClick={() => deleteCategory(filterType as any, cat)}
+                               className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-xl transition-all"
+                               title={t.common.delete}
+                             >
+                                <Trash2 className="w-4 h-4" />
+                             </button>
+                          </div>
+                       </>
+                     )}
+                  </div>
+                ))
+              )}
+           </div>
         </div>
 
         <button 
@@ -510,7 +547,7 @@ export function TemplatesTab() {
           
           <button 
             onClick={() => setIsManagingCategories(true)}
-            className="p-2.5 text-gray-400 hover:text-blue-500 hover:bg-white dark:hover:bg-gray-800 border border-transparent hover:border-gray-200 dark:hover:border-gray-700 rounded-xl transition-all ml-auto group"
+            className="p-2.5 text-blue-500 hover:text-white bg-blue-50 hover:bg-blue-600 dark:bg-blue-900/20 dark:hover:bg-blue-600 border border-blue-100 dark:border-blue-900/30 rounded-xl transition-all ml-auto group shadow-sm active:scale-95"
             title={t.templates.manageCategories}
           >
              <Settings2 className="w-4 h-4 group-hover:rotate-90 transition-transform duration-500" />
