@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { spawn } from 'child_process';
 
-async function executeCommand(command: string, env: any, timeoutMs: number) {
+async function executeCommand(command: string, env: NodeJS.ProcessEnv, timeoutMs: number) {
   return new Promise<{ stdout: string; stderr: string; error?: string }>((resolve) => {
     // shell: true is needed to support complex commands and pipes
     const child = spawn(command, { env, shell: true });
@@ -45,7 +45,7 @@ async function executeCommand(command: string, env: any, timeoutMs: number) {
       resolve({ stdout, stderr, error: err.message });
     });
 
-    child.on('close', (code) => {
+    child.on('close', (_code) => {
       clearTimeout(timeout);
       resolve({ stdout, stderr });
     });
