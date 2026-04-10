@@ -12,9 +12,17 @@ import { useKubernetesStore } from '@/store/useKubernetesStore';
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
+const stripAnchors = (code: string) => {
+  return code.replace(/^\s*#\s*\[ANCHOR:\s*[^\]]*\]\s*\n?/gm, '').trim();
+};
+
 export function CodeViewer() {
   const { t, language } = useTranslation();
-  const { activeTab, isFullStack, setIsFullStack, overrides, setOverrideEnabled, setOverrideEditing, setOverrideCode, resetOverride } = useAppStore();
+  const { 
+    activeTab, isFullStack, setIsFullStack, overrides, 
+    setOverrideEnabled, setOverrideEditing, setOverrideCode, resetOverride,
+    editorScrollTarget, setEditorScrollTarget 
+  } = useAppStore();
   const { dockerfileContent, composeYamlContent, kubernetesYamlContent } = useCodeGenerators();
   const composeReset = useComposeStore(s => s.reset);
   const dockerfileReset = useDockerfileStore(s => s.reset);
@@ -23,6 +31,7 @@ export function CodeViewer() {
 
   const [mounted, setMounted] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
+  const [editorInstance, setEditorInstance] = useState<any>(null);
   const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | null>(null);
   const [confirmState, setConfirmState] = useState<{
     isOpen: boolean;
@@ -47,7 +56,6 @@ export function CodeViewer() {
   const currentOverride = overrides[codeTab];
   const generatedCode = activeTab === 'kubernetes' ? kubernetesYamlContent : activeTab === 'compose' ? composeYamlContent : dockerfileContent;
 
-  // Logic: Show manual code if override is ENABLED. Otherwise show generated code.
   const displayCode = currentOverride.isEnabled ? currentOverride.code : generatedCode;
 
   const handleStartEdit = () => {
@@ -114,7 +122,7 @@ export function CodeViewer() {
 
   const handleDownload = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const code = displayCode;
+    const code = stripAnchors(displayCode);
     let filename = activeTab === 'kubernetes' ? 'k8s-manifest.yaml' : activeTab === 'compose' ? 'docker-compose.yml' : 'Dockerfile';
     if (activeTab === 'kubernetes' && isFullStack) filename = 'k8s-full-stack.yaml';
 
@@ -131,7 +139,7 @@ export function CodeViewer() {
 
   const handleCopy = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const code = displayCode;
+    const code = stripAnchors(displayCode);
     navigator.clipboard.writeText(code);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
@@ -140,6 +148,30 @@ export function CodeViewer() {
   const currentTitle = activeTab === 'kubernetes'
     ? (isFullStack ? 'k8s-full-stack.yaml' : 'kubernetes.yaml')
     : (activeTab === 'compose' ? 'docker-compose.yml' : 'Dockerfile');
+
+  // Logic to scroll to anchor
+  useEffect(() => {
+    if (editorInstance && editorScrollTarget && (activeTab === 'kubernetes' || activeTab === 'compose')) {
+      const code = displayCode;
+      const targetId = editorScrollTarget.id;
+      const searchString = `# [ANCHOR: ${targetId}]`;
+      const index = code.indexOf(searchString);
+      
+      if (index !== -1) {
+        const linesBefore = code.substring(0, index).split('\n').length;
+        editorInstance.revealLineInCenter(linesBefore);
+        
+        // Highlight logic
+        const decorations = editorInstance.deltaDecorations([], [
+          {
+            range: { startLineNumber: linesBefore, startColumn: 1, endLineNumber: linesBefore, endColumn: 200 },
+            options: { isWholeLine: true, className: 'bg-blue-500/10 dark:bg-blue-500/20' }
+          }
+        ]);
+        setTimeout(() => editorInstance.deltaDecorations(decorations, []), 2000);
+      }
+    }
+  }, [editorScrollTarget, editorInstance, activeTab, displayCode]);
 
   const ConfirmModal = confirmState.isOpen && createPortal(
     <div className="fixed inset-0 z-[1001] flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-300">
@@ -286,6 +318,7 @@ export function CodeViewer() {
               theme={resolvedTheme === 'dark' ? 'vs-dark' : 'light'}
               value={displayCode}
               onChange={handleEditorChange}
+              onMount={(editor) => setEditorInstance(editor)}
               options={{
                 readOnly: !currentOverride.isEditing,
                 minimap: { enabled: false },

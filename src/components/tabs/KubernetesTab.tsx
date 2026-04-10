@@ -11,6 +11,8 @@ import {
 import { useAppStore } from '@/store/useAppStore';
 import { useTranslation } from '@/hooks/useTranslation';
 import { KubernetesTopology } from '@/components/KubernetesTopology';
+import { ImportYamlModal } from '@/components/ImportYamlModal';
+import { FileUp } from 'lucide-react';
 
 // ── Shared styles ────────────────────────────────────────────────────────────
 const inp = "w-full bg-white dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-xl py-2 px-4 text-sm font-bold focus:outline-none focus:border-blue-500 focus:ring-4 ring-blue-500/5 transition-all text-gray-900 dark:text-gray-100 placeholder:text-gray-400 shadow-sm hover:border-gray-300 dark:hover:border-gray-700 h-[42px]";
@@ -337,7 +339,7 @@ function MetadataEditor(props: MetadataEditorProps & { theme?: string }) {
 
 // ── Env Item (Isolated to prevent focus loss) ──────────────────────────────
 const EnvItem = ({ e, i, wlId, containerId, isInit, updateEnv, removeEnv, configMaps, secrets, t, inpSm }: any) => {
-  const upE = (patch: Partial<typeof e>) => updateEnv(wlId, containerId, isInit, e.id, patch);
+  const upE = (patch: Partial<typeof e>) => updateEnv(wlId, containerId, isInit, i, patch);
 
   return (
     <div key={e.id} className={`p-4 border rounded-2xl bg-white dark:bg-[#0D1117] shadow-sm transition-all duration-200 border-gray-100 dark:border-gray-800 hover:shadow-md hover:border-blue-100 dark:hover:border-blue-900/40 animate-in fade-in slide-in-from-left-2 duration-300`}>
@@ -412,7 +414,7 @@ const EnvItem = ({ e, i, wlId, containerId, isInit, updateEnv, removeEnv, config
         </div>
 
         {/* Delete */}
-        <button onClick={() => removeEnv(wlId, containerId, isInit, e.id)}
+        <button onClick={() => removeEnv(wlId, containerId, isInit, i)}
           className="w-8 h-8 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all">
           <X className="w-3.5 h-3.5" />
         </button>
@@ -423,7 +425,7 @@ const EnvItem = ({ e, i, wlId, containerId, isInit, updateEnv, removeEnv, config
 
 // ── Env From Item (Isolated) ───────────────────────────────────────────
 const EnvFromItem = ({ ef, i, wlId, containerId, isInit, updateEnvFrom, removeEnvFrom, configMaps, secrets, t, inpSm }: any) => {
-  const up = (patch: any) => updateEnvFrom(wlId, containerId, isInit, ef.id, patch);
+  const up = (patch: any) => updateEnvFrom(wlId, containerId, isInit, i, patch);
   return (
     <div key={ef.id} className="p-4 bg-gray-50/30 dark:bg-black/20 border border-gray-100 dark:border-gray-800 rounded-2xl space-y-3 transition-colors hover:border-blue-100 dark:hover:border-blue-900/30">
       <div className="flex justify-between items-center text-xs font-bold text-gray-400 tracking-normal px-1">
@@ -431,7 +433,7 @@ const EnvFromItem = ({ ef, i, wlId, containerId, isInit, updateEnvFrom, removeEn
           <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
           EnvFrom
         </div>
-        <button onClick={() => removeEnvFrom(wlId, containerId, isInit, ef.id)} className="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all">
+        <button onClick={() => removeEnvFrom(wlId, containerId, isInit, i)} className="w-7 h-7 flex items-center justify-center text-gray-300 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all">
           <X className="w-3 h-3" />
         </button>
       </div>
@@ -808,7 +810,10 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                   <p className="text-sm font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{field.label}</p>
                   <div className="flex gap-1.5 items-stretch h-[36px]">
                     <input type="text" placeholder="NUM..." value={numPart}
-                      onChange={(e: any) => upC({ [field.key]: e.target.value + unitPart })}
+                      onChange={(e: any) => {
+                        const num = e.target.value.replace(/[^0-9.]/g, '');
+                        upC({ [field.key]: num + unitPart });
+                      }}
                       className={`${inp} flex-1 !h-full`} />
                     <div className="relative group min-w-[75px]">
                       <select value={unitPart} onChange={e => upC({ [field.key]: numPart + e.target.value })}
@@ -1072,11 +1077,11 @@ function WorkloadEditor({ wl }: { wl: K8sWorkload }) {
                 <div className="lg:flex-1 grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <p className="text-xs font-black text-gray-400 ml-1">Max Surge</p>
-                    <input type="text" value={wl.maxSurge} onChange={e => up({ maxSurge: e.target.value })} className={inp} placeholder="e.g. 25%" />
+                    <input type="text" value={wl.maxSurge} onChange={e => up({ maxSurge: e.target.value.replace(/[^0-9%]/g, '') })} className={inp} placeholder="e.g. 25%" />
                   </div>
                   <div className="space-y-2">
                     <p className="text-xs font-black text-gray-400 ml-1">Max Unavailable</p>
-                    <input type="text" value={wl.maxUnavailable} onChange={e => up({ maxUnavailable: e.target.value })} className={inp} placeholder="e.g. 1" />
+                    <input type="text" value={wl.maxUnavailable} onChange={e => up({ maxUnavailable: e.target.value.replace(/[^0-9%]/g, '') })} className={inp} placeholder="e.g. 1" />
                   </div>
                 </div>
               )}
@@ -1356,6 +1361,7 @@ function ResRow({ label, sub, active, onClick, onDelete, theme = "blue" }: { lab
 // ── Network Section ──────────────────────────────────────────────────────────
 function NetworkSection() {
   const { t, language } = useTranslation();
+  const { setEditorScrollTarget } = useAppStore();
   const { services, ingresses, workloads, secrets, activeServiceId, activeIngressId, setActiveServiceId, setActiveIngressId, addService, removeService, updateService, addIngress, removeIngress, updateIngress, addIngressRule, removeIngressRule, updateIngressRule } = useKubernetesStore();
   const svc = services.find(s => s.id === activeServiceId);
   const ing = ingresses.find(i => i.id === activeIngressId);
@@ -1376,7 +1382,12 @@ function NetworkSection() {
               sub={`${s.type} · ${s.port}→${s.targetPort}`}
               theme="green"
               active={s.id === activeServiceId}
-              onClick={() => { setActiveServiceId(s.id === activeServiceId ? null : s.id); setActiveIngressId(null); }}
+              onClick={() => { 
+                const newActive = s.id === activeServiceId ? null : s.id;
+                setActiveServiceId(newActive); 
+                setActiveIngressId(null); 
+                if (newActive) setEditorScrollTarget(s.id);
+              }}
               onDelete={() => removeService(s.id)}
             />
             {s.id === activeServiceId && (
@@ -1442,7 +1453,7 @@ function NetworkSection() {
                         <p className="text-sm font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
                           {t.k8s.servicePortLabel}
                         </p>
-                        <input type="text" placeholder="80" value={s.port} onChange={e => updateService(s.id, { port: e.target.value })} className={`${inpSm} font-mono text-center !h-9 shadow-sm`} />
+                        <input type="text" placeholder="80" value={s.port} onChange={e => updateService(s.id, { port: e.target.value.replace(/[^0-9]/g, '') })} className={`${inpSm} font-mono text-center !h-9 shadow-sm`} />
                       </div>
 
                       <div className="pb-2.5 flex flex-col items-center">
@@ -1455,7 +1466,7 @@ function NetworkSection() {
                         <p className="text-sm font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">
                           {t.k8s.targetPortLabel}
                         </p>
-                        <input type="text" placeholder="80" value={s.targetPort} onChange={e => updateService(s.id, { targetPort: e.target.value })} className={`${inpSm} font-mono text-center !h-9 shadow-sm`} />
+                        <input type="text" placeholder="80" value={s.targetPort} onChange={e => updateService(s.id, { targetPort: e.target.value.replace(/[^0-9]/g, '') })} className={`${inpSm} font-mono text-center !h-9 shadow-sm`} />
                       </div>
 
                       {s.type === 'NodePort' && (
@@ -1467,7 +1478,7 @@ function NetworkSection() {
                             <p className="text-sm text-orange-600 dark:text-orange-400 font-bold tracking-normal mb-2.5 ml-1">
                               {t.k8s.nodePortLabel}
                             </p>
-                            <input type="text" placeholder="30000" value={s.nodePort} onChange={e => updateService(s.id, { nodePort: e.target.value })} className={`${inpSm} font-mono text-center border-orange-200 dark:border-orange-900/40 !h-9 bg-orange-50/30 dark:bg-orange-900/10 shadow-sm`} />
+                            <input type="text" placeholder="30000" value={s.nodePort} onChange={e => updateService(s.id, { nodePort: e.target.value.replace(/[^0-9]/g, '') })} className={`${inpSm} font-mono text-center border-orange-200 dark:border-orange-900/40 !h-9 bg-orange-50/30 dark:bg-orange-900/10 shadow-sm`} />
                           </div>
                         </>
                       )}
@@ -1494,7 +1505,12 @@ function NetworkSection() {
               sub={`${i.rules.length} ${t.network.rule}`}
               theme="purple"
               active={i.id === activeIngressId}
-              onClick={() => { setActiveIngressId(i.id === activeIngressId ? null : i.id); setActiveServiceId(null); }}
+              onClick={() => { 
+                const newActive = i.id === activeIngressId ? null : i.id;
+                setActiveIngressId(newActive); 
+                setActiveServiceId(null); 
+                if (newActive) setEditorScrollTarget(i.id);
+              }}
               onDelete={() => removeIngress(i.id)}
             />
             {i.id === activeIngressId && (
@@ -1592,6 +1608,7 @@ function NetworkSection() {
 // ── Storage Section ──────────────────────────────────────────────────────────
 function StorageSection() {
   const { t, language } = useTranslation();
+  const { setEditorScrollTarget } = useAppStore();
   const {
     pvcs, configMaps, secrets, pvs,
     activePvcId, activeConfigMapId, activeSecretId, activePvId,
@@ -1625,8 +1642,10 @@ function StorageSection() {
               sub={item.provisioner}
               active={item.id === activeStorageClassId}
               onClick={() => {
-                setActiveStorageClassId(item.id === activeStorageClassId ? null : item.id);
+                const newActive = item.id === activeStorageClassId ? null : item.id;
+                setActiveStorageClassId(newActive);
                 setActivePvcId(null); setActiveConfigMapId(null); setActiveSecretId(null); setActivePvId(null);
+                if (newActive) setEditorScrollTarget(item.id);
               }}
               onDelete={() => removeStorageClass(item.id)}
               theme="orange"
@@ -1691,8 +1710,10 @@ function StorageSection() {
               theme="slate"
               active={item.id === activePvId}
               onClick={() => {
-                setActivePvId(item.id === activePvId ? null : item.id);
+                const newActive = item.id === activePvId ? null : item.id;
+                setActivePvId(newActive);
                 setActivePvcId(null); setActiveConfigMapId(null); setActiveSecretId(null); setActiveStorageClassId(null);
+                if (newActive) setEditorScrollTarget(item.id);
               }}
               onDelete={() => removePv(item.id)}
             />
@@ -1733,7 +1754,10 @@ function StorageSection() {
                       return (
                         <div className="flex gap-1.5 items-stretch h-[42px]">
                           <input type="text" placeholder="10" value={numPart}
-                            onChange={e => updatePv(item.id, { capacity: e.target.value + unitPart })}
+                            onChange={e => {
+                              const num = e.target.value.replace(/[^0-9.]/g, '');
+                              updatePv(item.id, { capacity: num + unitPart });
+                            }}
                             className={`${inp} flex-1 !h-full font-mono text-center shadow-sm`} />
                           <div className="relative group min-w-[70px]">
                             <select value={unitPart} onChange={e => updatePv(item.id, { capacity: numPart + e.target.value })}
@@ -1838,8 +1862,10 @@ function StorageSection() {
               theme="indigo"
               active={item.id === activePvcId}
               onClick={() => {
-                setActivePvcId(item.id === activePvcId ? null : item.id);
+                const newActive = item.id === activePvcId ? null : item.id;
+                setActivePvcId(newActive);
                 setActiveConfigMapId(null); setActiveSecretId(null); setActiveStorageClassId(null); setActivePvId(null);
+                if (newActive) setEditorScrollTarget(item.id);
               }}
               onDelete={() => removePvc(item.id)}
             />
@@ -1886,7 +1912,10 @@ function StorageSection() {
                       return (
                         <div className="flex gap-1.5 items-stretch h-[36px]">
                           <input type="text" placeholder="1" value={numPart}
-                            onChange={e => updatePvc(item.id, { storage: e.target.value + unitPart })}
+                            onChange={e => {
+                              const num = e.target.value.replace(/[^0-9.]/g, '');
+                              updatePvc(item.id, { storage: num + unitPart });
+                            }}
                             className={`${inp} flex-1 !h-full font-mono text-center shadow-sm`} />
                           <div className="relative group min-w-[70px]">
                             <select value={unitPart} onChange={e => updatePvc(item.id, { storage: numPart + e.target.value })}
@@ -1963,8 +1992,10 @@ function StorageSection() {
               theme="teal"
               active={item.id === activeConfigMapId}
               onClick={() => {
-                setActiveConfigMapId(item.id === activeConfigMapId ? null : item.id);
+                const newActive = item.id === activeConfigMapId ? null : item.id;
+                setActiveConfigMapId(newActive);
                 setActivePvcId(null); setActiveSecretId(null); setActiveStorageClassId(null); setActivePvId(null);
+                if (newActive) setEditorScrollTarget(item.id);
               }}
               onDelete={() => removeConfigMap(item.id)}
             />
@@ -2030,8 +2061,10 @@ function StorageSection() {
               sub={`type: ${item.secretType} · ${item.data.length} ${t.common.itemUnit}`}
               active={item.id === activeSecretId}
               onClick={() => {
-                setActiveSecretId(item.id === activeSecretId ? null : item.id);
+                const newActive = item.id === activeSecretId ? null : item.id;
+                setActiveSecretId(newActive);
                 setActivePvcId(null); setActiveConfigMapId(null); setActiveStorageClassId(null); setActivePvId(null);
+                if (newActive) setEditorScrollTarget(item.id);
               }}
               onDelete={() => removeSecret(item.id)}
             />
@@ -2167,8 +2200,9 @@ function StorageSection() {
 // ── Main Tab ─────────────────────────────────────────────────────────────────
 export function KubernetesTab() {
   const { t } = useTranslation();
-  const { resetOverride } = useAppStore();
+  const { resetOverride, setEditorScrollTarget } = useAppStore();
   const [isTopologyOpen, setIsTopologyOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const {
     activeSection, setSection, workloads, activeWorkloadId, setActiveWorkloadId, addWorkload, removeWorkload,
     globalNamespace, setNamespace,
@@ -2207,6 +2241,10 @@ export function KubernetesTab() {
               className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-bold tracking-normal shadow-sm transition-all active:scale-95">
               <RefreshCw className="w-4 h-4" /> {t.k8s.syncAll}
             </button>
+            <button onClick={() => setIsImportOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 rounded-lg text-xs font-bold tracking-normal shadow-sm transition-all active:scale-95">
+              <FileUp className="w-4 h-4" /> {t.k8s.importYaml}
+            </button>
             <button onClick={() => setIsTopologyOpen(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-200 dark:border-indigo-800 rounded-lg text-xs font-bold tracking-normal shadow-sm transition-all active:scale-95">
               <Zap className="w-4 h-4" /> {t.k8s.topology}
@@ -2241,11 +2279,15 @@ export function KubernetesTab() {
 
           <div className="space-y-3 mb-4">
             {workloads.map(w => {
-              const ICONS: Record<string, React.ReactNode> = { Deployment: <Layers className="w-3.5 h-3.5" />, StatefulSet: <Server className="w-3.5 h-3.5" />, DaemonSet: <RefreshCw className="w-3.5 h-3.5" />, CronJob: <Clock className="w-3.5 h-3.5" /> };
+              const ICONS: Record<string, React.ReactNode> = { Deployment: <Layers className="w-3.5 h-3.5" />, StatefulSet: <Server className="w-3.5 h-3.5" />, DaemonSet: <RefreshCw className="w-3.5 h-3.5" />, CronJob: <Clock className="w-3.5 h-3.5" />, Job: <Activity className="w-3.5 h-3.5" /> };
               const isActive = w.id === activeWorkloadId;
               return (
                 <div key={w.id} className="space-y-3">
-                  <div onClick={() => setActiveWorkloadId(isActive ? null : w.id)}
+                  <div onClick={() => {
+                    const newActive = isActive ? null : w.id;
+                    setActiveWorkloadId(newActive);
+                    if (newActive) setEditorScrollTarget(w.id);
+                  }}
                     className={`flex items-center justify-between px-3 py-2.5 rounded-xl border-2 cursor-pointer transition-all ${isActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 shadow-md' : 'border-gray-200 dark:border-gray-800 hover:border-gray-400 bg-white dark:bg-[#0D1117]'}`}>
                     <div className="flex items-center gap-2.5">
                       <span className={isActive ? 'text-blue-500' : 'text-gray-400'}>{ICONS[w.workloadType]}</span>
@@ -2289,6 +2331,7 @@ export function KubernetesTab() {
       )}
 
       {isTopologyOpen && <KubernetesTopology onClose={() => setIsTopologyOpen(false)} />}
+      <ImportYamlModal isOpen={isImportOpen} onClose={() => setIsImportOpen(false)} />
     </div>
   );
 }

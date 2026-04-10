@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-const uid = () => Math.random().toString(36).slice(2, 8);
+export const uid = () => Math.random().toString(36).slice(2, 8);
 
 // ── Primitives ──────────────────────────────────────────────────────────────
 export type WorkloadType = 'Deployment' | 'StatefulSet' | 'DaemonSet' | 'CronJob' | 'Job';
@@ -355,6 +355,15 @@ export interface KubernetesState {
   addStorageClassParam: (id: string) => void;
   removeStorageClassParam: (id: string, idx: number) => void;
   updateStorageClassParam: (id: string, idx: number, field: 'key' | 'value', value: string) => void;
+  batchLoadResources: (patch: { 
+    workloads?: K8sWorkload[], 
+    services?: K8sServiceDef[], 
+    ingresses?: K8sIngressDef[], 
+    pvcs?: K8sPvcDef[], 
+    configMaps?: K8sConfigMapDef[], 
+    secrets?: K8sSecretDef[], 
+    pvs?: K8sPvDef[] 
+  }) => void;
   reset: () => void;
 }
 
@@ -538,6 +547,16 @@ export const useKubernetesStore = create<KubernetesState>()((set) => ({
   }),
   removeStorageClassParam: (id: string, idx: number) => set((s) => ({ storageClasses: s.storageClasses.map(v => v.id === id ? { ...v, parameters: v.parameters.filter((_, i) => i !== idx) } : v) })),
   updateStorageClassParam: (id: string, idx: number, field: 'key' | 'value', value: string) => set((s) => ({ storageClasses: s.storageClasses.map(v => v.id === id ? { ...v, parameters: v.parameters.map((p, i) => i === idx ? { ...p, [field]: value } : p) } : v) })),
+  batchLoadResources: (patch) => set((s) => ({
+    workloads: [...s.workloads, ...(patch.workloads || [])],
+    services: [...s.services, ...(patch.services || [])],
+    ingresses: [...s.ingresses, ...(patch.ingresses || [])],
+    pvcs: [...s.pvcs, ...(patch.pvcs || [])],
+    configMaps: [...s.configMaps, ...(patch.configMaps || [])],
+    secrets: [...s.secrets, ...(patch.secrets || [])],
+    pvs: [...s.pvs, ...(patch.pvs || [])],
+    activeWorkloadId: patch.workloads?.[0]?.id ?? s.activeWorkloadId,
+  })),
   reset: () => set({
     workloads: [],
     services: [],

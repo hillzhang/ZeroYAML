@@ -202,7 +202,7 @@ export function ComposeTab() {
             <Plus className="w-4 h-4 group-hover/add:rotate-90 transition-transform" />
             {t.common.add} {t.compose.serviceName.split(' ')[0]}
           </button>
-          
+
           <div className="mx-2 w-[1px] h-6 bg-gray-200 dark:bg-gray-800" />
 
           <button
@@ -553,7 +553,7 @@ export function ComposeTab() {
                     </div>
                   </div>
                 ))}
-                
+
                 {svc.vols.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-8 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-3xl space-y-2">
                     <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/50 text-gray-400">
@@ -641,8 +641,9 @@ export function ComposeTab() {
                     type="text"
                     value={String(svc.shmSize || "").replace(/[a-zA-Z]/g, '')}
                     onChange={e => {
+                      const num = e.target.value.replace(/[^0-9.]/g, '');
                       const unit = String(svc.shmSize || "").match(/[a-zA-Z]+$/)?.[0] || "gb";
-                      updateSvc("shmSize", e.target.value + unit);
+                      updateSvc("shmSize", num + unit);
                     }}
                     className={`${inp} flex-1 !h-full`}
                     placeholder="2"
@@ -726,8 +727,9 @@ export function ComposeTab() {
                         type="text"
                         value={String(svc.cpus || "").replace(/[a-zA-Z]/g, '')}
                         onChange={e => {
+                          const num = e.target.value.replace(/[^0-9.]/g, '');
                           const unit = String(svc.cpus || "").match(/[a-zA-Z]+$/)?.[0] || "";
-                          updateSvc("cpus", e.target.value + unit);
+                          updateSvc("cpus", num + unit);
                         }}
                         className={`${inp} flex-1 !h-full`}
                         placeholder="0.25"
@@ -757,8 +759,9 @@ export function ComposeTab() {
                         type="text"
                         value={String(svc.memLimit || "").replace(/[a-zA-Z]/g, '')}
                         onChange={e => {
+                          const num = e.target.value.replace(/[^0-9.]/g, '');
                           const unit = String(svc.memLimit || "").match(/[a-zA-Z]+$/)?.[0] || "G";
-                          updateSvc("memLimit", e.target.value + unit);
+                          updateSvc("memLimit", num + unit);
                         }}
                         className={`${inp} flex-1 !h-full`}
                         placeholder="1"

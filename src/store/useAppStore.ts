@@ -18,12 +18,14 @@ interface AppState {
     compose: { isEnabled: boolean; isEditing: boolean; code: string };
     kubernetes: { isEnabled: boolean; isEditing: boolean; code: string };
   };
+  editorScrollTarget: string | null;
+
 
   setActiveTab: (tab: 'dockerfile' | 'compose' | 'kubernetes' | 'templates' | 'containers') => void;
   setActiveTooltip: (tooltipId: string | null) => void;
   setActiveMenu: (menuId: string) => void;
   setIsFullStack: (is: boolean) => void;
-  
+
   // New actions for tab-specific overrides
   setOverrideEnabled: (tab: 'dockerfile' | 'compose' | 'kubernetes', enabled: boolean) => void;
   setOverrideEditing: (tab: 'dockerfile' | 'compose' | 'kubernetes', editing: boolean) => void;
@@ -35,6 +37,7 @@ interface AppState {
   setContainerRuntime: (runtime: 'docker' | 'kubernetes') => void;
   setContainerNamespace: (ns: string) => void;
   setIsDashboardEnabled: (enabled: boolean) => void;
+  setEditorScrollTarget: (target: string | null) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -48,12 +51,14 @@ export const useAppStore = create<AppState>((set) => ({
   containerRuntime: 'docker',
   containerNamespace: 'default',
   isDashboardEnabled: false,
-  
+
   overrides: {
     dockerfile: { isEnabled: false, isEditing: false, code: '' },
     compose: { isEnabled: false, isEditing: false, code: '' },
     kubernetes: { isEnabled: false, isEditing: false, code: '' },
   },
+  editorScrollTarget: null,
+
 
   setActiveTab: (tab) => set({ activeTab: tab }),
   setActiveTooltip: (tooltipId: string | null) => set({ activeTooltip: tooltipId }),
@@ -78,4 +83,5 @@ export const useAppStore = create<AppState>((set) => ({
   setContainerRuntime: (runtime) => set({ containerRuntime: runtime }),
   setContainerNamespace: (ns) => set({ containerNamespace: ns }),
   setIsDashboardEnabled: (enabled: boolean) => set({ isDashboardEnabled: enabled }),
+  setEditorScrollTarget: (target: string | null) => set({ editorScrollTarget: target }),
 }));

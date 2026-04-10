@@ -316,6 +316,77 @@ export function TemplatesTab() {
       {PreviewModal}
       {DeleteConfirmModal}
 
+      {/* 📁 CATEGORY MANAGEMENT MODAL */}
+      {isManagingCategories && createPortal(
+        <div className="fixed inset-0 z-[1100] flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-[#0D1117] w-full max-w-md rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 flex flex-col max-h-[80vh] animate-in zoom-in-95 duration-200">
+            <div className="p-8 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+              <h3 className="text-xl font-black text-gray-900 dark:text-white uppercase tracking-tight">{tm.manageCategories}</h3>
+              <button onClick={() => setIsManagingCategories(false)} className="p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-xl transition-all">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-auto p-8 space-y-6">
+              <div className="space-y-3">
+                <p className="text-xs font-black text-blue-600 dark:text-blue-400 uppercase tracking-widest ml-1">{tm.addNewCategory}</p>
+                <div className="flex gap-2">
+                  <input 
+                    type="text" 
+                    value={newCategoryInModal}
+                    onChange={e => setNewCategoryInModal(e.target.value)}
+                    placeholder={tm.categoryPlaceholder}
+                    className="flex-1 px-4 py-3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-gray-800 rounded-2xl text-sm font-bold focus:border-blue-500 outline-none dark:text-gray-100"
+                  />
+                  <button 
+                    onClick={() => {
+                      if (newCategoryInModal.trim()) {
+                        addCategory(filterType === 'all' ? 'dockerfile' : filterType, newCategoryInModal.trim());
+                        setNewCategoryInModal('');
+                      }
+                    }}
+                    className="p-3 bg-blue-600 text-white rounded-2xl shadow-lg active:scale-95 transition-all"
+                  >
+                    <Plus className="w-5 h-5" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                 <p className="text-xs font-black text-gray-400 uppercase tracking-widest ml-1">
+                   {filterType === 'all' ? tm.allCategories : `${filterType} ${tm.tabCategories}`}
+                 </p>
+                 <div className="space-y-2">
+                    {(filterType === 'all' ? Object.values(categories).flat() : categories[filterType] || []).map((cat, idx) => (
+                      <div key={idx} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/20 rounded-2xl border border-gray-100 dark:border-gray-800 group">
+                        {editingCategory?.oldName === cat ? (
+                          <input 
+                            autoFocus
+                            value={editingCategory.newName}
+                            onChange={e => setEditingCategory({...editingCategory, newName: e.target.value})}
+                            onBlur={() => {
+                              renameCategory(filterType === 'all' ? 'dockerfile' : filterType, editingCategory.oldName, editingCategory.newName);
+                              setEditingCategory(null);
+                            }}
+                            className="bg-transparent border-b border-blue-500 font-bold outline-none dark:text-white"
+                          />
+                        ) : (
+                          <span className="font-bold text-sm text-gray-700 dark:text-gray-200">{cat}</span>
+                        )}
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button onClick={() => setEditingCategory({oldName: cat, newName: cat})} className="p-2 text-gray-400 hover:text-blue-500 transition-colors"><Edit3 className="w-4 h-4" /></button>
+                          <button onClick={() => deleteCategory(filterType === 'all' ? 'dockerfile' : filterType, cat)} className="p-2 text-gray-400 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
+                        </div>
+                      </div>
+                    ))}
+                 </div>
+              </div>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
+
       {/* 🚀 FLOAT ACTION BAR */}
       {isBatchMode && selectedIds.length > 0 && (
         <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] animate-in slide-in-from-bottom-10 duration-500">
@@ -326,6 +397,18 @@ export function TemplatesTab() {
              </div>
              
              <div className="flex items-center gap-4">
+                <div className="relative group">
+                   <button className="flex items-center gap-2 px-6 py-3 bg-gray-800 hover:bg-gray-700 text-white rounded-[1.5rem] font-black text-xs transition-all uppercase tracking-widest">
+                     <FolderInput className="w-4 h-4" />
+                     {tm.moveTo}
+                   </button>
+                   <div className="absolute bottom-full mb-2 left-0 w-48 bg-gray-900 border border-white/10 rounded-2xl p-2 hidden group-hover:block animate-in fade-in slide-in-from-bottom-2 shadow-2xl">
+                      <button onClick={() => {bulkUpdateCategory(selectedIds, undefined); setIsBatchMode(false);}} className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-xl text-xs font-bold">{tm.uncategorized}</button>
+                      {(filterType === 'all' ? [] : categories[filterType] || []).map(cat => (
+                        <button key={cat} onClick={() => {bulkUpdateCategory(selectedIds, cat); setIsBatchMode(false);}} className="w-full text-left px-4 py-2 hover:bg-white/10 rounded-xl text-xs font-bold">{cat}</button>
+                      ))}
+                   </div>
+                </div>
                 <button 
                   onClick={handleBulkDownload}
                   className="flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-[1.5rem] font-black text-xs transition-all shadow-lg active:scale-95 uppercase tracking-widest"
@@ -430,74 +513,119 @@ export function TemplatesTab() {
                <ListChecks className="w-4 h-4" />
                <span className="text-xs font-black uppercase tracking-tight">{tm.bulkActions}</span>
             </button>
+            <button 
+              onClick={() => setIsManagingCategories(true)}
+              className="px-5 py-2.5 bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 text-gray-600 dark:text-gray-400 rounded-xl text-xs font-black uppercase tracking-tight shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 active:scale-95 transition-all flex items-center gap-2"
+            >
+              <Settings2 className="w-4 h-4" />
+              {tm.manageCategories}
+            </button>
          </div>
       </div>
 
-      {/* 📦 CONTENT GRID */}
-      {filteredTemplates.length === 0 ? (
-        <div className="py-40 flex flex-col items-center justify-center bg-gray-50/50 dark:bg-gray-900/10 rounded-[3rem] border-2 border-dashed border-gray-100 dark:border-gray-800 group">
-          <FolderHeart className="w-16 h-16 text-gray-200 dark:text-gray-700 mb-6 group-hover:scale-110 transition-transform duration-500" />
-          <p className="text-xl font-black text-gray-400 dark:text-gray-600">{tm.noData}</p>
+      <div className="flex flex-col lg:flex-row gap-8">
+        {/* 📑 CATEGORY SIDEBAR */}
+        <div className="w-full lg:w-64 space-y-2 flex-shrink-0">
+           <button 
+             onClick={() => setActiveCategory('all')}
+             className={`w-full text-left px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border ${activeCategory === 'all' ? 'bg-blue-600 text-white border-blue-600 shadow-xl shadow-blue-600/20' : 'bg-white dark:bg-[#0D1117] border-gray-100 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/10'}`}
+           >
+             {tm.allTemplates}
+           </button>
+           <button 
+             onClick={() => setActiveCategory('uncategorized')}
+             className={`w-full text-left px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border ${activeCategory === 'uncategorized' ? 'bg-indigo-600 text-white border-indigo-600 shadow-xl shadow-indigo-600/20' : 'bg-white dark:bg-[#0D1117] border-gray-100 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/10'}`}
+           >
+             {tm.uncategorized}
+           </button>
+           
+           {(filterType === 'all' ? Object.values(categories).flat() : categories[filterType] || []).map((cat, idx) => (
+             <button 
+               key={idx}
+               onClick={() => setActiveCategory(cat)}
+               className={`w-full text-left px-5 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all border ${activeCategory === cat ? 'bg-gray-900 dark:bg-gray-800 text-white border-gray-900 shadow-xl' : 'bg-white dark:bg-[#0D1117] border-gray-100 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800'}`}
+             >
+               {cat}
+             </button>
+           ))}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {filteredTemplates.map((tpl) => (
-            <div 
-              key={tpl.id}
-              onClick={() => setPreviewTemplate(tpl)}
-              className="group relative bg-white dark:bg-[#0D1117] border border-gray-100 dark:border-gray-800 rounded-[2.5rem] p-8 cursor-pointer hover:border-blue-500/30 dark:hover:border-blue-400/30 hover:shadow-2xl transition-all duration-500"
-            >
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex gap-6 items-center">
-                   {isBatchMode && (
-                     <button 
-                       onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedIds(prev => 
-                            prev.includes(tpl.id) ? prev.filter(id => id !== tpl.id) : [...prev, tpl.id]
-                          );
-                       }}
-                       className={`flex-shrink-0 p-3 rounded-2xl transition-all ${
-                          selectedIds.includes(tpl.id) 
-                            ? 'bg-blue-600 text-white shadow-lg' 
-                            : 'bg-gray-50 dark:bg-gray-800 text-gray-400 hover:bg-blue-50'
-                       }`}
-                     >
-                        {selectedIds.includes(tpl.id) ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
-                     </button>
-                   )}
-                   <div className={`p-4 rounded-3xl bg-gradient-to-br ${getColor(tpl.type)} text-white shadow-xl group-hover:scale-110 transition-transform duration-500`}>
-                      {getIcon(tpl.type)}
-                   </div>
-                   <div>
-                      <h3 className="text-lg font-black text-gray-800 dark:text-gray-100 tracking-tight mb-1">{tpl.name}</h3>
-                      <div className="flex items-center gap-3">
-                         <span className="text-xs font-black uppercase text-blue-500 opacity-80 tracking-widest">{tpl.type}</span>
-                         <span className="w-1 h-1 rounded-full bg-gray-300" />
-                         <span className="text-xs font-bold text-gray-400 uppercase">{new Date(tpl.id).toLocaleDateString()}</span>
-                      </div>
-                   </div>
-                </div>
-                
-                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                   <button 
-                     onClick={(e) => { e.stopPropagation(); handleDownload(tpl); }}
-                     className="p-3 bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-blue-500 rounded-2xl border border-gray-100 dark:border-gray-800 transition-all"
-                   >
-                     <Download className="w-5 h-5" />
-                   </button>
-                   <button 
-                     onClick={(e) => { e.stopPropagation(); setDeleteId(tpl.id); }}
-                     className="p-3 bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-red-500 rounded-2xl border border-gray-100 dark:border-gray-800 transition-all"
-                   >
-                     <Trash2 className="w-5 h-5" />
-                   </button>
-                </div>
-              </div>
+
+        {/* 📦 CONTENT GRID */}
+        <div className="flex-1">
+          {filteredTemplates.length === 0 ? (
+            <div className="py-20 flex flex-col items-center justify-center bg-gray-50/50 dark:bg-gray-900/10 rounded-[3rem] border-2 border-dashed border-gray-100 dark:border-gray-800 group h-full">
+              <FolderHeart className="w-16 h-16 text-gray-200 dark:text-gray-700 mb-6 group-hover:scale-110 transition-transform duration-500" />
+              <p className="text-xl font-black text-gray-400 dark:text-gray-600">{tm.noData}</p>
             </div>
-          ))}
+          ) : (
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              {filteredTemplates.map((tpl) => (
+                <div 
+                  key={tpl.id}
+                  onClick={() => setPreviewTemplate(tpl)}
+                  className="group relative bg-white dark:bg-[#0D1117] border border-gray-100 dark:border-gray-800 rounded-[2.5rem] p-8 cursor-pointer hover:border-blue-500/30 dark:hover:border-blue-400/30 hover:shadow-2xl transition-all duration-500"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex gap-6 items-center">
+                       {isBatchMode && (
+                         <button 
+                           onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedIds(prev => 
+                                prev.includes(tpl.id) ? prev.filter(id => id !== tpl.id) : [...prev, tpl.id]
+                              );
+                           }}
+                           className={`flex-shrink-0 p-3 rounded-2xl transition-all ${
+                              selectedIds.includes(tpl.id) 
+                                ? 'bg-blue-600 text-white shadow-lg' 
+                                : 'bg-gray-50 dark:bg-gray-800 text-gray-400 hover:bg-blue-50'
+                           }`}
+                         >
+                            {selectedIds.includes(tpl.id) ? <CheckSquare className="w-5 h-5" /> : <Square className="w-5 h-5" />}
+                         </button>
+                       )}
+                       <div className={`p-4 rounded-3xl bg-gradient-to-br ${getColor(tpl.type)} text-white shadow-xl group-hover:scale-110 transition-transform duration-500`}>
+                          {getIcon(tpl.type)}
+                       </div>
+                       <div>
+                          <h3 className="text-lg font-black text-gray-800 dark:text-gray-100 tracking-tight mb-1">{tpl.name}</h3>
+                          <div className="flex items-center gap-3">
+                             <span className="text-xs font-black uppercase text-blue-500 opacity-80 tracking-widest">{tpl.type}</span>
+                             <span className="w-1 h-1 rounded-full bg-gray-300" />
+                            <span className="text-xs font-bold text-gray-400 uppercase">
+                              {tpl.createdAt ? new Date(tpl.createdAt).toLocaleDateString() : '—'}
+                            </span>
+                             {tpl.category && (
+                               <>
+                                 <span className="w-1 h-1 rounded-full bg-gray-300" />
+                                 <span className="text-[10px] font-black uppercase bg-gray-100 dark:bg-gray-800 px-2 py-0.5 rounded-md text-gray-500">{tpl.category}</span>
+                               </>
+                             )}
+                          </div>
+                       </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                       <button 
+                         onClick={(e) => { e.stopPropagation(); handleDownload(tpl); }}
+                         className="p-3 bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-blue-500 rounded-2xl border border-gray-100 dark:border-gray-800 transition-all"
+                       >
+                         <Download className="w-5 h-5" />
+                       </button>
+                       <button 
+                         onClick={(e) => { e.stopPropagation(); setDeleteId(tpl.id); }}
+                         className="p-3 bg-gray-50 dark:bg-white/5 text-gray-400 hover:text-red-500 rounded-2xl border border-gray-100 dark:border-gray-800 transition-all"
+                       >
+                         <Trash2 className="w-5 h-5" />
+                       </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }

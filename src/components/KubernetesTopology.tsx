@@ -1,4 +1,4 @@
-import React, { useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import {
   ReactFlow,
   Handle,
@@ -12,33 +12,38 @@ import {
   useNodesState,
   useEdgesState,
   Connection,
-  BaseEdge, 
-  EdgeLabelRenderer, 
-  getBezierPath, 
+  BaseEdge,
+  EdgeLabelRenderer,
+  getBezierPath,
   EdgeProps
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
-import { 
-  Globe, 
-  Network, 
-  Box, 
-  Database, 
-  KeyRound, 
-  HardDrive, 
+import {
+  Globe,
+  Network,
+  Box,
+  Database,
+  KeyRound,
+  HardDrive,
   X,
   Zap,
   MousePointer2,
-  Settings2
+  Settings2,
+  FileDown,
+  FileUp,
+  Workflow
 } from 'lucide-react';
 import { useKubernetesStore } from '@/store/useKubernetesStore';
 import { useTranslation } from '@/hooks/useTranslation';
+import { parseKubernetesYaml } from '@/utils/k8s-parser';
+import { ImportYamlModal } from './ImportYamlModal';
 
 // ── Custom Node Type ────────────────────────────────────────────────────────
 
 const K8sNode = ({ data, selected }: { data: any; selected?: boolean }) => {
   const Icon = data.icon || Box;
   const colorClass = data.color || 'blue';
-  
+
   const themes: Record<string, string> = {
     blue: 'border-blue-500/50 bg-blue-50/90 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300',
     purple: 'border-purple-500/50 bg-purple-50/90 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300',
@@ -103,9 +108,9 @@ const DeletableEdge = ({
           className="nodrag nopan flex flex-col items-center gap-1 group"
         >
           {label && (
-            <div 
+            <div
               className="px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-wider shadow-lg border border-white/10"
-              style={{ 
+              style={{
                 backgroundColor: labelStyle?.fill as string || '#3b82f6',
                 color: '#fff',
                 textShadow: '0 1px 2px rgba(0,0,0,0.2)'
@@ -117,8 +122,8 @@ const DeletableEdge = ({
           <button
             className="w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:scale-110 active:scale-90"
             onClick={(evt) => {
-               evt.stopPropagation();
-               window.dispatchEvent(new CustomEvent('delete-edge', { detail: id }));
+              evt.stopPropagation();
+              window.dispatchEvent(new CustomEvent('delete-edge', { detail: id }));
             }}
           >
             <X className="w-3 h-3 stroke-[3]" />
@@ -128,7 +133,6 @@ const DeletableEdge = ({
     </>
   );
 };
-
 const nodeTypes = {
   k8s: K8sNode,
 };
@@ -142,10 +146,11 @@ const edgeTypes = {
 export function KubernetesTopology({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation();
   const state = useKubernetesStore();
-  
+
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const [modePicker, setModePicker] = React.useState<{ workId: string; targetId: string; targetName: string; type: 'cm' | 'sec'; } | null>(null);
+  const [isImportOpen, setIsImportOpen] = useState(false);
 
   const deleteEdgeById = useCallback((edgeId: string) => {
     const parts = edgeId.split(':');
@@ -185,7 +190,7 @@ export function KubernetesTopology({ onClose }: { onClose: () => void }) {
       if (svc && ingress) {
         state.updateIngressRule(ingress.id, ingress.rules[0].id, { serviceName: svc.name });
       }
-    } 
+    }
     else if (source.startsWith('svc-') && target.startsWith('work-')) {
       const svcId = source.replace('svc-', '');
       const workId = target.replace('work-', '');
@@ -240,6 +245,8 @@ export function KubernetesTopology({ onClose }: { onClose: () => void }) {
     setModePicker(null);
   };
 
+
+
   const onEdgesDelete = useCallback((edgesToDelete: Edge[]) => {
     edgesToDelete.forEach(edge => deleteEdgeById(edge.id));
   }, [deleteEdgeById]);
@@ -248,7 +255,7 @@ export function KubernetesTopology({ onClose }: { onClose: () => void }) {
   useEffect(() => {
     const initialNodes: Node[] = [];
     const initialEdges: Edge[] = [];
-    
+
     let x = 0;
     const xOffset = 350;
     const yOffset = 120;
@@ -327,21 +334,44 @@ export function KubernetesTopology({ onClose }: { onClose: () => void }) {
             }
           }
         });
+
+        // 1. EnvFrom References (Whole Secret/CM)
         (c.envFrom || []).forEach((ef, idx) => {
           let targetId = '';
           if (ef.type === 'configMap') {
-             const cm = state.configMaps.find(m => m.name === ef.name);
-             if (cm) targetId = `cm-${cm.id}`;
+            const cm = state.configMaps.find(m => m.name === ef.name);
+            if (cm) targetId = `cm-${cm.id}`;
           } else {
-             const sec = state.secrets.find(s => s.name === ef.name);
-             if (sec) targetId = `sec-${sec.id}`;
+            const sec = state.secrets.find(s => s.name === ef.name);
+            if (sec) targetId = `sec-${sec.id}`;
           }
           if (targetId) {
-            initialEdges.push({ 
-              id: `envfrom:${w.id}:${idx}`, source: id, target: targetId, 
+            initialEdges.push({
+              id: `envfrom:${w.id}:${idx}`, source: id, target: targetId,
               label: 'Env',
-              labelStyle: { fill: '#10b981' }, // High contrast emerald
-              style: { stroke: '#10b981', strokeWidth: 2, strokeDasharray: '4,4', opacity: 0.6 } 
+              labelStyle: { fill: '#10b981' },
+              style: { stroke: '#10b981', strokeWidth: 2, strokeDasharray: '4,4', opacity: 0.6 }
+            });
+          }
+        });
+
+        // 2. Individual Env References (Secret/CM Key Ref)
+        (c.envs || []).forEach((env, idx) => {
+          if (env.type === 'value') return;
+          let targetId = '';
+          if (env.type === 'configMapKeyRef') {
+            const cm = state.configMaps.find(m => m.name === env.refName);
+            if (cm) targetId = `cm-${cm.id}`;
+          } else if (env.type === 'secretKeyRef') {
+            const sec = state.secrets.find(s => s.name === env.refName);
+            if (sec) targetId = `sec-${sec.id}`;
+          }
+          if (targetId) {
+            initialEdges.push({
+              id: `envref:${w.id}:${idx}`, source: id, target: targetId,
+              label: 'Env',
+              labelStyle: { fill: '#10b981' },
+              style: { stroke: '#10b981', strokeWidth: 2, strokeDasharray: '4,4', opacity: 0.6 }
             });
           }
         });
@@ -371,21 +401,31 @@ export function KubernetesTopology({ onClose }: { onClose: () => void }) {
   return (
     <div className="fixed inset-0 z-[200] bg-[#0D1117] animate-in fade-in duration-300 flex flex-col text-white">
       <div className="flex items-center justify-between px-8 py-4 border-b border-gray-800 bg-black/40 backdrop-blur-md">
-         <div className="flex items-center gap-4">
-            <div className="p-2.5 rounded-2xl bg-blue-500/10 border border-blue-500/20">
-               <Zap className="w-5 h-5 text-blue-500" />
+        <div className="flex items-center gap-4">
+          <div className="p-2.5 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+            <Zap className="w-5 h-5 text-blue-500" />
+          </div>
+          <div>
+            <h2 className="text-xl font-black tracking-tight dark:text-white uppercase leading-tight">{t.k8s.topology}</h2>
+            <div className="flex items-center gap-2 text-xs text-gray-400 font-bold uppercase tracking-widest mt-0.5">
+              <MousePointer2 className="w-3 h-3" />
+              <span>{t.k8s.topologySub}</span>
             </div>
-            <div>
-               <h2 className="text-xl font-black tracking-tight dark:text-white uppercase leading-tight">{t.k8s.topology}</h2>
-               <div className="flex items-center gap-2 text-xs text-gray-400 font-bold uppercase tracking-widest mt-0.5">
-                  <MousePointer2 className="w-3 h-3" />
-                  <span>{t.k8s.topologySub}</span>
-               </div>
-            </div>
-         </div>
-         <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 transition-all active:scale-95 group">
-           <X className="w-6 h-6 text-gray-400 group-hover:text-red-500 transition-colors" />
-         </button>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-4">
+           <button 
+             onClick={() => setIsImportOpen(true)}
+             className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-white font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+           >
+              <FileUp className="w-4 h-4" />
+              {t.k8s.importYaml}
+           </button>
+           <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/10 transition-all active:scale-95 group">
+             <X className="w-6 h-6 text-gray-400 group-hover:text-red-500 transition-colors" />
+           </button>
+        </div>
       </div>
 
       <div className="flex-1 relative overflow-hidden bg-[#0D1117]">
@@ -399,37 +439,38 @@ export function KubernetesTopology({ onClose }: { onClose: () => void }) {
           <Background color="#94a3b8" gap={20} size={1} />
           <Controls className="!bg-gray-900 !border-gray-800 !shadow-2xl rounded-xl" />
           <Panel position="top-right" className="bg-gray-900/80 p-4 rounded-2xl border border-gray-800 shadow-2xl backdrop-blur-xl">
-             <div className="flex flex-col gap-3">
-                <p className="text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-800 pb-2 mb-1">Legend</p>
-                <div className="flex items-center gap-3"><div className="w-3 h-3 rounded-full bg-purple-500 ring-4 ring-purple-500/20" /><span className="text-xs font-bold text-gray-400 uppercase">Ingress → Service</span></div>
-                <div className="flex items-center gap-3"><div className="w-3 h-3 rounded-full bg-blue-500 ring-4 ring-blue-500/20" /><span className="text-xs font-bold text-gray-400 uppercase">Service → Workload</span></div>
-                <div className="flex items-center gap-3"><div className="w-3 h-3 rounded-full bg-orange-500 ring-4 ring-orange-500/20" /><span className="text-xs font-bold text-gray-400 uppercase">Workload → Storage</span></div>
-             </div>
+            <div className="flex flex-col gap-3">
+              <p className="text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-800 pb-2 mb-1">Legend</p>
+              <div className="flex items-center gap-3"><div className="w-3 h-3 rounded-full bg-purple-500 ring-4 ring-purple-500/20" /><span className="text-xs font-bold text-gray-400 uppercase">Ingress → Service</span></div>
+              <div className="flex items-center gap-3"><div className="w-3 h-3 rounded-full bg-blue-500 ring-4 ring-blue-500/20" /><span className="text-xs font-bold text-gray-400 uppercase">Service → Workload</span></div>
+              <div className="flex items-center gap-3"><div className="w-3 h-3 rounded-full bg-orange-500 ring-4 ring-orange-500/20" /><span className="text-xs font-bold text-gray-400 uppercase">Workload → Storage</span></div>
+            </div>
           </Panel>
         </ReactFlow>
 
         {modePicker && (
           <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
             <div className="bg-gray-900 p-8 rounded-3xl border border-gray-800 shadow-[0_0_50px_rgba(0,0,0,0.5)] animate-in zoom-in-95 duration-200 max-w-sm w-full mx-4">
-               <div className="flex items-center gap-3 mb-6">
-                 <div className="p-3 rounded-2xl bg-blue-500/10"><Settings2 className="w-6 h-6 text-blue-500" /></div>
-                 <h3 className="text-lg font-black uppercase tracking-tight dark:text-white">Connection Mode</h3>
-               </div>
-               <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 font-medium">How should <span className="text-blue-500 font-black">{modePicker.targetName}</span> be associated with this workload?</p>
-               <div className="grid grid-cols-1 gap-4">
-                  <button onClick={() => handleModeSelect('env')} className="group flex flex-col items-start p-4 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-500 text-blue-600 dark:text-blue-400 hover:text-white rounded-2xl transition-all shadow-sm">
-                    <span className="font-black uppercase text-sm mb-1 tracking-wider">Environment Variables</span>
-                    <span className="text-xs opacity-70 font-bold group-hover:opacity-100 uppercase">Inject as process environment</span>
-                  </button>
-                  <button onClick={() => handleModeSelect('vol')} className="group flex flex-col items-start p-4 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-500 text-orange-600 dark:text-orange-400 hover:text-white rounded-2xl transition-all shadow-sm">
-                    <span className="font-black uppercase text-sm mb-1 tracking-wider">Volume Mount</span>
-                    <span className="text-xs opacity-70 font-bold group-hover:opacity-100 uppercase">Mount as file system path</span>
-                  </button>
-               </div>
-               <button onClick={() => setModePicker(null)} className="w-full mt-6 py-2 text-xs font-black uppercase text-gray-400 hover:text-red-500 transition-colors">Cancel Connection</button>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 rounded-2xl bg-blue-500/10"><Settings2 className="w-6 h-6 text-blue-500" /></div>
+                <h3 className="text-lg font-black uppercase tracking-tight dark:text-white">Connection Mode</h3>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 font-medium">How should <span className="text-blue-500 font-black">{modePicker.targetName}</span> be associated with this workload?</p>
+              <div className="grid grid-cols-1 gap-4">
+                <button onClick={() => handleModeSelect('env')} className="group flex flex-col items-start p-4 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-500 text-blue-600 dark:text-blue-400 hover:text-white rounded-2xl transition-all shadow-sm">
+                  <span className="font-black uppercase text-sm mb-1 tracking-wider">Environment Variables</span>
+                  <span className="text-xs opacity-70 font-bold group-hover:opacity-100 uppercase">Inject as process environment</span>
+                </button>
+                <button onClick={() => handleModeSelect('vol')} className="group flex flex-col items-start p-4 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-500 text-orange-600 dark:text-orange-400 hover:text-white rounded-2xl transition-all shadow-sm">
+                  <span className="font-black uppercase text-sm mb-1 tracking-wider">Volume Mount</span>
+                  <span className="text-xs opacity-70 font-bold group-hover:opacity-100 uppercase">Mount as file system path</span>
+                </button>
+              </div>
+              <button onClick={() => setModePicker(null)} className="w-full mt-6 py-2 text-xs font-black uppercase text-gray-400 hover:text-red-500 transition-colors">Cancel Connection</button>
             </div>
           </div>
         )}
+        {isImportOpen && <ImportYamlModal isOpen={isImportOpen} onClose={() => setIsImportOpen(false)} />}
       </div>
     </div>
   );
