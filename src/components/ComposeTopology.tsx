@@ -72,7 +72,7 @@ const DeletableEdge = ({
         >
           {label && (
             <div 
-              className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-lg border border-white/10"
+              className="px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-wider shadow-lg border border-white/10"
               style={{ 
                 backgroundColor: labelStyle?.fill as string || '#3b82f6',
                 color: '#fff',
@@ -107,15 +107,15 @@ const ServiceNode = ({ data }: any) => (
           <Box className={`w-5 h-5 ${data.active ? 'text-white' : 'text-indigo-400'}`} />
         </div>
         <div className="flex-1 overflow-hidden">
-          <p className="text-[9px] font-black uppercase tracking-widest text-indigo-400/60 mb-0.5">{data.t.compose.serviceNode}</p>
-          <h3 className="font-black text-white text-[15px] break-all leading-tight tracking-tight">{data.label}</h3>
+          <p className="text-xs font-black uppercase tracking-widest text-indigo-400/60 mb-0.5">{data.t.compose.serviceNode}</p>
+          <h3 className="font-black text-white text-base break-all leading-tight tracking-tight">{data.label}</h3>
         </div>
       </div>
       
       {data.image && (
         <div className="mt-3 px-3 py-1.5 bg-black/40 rounded-xl border border-white/5 flex items-center gap-2">
            <Layers className="w-3 h-3 text-gray-600" />
-           <span className="text-[10px] font-mono text-gray-500 break-all leading-tight">{data.image}</span>
+           <span className="text-xs font-mono text-gray-500 break-all leading-tight">{data.image}</span>
         </div>
       )}
 
@@ -131,8 +131,8 @@ const ExternalNode = ({ data }: any) => (
       <ExternalLink className="w-4 h-4" />
     </div>
     <div className="flex-1 overflow-hidden">
-       <p className="text-[9px] font-black text-purple-500/60 uppercase">{data.t.compose.portNode}</p>
-       <h3 className="text-[11px] font-black text-gray-300 break-all leading-tight tracking-wider">{data.label}</h3>
+       <p className="text-xs font-black text-purple-500/60 uppercase">{data.t.compose.portNode}</p>
+       <h3 className="text-xs font-black text-gray-300 break-all leading-tight tracking-wider">{data.label}</h3>
     </div>
     <Handle type="source" position={Position.Bottom} className="!opacity-0" />
   </div>
@@ -144,8 +144,8 @@ const VolumeNode = ({ data }: any) => (
       <Database className="w-4 h-4" />
     </div>
     <div className="flex-1 overflow-hidden">
-       <p className="text-[9px] font-black text-orange-500/60 uppercase">{data.t.compose.storageNode}</p>
-       <h3 className="text-[11px] font-black text-gray-300 break-all leading-tight tracking-wider">{data.label}</h3>
+       <p className="text-xs font-black text-orange-500/60 uppercase">{data.t.compose.storageNode}</p>
+       <h3 className="text-xs font-black text-gray-300 break-all leading-tight tracking-wider">{data.label}</h3>
     </div>
     <Handle type="target" position={Position.Top} className="!w-2.5 !h-2.5 !bg-orange-400 !border-2 !border-gray-900" />
   </div>
@@ -303,7 +303,7 @@ export function ComposeTopology({ onClose }: { onClose: () => void }) {
             </div>
             <div>
                <h2 className="text-xl font-black tracking-tight leading-tight">{t.compose.topologyTitle}</h2>
-               <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
+               <div className="flex items-center gap-2 text-xs text-gray-400 font-bold uppercase tracking-widest mt-0.5">
                   <MousePointer2 className="w-3 h-3" />
                   <span>{t.compose.topologySub}</span>
                </div>
@@ -330,7 +330,7 @@ export function ComposeTopology({ onClose }: { onClose: () => void }) {
           
           <Panel position="top-right" className="bg-gray-900/80 p-4 rounded-2xl border border-gray-800 shadow-2xl backdrop-blur-xl">
              <div className="flex flex-col gap-3">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-800 pb-2 mb-1">{t.compose.topologyLegend}</p>
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-800 pb-2 mb-1">{t.compose.topologyLegend}</p>
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded-full bg-purple-500 ring-4 ring-purple-500/20" />
                   <span className="text-xs font-bold text-gray-400">{t.compose.portNode}</span>
@@ -351,7 +351,7 @@ export function ComposeTopology({ onClose }: { onClose: () => void }) {
           </Panel>
 
           <Panel position="bottom-center" className="bg-blue-600/10 border border-blue-500/20 p-2 px-4 rounded-full backdrop-blur-md mb-4 group hover:bg-blue-600/20 transition-all cursor-default">
-             <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest flex items-center gap-2">
+             <p className="text-xs font-black text-blue-400 uppercase tracking-widest flex items-center gap-2">
                 <Settings2 className="w-3 h-3 animate-spin-slow" />
                 {t.compose.topologyDragHint}
              </p>

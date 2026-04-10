@@ -9,9 +9,13 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@kubernetes/client-node": "^1.4.0",
     "@monaco-editor/react": "^4.7.0",
+    "@types/dockerode": "^4.0.1",
+    "@types/tar-stream": "^3.1.4",
     "@xyflow/react": "^12.10.2",
     "clsx": "^2.1.1",
+    "dockerode": "^4.0.10",
     "jszip": "^3.10.1",
     "lucide-react": "^1.7.0",
     "next": "16.2.2",
@@ -19,6 +23,8 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "tailwind-merge": "^3.5.0",
+    "tar-stream": "^3.1.8",
+    "uuid": "^13.0.0",
     "zustand": "^5.0.12"
   },
   "devDependencies": {

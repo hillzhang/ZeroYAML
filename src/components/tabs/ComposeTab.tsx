@@ -14,7 +14,7 @@ import {
 
 // ── Shared styles ────────────────────────────────────────────────────────────
 const inp = "w-full bg-white dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-xl py-2 px-4 text-sm font-bold focus:outline-none focus:border-blue-500 focus:ring-4 ring-blue-500/5 transition-all text-gray-900 dark:text-gray-100 placeholder:text-gray-400 shadow-sm hover:border-gray-300 dark:hover:border-gray-700 h-[42px]";
-const inpSm = "w-full bg-white dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-xl py-1.5 px-3 text-[13px] font-bold focus:outline-none focus:border-blue-500 focus:ring-4 ring-blue-500/5 transition-all text-gray-900 dark:text-gray-100 placeholder:text-gray-400 shadow-sm hover:border-gray-300 dark:hover:border-gray-700 h-[36px]";
+const inpSm = "w-full bg-white dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-xl py-1.5 px-3 text-sm font-bold focus:outline-none focus:border-blue-500 focus:ring-4 ring-blue-500/5 transition-all text-gray-900 dark:text-gray-100 placeholder:text-gray-400 shadow-sm hover:border-gray-300 dark:hover:border-gray-700 h-[36px]";
 const btnSm = "flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full border transition-all font-bold tracking-normal shadow-sm hover:scale-105 active:scale-95";
 
 // ── Collapsible Section ──────────────────────────────────────────────────────
@@ -39,7 +39,7 @@ function Section({ title, icon, children, defaultOpen = false, theme = "blue", b
           </div>
           <div>
             <p className="text-base font-bold text-gray-800 dark:text-gray-100 tracking-tight transition-colors">{title}</p>
-            {badge && <span className={`mt-1 inline-block px-2.5 py-1 rounded-full text-[10px] font-bold tracking-normal border transition-colors ${th.badge}`}>{badge}</span>}
+            {badge && <span className={`mt-1 inline-block px-2.5 py-1 rounded-full text-xs font-bold tracking-normal border transition-colors ${th.badge}`}>{badge}</span>}
           </div>
         </div>
         <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-500 ${open ? 'rotate-180' : ''}`} />
@@ -68,9 +68,9 @@ function MetadataEditor({ title, items, onUpdate, theme = "blue", icon: Icon, ke
           <div className="p-2 rounded-xl bg-white dark:bg-gray-900 shadow-sm border border-black/5">
             <Icon className="w-3.5 h-3.5" />
           </div>
-          <p className="text-[12px] font-bold tracking-tight">{title}</p>
+          <p className="text-sm font-bold tracking-tight">{title}</p>
         </div>
-        <span className="text-[10px] font-bold opacity-60 tracking-tight transition-colors">{(items || []).length} Items</span>
+        <span className="text-xs font-bold opacity-60 tracking-tight transition-colors">{(items || []).length} Items</span>
       </div>
       <div className="space-y-2.5">
         {(items || []).map((it: any, i: number) => (
@@ -188,7 +188,7 @@ export function ComposeTab() {
                     setComposeServices(next);
                     if (activeSvcId === tabSvc.id) setActiveSvcId(next[0].id);
                   }}
-                  className={`absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-[10px] shadow-lg opacity-0 group-hover/tab:opacity-100 transition-all hover:scale-110 z-20 font-black`}
+                  className={`absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center text-xs shadow-lg opacity-0 group-hover/tab:opacity-100 transition-all hover:scale-110 z-20 font-black`}
                 >
                   ×
                 </button>
@@ -238,17 +238,17 @@ export function ComposeTab() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
             <div className="space-y-6">
               <div className="relative group">
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-colors">
+                <p className="text-sm font-black text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 flex items-center gap-1.5 group-hover:text-blue-500 transition-colors">
                   {t.compose.serviceName}
                   <Info className="w-3.5 h-3.5 cursor-help text-gray-400 hover:text-blue-500" onClick={() => setActiveTooltip(activeTooltip === 'name' ? null : 'name')} />
                 </p>
-                {activeTooltip === 'name' && <div className="absolute left-0 -top-12 bg-gray-900 text-white p-2 text-[10px] rounded-xl shadow-2xl w-[200px] z-20 border border-gray-700">{t.compose.nameTooltip}</div>}
+                {activeTooltip === 'name' && <div className="absolute left-0 -top-12 bg-gray-900 text-white p-2 text-xs rounded-xl shadow-2xl w-[200px] z-20 border border-gray-700">{t.compose.nameTooltip}</div>}
                 <input type="text" value={svc.name} onChange={e => updateSvc("name", e.target.value)} className={inp} placeholder="web-api" />
               </div>
 
               <div className="p-6 bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 rounded-3xl space-y-4">
                 <div className="flex items-center justify-between">
-                  <p className="text-[12px] font-black text-gray-600 dark:text-gray-400 tracking-normal">{t.compose.deploySource}</p>
+                  <p className="text-sm font-black text-gray-600 dark:text-gray-400 tracking-normal">{t.compose.deploySource}</p>
                   <div className="flex bg-white dark:bg-[#0D1117] rounded-full border border-gray-200 dark:border-gray-800 p-1.5 shadow-inner">
                     <button onClick={() => updateSvc('buildMode', 'build')}
                       className={`px-4 py-1.5 text-xs font-black rounded-full transition-all ${svc.buildMode === 'build' ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'text-gray-500 hover:text-gray-900 dark:hover:text-white'}`}>{t.compose.build}</button>
@@ -262,12 +262,12 @@ export function ComposeTab() {
                 ) : (
                   <div className="flex gap-2">
                     <div className="relative flex-1 group/ctx">
-                      <p className="absolute -top-2 left-3 bg-white dark:bg-[#0D1117] px-1 text-[10px] font-black text-blue-600 dark:text-blue-400 z-10">Context</p>
+                      <p className="absolute -top-2 left-3 bg-white dark:bg-[#0D1117] px-1 text-xs font-black text-blue-600 dark:text-blue-400 z-10">Context</p>
                       <input type="text" placeholder="." value={svc.context || '.'} onChange={e => updateSvc("context", e.target.value)}
                         className={`${inp} !bg-white dark:!bg-[#0D1117] flex-1 !border-blue-100 dark:!border-blue-900/30 !rounded-2xl`} />
                     </div>
                     <div className="relative group/df">
-                      <p className="absolute -top-2 left-3 bg-white dark:bg-[#0D1117] px-1 text-[10px] font-black text-emerald-600 dark:text-emerald-400 z-10">Dockerfile</p>
+                      <p className="absolute -top-2 left-3 bg-white dark:bg-[#0D1117] px-1 text-xs font-black text-emerald-600 dark:text-emerald-400 z-10">Dockerfile</p>
                       <input type="text" placeholder="Dockerfile" value={svc.dockerfile || 'Dockerfile'} onChange={e => updateSvc("dockerfile", e.target.value)}
                         className={`${inp} !bg-white dark:!bg-[#0D1117] w-32 !border-emerald-100 dark:!border-emerald-900/30 !rounded-2xl !text-xs font-mono`} />
                     </div>
@@ -278,11 +278,11 @@ export function ComposeTab() {
 
             <div className="space-y-6">
               <div className="relative group">
-                <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 flex items-center gap-1.5 group-hover:text-indigo-500 transition-colors">
+                <p className="text-sm font-black text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 flex items-center gap-1.5 group-hover:text-indigo-500 transition-colors">
                   {t.compose.restartPolicy}
                   <Info className="w-3.5 h-3.5 cursor-help opacity-60 hover:opacity-100" onClick={() => setActiveTooltip(activeTooltip === 'restart' ? null : 'restart')} />
                 </p>
-                {activeTooltip === 'restart' && <div className="absolute right-0 -top-12 bg-gray-900 text-white p-2 text-[10px] rounded-xl shadow-2xl w-[200px] z-20 border border-gray-700">{t.compose.restartTooltip}</div>}
+                {activeTooltip === 'restart' && <div className="absolute right-0 -top-12 bg-gray-900 text-white p-2 text-xs rounded-xl shadow-2xl w-[200px] z-20 border border-gray-700">{t.compose.restartTooltip}</div>}
                 <select value={svc.restart} onChange={e => updateSvc("restart", e.target.value)}
                   className={`${inp} cursor-pointer appearance-none bg-no-repeat bg-[right_1rem_center]`} style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")` }}>
                   <option value="no">no (Always Stop)</option>
@@ -293,7 +293,7 @@ export function ComposeTab() {
               </div>
 
               <div className="p-6 bg-indigo-50/20 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-900/40 rounded-3xl space-y-4">
-                <p className="text-[12px] font-black text-indigo-600 dark:text-indigo-400 tracking-normal">{t.compose.dependsOn}</p>
+                <p className="text-sm font-black text-indigo-600 dark:text-indigo-400 tracking-normal">{t.compose.dependsOn}</p>
                 <div className="flex flex-wrap gap-2">
                   {composeServices.filter(s => s.id !== svc.id).map(ds => {
                     const isChecked = (svc.dependsOn || []).includes(ds.id);
@@ -305,7 +305,7 @@ export function ComposeTab() {
                             : [...(svc.dependsOn || []), ds.id];
                           updateSvc("dependsOn", newDeps);
                         }}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-[10px] font-black transition-all ${isChecked ? 'bg-indigo-500 border-indigo-400 text-white shadow-lg shadow-indigo-500/30' : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-500 hover:border-indigo-300'}`}>
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-black transition-all ${isChecked ? 'bg-indigo-500 border-indigo-400 text-white shadow-lg shadow-indigo-500/30' : 'bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 text-gray-500 hover:border-indigo-300'}`}>
                         {isChecked ? <Check className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
                         {ds.name}
                       </button>
@@ -331,8 +331,8 @@ export function ComposeTab() {
                       <Zap className="w-3.5 h-3.5 text-white" />
                     </div>
                     <div>
-                      <p className="text-[12px] font-black text-gray-800 dark:text-gray-200 tracking-normal">{t.compose.portCenter}</p>
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium italic leading-tight">{t.compose.portTooltip}</p>
+                      <p className="text-sm font-black text-gray-800 dark:text-gray-200 tracking-normal">{t.compose.portCenter}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 font-medium italic leading-tight">{t.compose.portTooltip}</p>
                     </div>
                   </div>
                 </div>
@@ -341,11 +341,11 @@ export function ComposeTab() {
               <div className="space-y-3">
                 {svc.ports.length > 0 && (
                   <div className="grid grid-cols-[1fr_48px_1fr_40px] gap-4 px-4 mb-2 items-center">
-                    <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.compose.hostPort}</p>
+                    <p className="text-sm font-black text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.compose.hostPort}</p>
                     <div className="flex justify-center">
-                      <span className="text-[10px] font-black text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 px-2.5 py-1 rounded-lg border border-indigo-100 dark:border-indigo-800/30 tracking-tight whitespace-nowrap">{t.compose.portTo}</span>
+                      <span className="text-xs font-black text-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 px-2.5 py-1 rounded-lg border border-indigo-100 dark:border-indigo-800/30 tracking-tight whitespace-nowrap">{t.compose.portTo}</span>
                     </div>
-                    <p className="text-[12px] font-black text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.compose.clusterPort}</p>
+                    <p className="text-sm font-black text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.compose.clusterPort}</p>
                     <div /> {/* Spacer for action column */}
                   </div>
                 )}
@@ -356,7 +356,7 @@ export function ComposeTab() {
                       <div className="space-y-1.5 text-center">
                         <input type="text" placeholder="8080" value={p.host} onChange={e => updateArr("ports", i, "host", e.target.value)}
                           className="w-full bg-transparent border-b border-transparent focus:border-indigo-500 text-center font-mono text-sm dark:text-gray-200 focus:outline-none transition-all placeholder:text-gray-300" />
-                        <p className="text-[12px] text-gray-600 dark:text-gray-300 font-black tracking-[0.2em]">{t.compose.entryLabel}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 font-black tracking-[0.2em]">{t.compose.entryLabel}</p>
                       </div>
 
                       <div className="flex justify-center">
@@ -368,7 +368,7 @@ export function ComposeTab() {
                       <div className="space-y-1.5 text-center">
                         <input type="text" placeholder="80" value={p.container} onChange={e => updateArr("ports", i, "container", e.target.value)}
                           className="w-full bg-transparent border-b border-transparent focus:border-emerald-500 text-center font-mono text-sm dark:text-gray-200 focus:outline-none transition-all placeholder:text-gray-300" />
-                        <p className="text-[12px] text-gray-600 dark:text-gray-300 font-black tracking-[0.2em]">{t.compose.insideLabel}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 font-black tracking-[0.2em]">{t.compose.insideLabel}</p>
                       </div>
 
                       <div className="flex justify-center">
@@ -394,8 +394,8 @@ export function ComposeTab() {
                       <Rocket className="w-6 h-6 text-gray-300" />
                     </div>
                     <div className="text-center space-y-1">
-                      <p className="text-[12px] text-gray-600 dark:text-gray-300 font-black tracking-normal">{t.compose.portCenter}</p>
-                      <p className="text-[10px] text-gray-400 font-medium italic">Empty configuration</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 font-black tracking-normal">{t.compose.portCenter}</p>
+                      <p className="text-xs text-gray-400 font-medium italic">Empty configuration</p>
                     </div>
                     <button onClick={() => addArr("ports", { host: "", container: "" })}
                       className="mt-2 flex items-center gap-2 text-xs px-6 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-black tracking-wider shadow-xl shadow-indigo-500/20 transition-all active:scale-95">
@@ -416,8 +416,8 @@ export function ComposeTab() {
                       <Globe className="w-4 h-4 text-white" />
                     </div>
                     <div>
-                      <p className="text-[12px] font-black text-blue-700 dark:text-blue-400 tracking-normal">{t.compose.sharedNetwork}</p>
-                      <p className="text-[11px] text-blue-600 dark:text-blue-400/80 font-medium italic leading-tight">{t.compose.sharedNetworkTooltip}</p>
+                      <p className="text-sm font-black text-blue-700 dark:text-blue-400 tracking-normal">{t.compose.sharedNetwork}</p>
+                      <p className="text-xs text-blue-600 dark:text-blue-400/80 font-medium italic leading-tight">{t.compose.sharedNetworkTooltip}</p>
                     </div>
                   </div>
                   <Checkbox checked={useSharedNetwork} onChange={setUseSharedNetwork} theme="blue" />
@@ -426,7 +426,7 @@ export function ComposeTab() {
                 {useSharedNetwork ? (
                   <div className="animate-in fade-in slide-in-from-top-4 space-y-4">
                     <div className="space-y-1.5 px-1">
-                      <p className="text-[10px] font-black text-blue-600/60 tracking-wider">NETWORK ID</p>
+                      <p className="text-xs font-black text-blue-600/60 tracking-wider">NETWORK ID</p>
                       <input
                         type="text"
                         value={networkName}
@@ -438,7 +438,7 @@ export function ComposeTab() {
                   </div>
                 ) : (
                   <div className="py-4 border border-dashed border-blue-200 dark:border-blue-900/50 rounded-2xl flex items-center justify-center">
-                    <p className="text-[11px] text-blue-600 dark:text-blue-400 font-bold italic tracking-wider">{t.compose.networkDisabled}</p>
+                    <p className="text-xs text-blue-600 dark:text-blue-400 font-bold italic tracking-wider">{t.compose.networkDisabled}</p>
                   </div>
                 )}
               </div>
@@ -450,14 +450,14 @@ export function ComposeTab() {
                     <Activity className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-[12px] font-black text-gray-700 dark:text-gray-300 tracking-normal">{t.compose.stackIntegration}</p>
-                    <p className="text-[11px] text-gray-600 dark:text-gray-400/80 font-medium italic leading-tight">{t.compose.stackDesc}</p>
+                    <p className="text-sm font-black text-gray-700 dark:text-gray-300 tracking-normal">{t.compose.stackIntegration}</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400/80 font-medium italic leading-tight">{t.compose.stackDesc}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-6">
                   <div className="space-y-3">
-                    <p className="text-[10px] font-black text-gray-500 dark:text-gray-400 tracking-wider px-1">{t.compose.networkMode}</p>
+                    <p className="text-xs font-black text-gray-500 dark:text-gray-400 tracking-wider px-1">{t.compose.networkMode}</p>
                     <select value={svc.networkMode || "bridge"} onChange={e => updateSvc("networkMode", e.target.value)}
                       className={`${inp} appearance-none bg-no-repeat bg-[right_1rem_center] !rounded-2xl border-gray-100/50 dark:border-gray-800/50 focus:ring-gray-500/5`} style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")` }}>
                       <option value="bridge">bridge ({useSharedNetwork ? "Join Shared" : "Default Project"})</option>
@@ -467,7 +467,7 @@ export function ComposeTab() {
                   </div>
 
                   <div className="space-y-3">
-                    <p className="text-[10px] font-black text-gray-500 dark:text-gray-400 tracking-wider px-1">{t.compose.pidNamespace}</p>
+                    <p className="text-xs font-black text-gray-500 dark:text-gray-400 tracking-wider px-1">{t.compose.pidNamespace}</p>
                     <select value={svc.pid || ""} onChange={e => updateSvc("pid", e.target.value)}
                       className={`${inp} appearance-none bg-no-repeat bg-[right_1rem_center] !rounded-2xl border-gray-100/50 dark:border-gray-800/50 focus:ring-gray-500/5`} style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")` }}>
                       <option value="">Default (Isolated Namespace)</option>
@@ -494,7 +494,7 @@ export function ComposeTab() {
             <MetadataEditor title={t.compose.labels} items={svc.labels} onUpdate={(val: any) => updateSvc("labels", val)} theme="blue" icon={Tag} />
             <div className="md:col-span-2 p-6 bg-teal-50/20 dark:bg-teal-900/10 border border-teal-100 dark:border-teal-900/30 rounded-3xl space-y-4">
               <div className="flex items-center justify-between">
-                <p className="text-[11px] font-black text-teal-600 dark:text-teal-400 tracking-wider">{t.compose.envFile}</p>
+                <p className="text-xs font-black text-teal-600 dark:text-teal-400 tracking-wider">{t.compose.envFile}</p>
                 <button onClick={() => addArr("envFiles", "")} className={btnSm + " !bg-white dark:!bg-[#0D1117] border-teal-200 text-teal-600"}><Plus className="w-3.5 h-3.5" /> {t.common.add} ENV_FILE</button>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -505,7 +505,7 @@ export function ComposeTab() {
                     <button onClick={() => remArr("envFiles", i)} className="p-2 text-gray-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"><Trash2 className="w-4 h-4" /></button>
                   </div>
                 ))}
-                {svc.envFiles.length === 0 && <p className="text-[11px] text-gray-400 font-medium italic">{t.compose.noEnvFiles}</p>}
+                {svc.envFiles.length === 0 && <p className="text-xs text-gray-400 font-medium italic">{t.compose.noEnvFiles}</p>}
               </div>
             </div>
           </div>
@@ -518,7 +518,7 @@ export function ComposeTab() {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <div className="p-1.5 rounded-xl bg-orange-500 shadow-lg shadow-orange-500/20"><Database className="w-3.5 h-3.5 text-white" /></div>
-                  <p className="text-[12px] font-bold text-gray-700 dark:text-gray-200 leading-none">{t.common.volumes}</p>
+                  <p className="text-sm font-bold text-gray-700 dark:text-gray-200 leading-none">{t.common.volumes}</p>
                 </div>
                 <button onClick={() => addArr("vols", { host: "", container: "" })} className={`${btnSm} !rounded-full border-orange-200 text-orange-600 bg-white dark:bg-[#0D1117] hover:scale-105 transition-all shadow-sm`}>
                   <Plus className="w-3.5 h-3.5" /> {t.common.add}
@@ -529,7 +529,7 @@ export function ComposeTab() {
                 {svc.vols.map((v, i) => (
                   <div key={i} className="grid grid-cols-1 md:grid-cols-[1fr_40px_1fr_40px] gap-x-3 gap-y-4 relative items-end group animate-in fade-in slide-in-from-left-2 duration-300">
                     <div className="space-y-2">
-                      <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 ml-1">{t.compose.hostPath}</p>
+                      <p className="text-xs font-bold text-gray-500 dark:text-gray-400 ml-1">{t.compose.hostPath}</p>
                       <input type="text" placeholder="./data" value={v.host} onChange={e => updateArr("vols", i, "host", e.target.value)}
                         className={`${inpSm} !bg-white dark:!bg-[#0D1117] border-orange-200/50 focus:border-orange-500/50 transition-all shadow-sm`} />
                     </div>
@@ -541,7 +541,7 @@ export function ComposeTab() {
                     </div>
 
                     <div className="space-y-2">
-                      <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 ml-1">{t.compose.containerPath}</p>
+                      <p className="text-xs font-bold text-gray-500 dark:text-gray-400 ml-1">{t.compose.containerPath}</p>
                       <input type="text" placeholder="/app/data" value={v.container} onChange={e => updateArr("vols", i, "container", e.target.value)}
                         className={`${inpSm} !bg-white dark:!bg-[#0D1117] border-orange-200/50 focus:border-orange-500/50 transition-all shadow-sm`} />
                     </div>
@@ -559,7 +559,7 @@ export function ComposeTab() {
                     <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/50 text-gray-400">
                       <HardDrive className="w-6 h-6 opacity-40" />
                     </div>
-                    <p className="text-[11px] text-gray-400 font-bold tracking-tight">{t.compose.noVolumes}</p>
+                    <p className="text-xs text-gray-400 font-bold tracking-tight">{t.compose.noVolumes}</p>
                   </div>
                 )}
               </div>
@@ -572,8 +572,8 @@ export function ComposeTab() {
                     <Terminal className="w-4 h-4 text-white" />
                   </div>
                   <div>
-                    <p className="text-[12px] font-bold text-orange-600 dark:text-orange-400 tracking-normal leading-none">{t.compose.startConfig}</p>
-                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.compose.previewView}</p>
+                    <p className="text-sm font-bold text-orange-600 dark:text-orange-400 tracking-normal leading-none">{t.compose.startConfig}</p>
+                    <p className="text-sm font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1">{t.compose.previewView}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-6">
@@ -584,8 +584,8 @@ export function ComposeTab() {
               <div className="grid grid-cols-1 md:grid-cols-[1fr_42px_1fr] gap-x-2 gap-y-6 relative items-end">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between px-1">
-                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-1 ml-1 flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-orange-500" /> Entrypoint</p>
-                    <span className="text-[10px] font-bold bg-orange-100 dark:bg-orange-900/60 text-orange-600 px-2.5 py-0.5 rounded-full border border-orange-200/50">{t.compose.fixed}</span>
+                    <p className="text-sm font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-1 ml-1 flex items-center gap-1.5"><Shield className="w-3.5 h-3.5 text-orange-500" /> Entrypoint</p>
+                    <span className="text-xs font-bold bg-orange-100 dark:bg-orange-900/60 text-orange-600 px-2.5 py-0.5 rounded-full border border-orange-200/50">{t.compose.fixed}</span>
                   </div>
                   <input type="text" placeholder="[bin/sh]" value={svc.entrypoint} onChange={e => updateSvc("entrypoint", e.target.value)}
                     className={`${inp} !bg-white dark:!bg-[#0D1117] border-orange-200 dark:border-orange-800 focus:ring-orange-500/10 shadow-sm`} />
@@ -599,8 +599,8 @@ export function ComposeTab() {
 
                 <div className="space-y-2">
                   <div className="flex items-center justify-between px-1">
-                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-1 ml-1 flex items-center gap-1.5"><Activity className="w-3.5 h-3.5 text-emerald-500" /> Command</p>
-                    <span className="text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 px-2.5 py-0.5 rounded-full border border-emerald-200/50">{t.compose.args}</span>
+                    <p className="text-sm font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-1 ml-1 flex items-center gap-1.5"><Activity className="w-3.5 h-3.5 text-emerald-500" /> Command</p>
+                    <span className="text-xs font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-600 px-2.5 py-0.5 rounded-full border border-emerald-200/50">{t.compose.args}</span>
                   </div>
                   <input type="text" placeholder="[start.sh]" value={svc.command} onChange={e => updateSvc("command", e.target.value)}
                     className={`${inp} !bg-white dark:!bg-[#0D1117] border-emerald-200 dark:border-emerald-800 focus:ring-emerald-500/10 shadow-sm`} />
@@ -608,7 +608,7 @@ export function ComposeTab() {
 
                 <div className="col-span-1 md:col-span-3 pt-2">
                   <div className="px-5 py-3 bg-white/60 dark:bg-black/40 rounded-2xl border border-orange-100 dark:border-orange-900/30 shadow-inner">
-                    <p className="text-[11px] font-mono text-gray-500 dark:text-gray-400 tracking-tight leading-relaxed">
+                    <p className="text-xs font-mono text-gray-500 dark:text-gray-400 tracking-tight leading-relaxed">
                       <span className="text-orange-500 font-bold opacity-60 mr-2">{t.compose.previewView}:</span>
                       {svc.useShellWrapper ? 'sh -ec "' : ''}<span className="text-gray-800 dark:text-gray-200">{svc.entrypoint || '<entrypoint>'}</span> <span className="text-gray-600 dark:text-gray-400">{svc.command || '<command>'}</span>{svc.useShellWrapper ? '"' : ''}
                     </p>
@@ -619,13 +619,13 @@ export function ComposeTab() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end mt-4">
               <div className="space-y-2">
-                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-1.5 ml-1 flex items-center gap-1.5">
+                <p className="text-sm font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-1.5 ml-1 flex items-center gap-1.5">
                   <UserCheck className="w-3.5 h-3.5 text-blue-500" /> {t.dockerfile.user}
                 </p>
                 <input type="text" placeholder="node / 1001" value={svc.user} onChange={e => updateSvc("user", e.target.value)} className={inp} />
               </div>
               <div className="space-y-2">
-                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-1.5 ml-1 flex items-center gap-1.5">
+                <p className="text-sm font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-1.5 ml-1 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-orange-500" /> {t.compose.privileged}
                 </p>
                 <div className="h-[42px] bg-white dark:bg-[#161B22] border border-gray-200 dark:border-gray-800 rounded-xl flex items-center justify-center shadow-sm hover:border-orange-500/50 transition-all cursor-pointer">
@@ -633,7 +633,7 @@ export function ComposeTab() {
                 </div>
               </div>
               <div className="space-y-2">
-                <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-1.5 ml-1 flex items-center gap-1.5">
+                <p className="text-sm font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-1.5 ml-1 flex items-center gap-1.5">
                   <HardDrive className="w-3.5 h-3.5 text-teal-500" /> {t.compose.shmSize}
                 </p>
                 <div className="flex gap-1.5 items-stretch h-[42px]">
@@ -654,7 +654,7 @@ export function ComposeTab() {
                         const num = String(svc.shmSize || "").replace(/[a-zA-Z]/g, '') || "2";
                         updateSvc("shmSize", num + e.target.value);
                       }}
-                      className="w-full bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 rounded-2xl font-bold text-[11px] h-full pl-2.5 pr-6 appearance-none cursor-pointer hover:border-blue-400 transition-all focus:outline-none text-gray-700 dark:text-gray-300"
+                      className="w-full bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 rounded-2xl font-bold text-xs h-full pl-2.5 pr-6 appearance-none cursor-pointer hover:border-blue-400 transition-all focus:outline-none text-gray-700 dark:text-gray-300"
                     >
                       <option value="mb">mb</option>
                       <option value="gb">gb</option>
@@ -674,7 +674,7 @@ export function ComposeTab() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-2xl bg-emerald-500 shadow-xl shadow-emerald-500/20"><Activity className="w-4 h-4 text-white" /></div>
-                  <p className="text-[12px] font-bold text-emerald-700 dark:text-emerald-400 tracking-normal">{t.compose.healthcheck}</p>
+                  <p className="text-sm font-bold text-emerald-700 dark:text-emerald-400 tracking-normal">{t.compose.healthcheck}</p>
                 </div>
                 <div className="flex items-center gap-3 px-3 py-1.5 bg-white/80 dark:bg-black/30 rounded-full border border-emerald-100 dark:border-emerald-990 shadow-sm">
                   <Checkbox checked={!!svc.healthcheck?.enabled} onChange={(val) => updateSvc("healthcheck", { ...(svc.healthcheck || {}), enabled: val })} label="Enabled" theme="emerald" />
@@ -684,7 +684,7 @@ export function ComposeTab() {
               {svc.healthcheck?.enabled ? (
                 <div className="space-y-5 animate-in fade-in slide-in-from-top-2">
                   <div>
-                    <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 mb-2 tracking-normal font-mono">{t.compose.cmdShell}</p>
+                    <p className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-2 tracking-normal font-mono">{t.compose.cmdShell}</p>
                     <input type="text" placeholder="curl -f http://localhost:8080/ || exit 1" value={svc.healthcheck.test} onChange={e => updateSvc("healthcheck", { ...svc.healthcheck, test: e.target.value })}
                       className={`${inp} !bg-white dark:!bg-[#0D1117] !py-3 shadow-md border-emerald-200 focus:ring-emerald-500/10 font-mono`} />
                   </div>
@@ -696,7 +696,7 @@ export function ComposeTab() {
                       { label: 'Retries', key: 'retries', placeholder: '3' },
                     ].map(f => (
                       <div key={f.key} className="space-y-1.5">
-                        <p className="text-[11px] font-bold text-gray-500 dark:text-gray-300 tracking-normal">{f.label}</p>
+                        <p className="text-xs font-bold text-gray-500 dark:text-gray-300 tracking-normal">{f.label}</p>
                         <input type="text" placeholder={f.placeholder} value={svc.healthcheck ? (svc.healthcheck as any)[f.key] : ''} onChange={e => updateSvc("healthcheck", { ...svc.healthcheck, [f.key]: e.target.value })}
                           className={`${inpSm} !py-2 !rounded-xl !bg-white dark:!bg-[#0D1117] text-center font-bold`} />
                       </div>
@@ -706,7 +706,7 @@ export function ComposeTab() {
               ) : (
                 <div className="py-12 border-2 border-dashed border-emerald-500/10 rounded-[2rem] flex flex-col items-center justify-center opacity-40 group hover:opacity-100 transition-opacity cursor-pointer" onClick={() => updateSvc("healthcheck", { ...(svc.healthcheck || {}), enabled: true })}>
                   <Activity className="w-8 h-8 text-emerald-500 mb-3" />
-                  <p className="text-[10px] font-bold text-emerald-600 tracking-normal italic">{t.compose.disabledClickToEnable}</p>
+                  <p className="text-xs font-bold text-emerald-600 tracking-normal italic">{t.compose.disabledClickToEnable}</p>
                 </div>
               )}
             </div>
@@ -715,12 +715,12 @@ export function ComposeTab() {
               <div className="p-6 bg-gray-50/50 dark:bg-[#161B22]/50 border border-gray-200 dark:border-gray-800 rounded-3xl space-y-6">
                 <div className="flex items-center gap-2">
                   <Settings className="w-4 h-4 text-blue-500" />
-                  <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal transition-colors">{t.compose.limits} (Limits)</p>
+                  <p className="text-sm font-bold text-gray-600 dark:text-gray-300 tracking-normal transition-colors">{t.compose.limits} (Limits)</p>
                 </div>
                 <div className="grid grid-cols-2 gap-6">
                   {/* CPU Limit */}
                   <div className="space-y-1.5">
-                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1 transition-colors">{t.compose.cpuLimit}</p>
+                    <p className="text-sm font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1 transition-colors">{t.compose.cpuLimit}</p>
                     <div className="flex gap-1.5 items-stretch h-[42px]">
                       <input
                         type="text"
@@ -739,7 +739,7 @@ export function ComposeTab() {
                             const num = String(svc.cpus || "").replace(/[a-zA-Z]/g, '') || "0.25";
                             updateSvc("cpus", num + e.target.value);
                           }}
-                          className="w-full bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 rounded-2xl font-bold text-[11px] h-full pl-2.5 pr-6 appearance-none cursor-pointer hover:border-blue-400 transition-all focus:outline-none text-gray-700 dark:text-gray-300"
+                          className="w-full bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 rounded-2xl font-bold text-xs h-full pl-2.5 pr-6 appearance-none cursor-pointer hover:border-blue-400 transition-all focus:outline-none text-gray-700 dark:text-gray-300"
                         >
                           <option value="">Core</option>
                           <option value="m">m</option>
@@ -751,7 +751,7 @@ export function ComposeTab() {
 
                   {/* Memory Limit */}
                   <div className="space-y-1.5">
-                    <p className="text-[12px] font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1 transition-colors">{t.compose.memoryLimit}</p>
+                    <p className="text-sm font-bold text-gray-600 dark:text-gray-300 tracking-normal mb-2.5 ml-1 transition-colors">{t.compose.memoryLimit}</p>
                     <div className="flex gap-1.5 items-stretch h-[42px]">
                       <input
                         type="text"
@@ -770,7 +770,7 @@ export function ComposeTab() {
                             const num = String(svc.memLimit || "").replace(/[a-zA-Z]/g, '') || "1";
                             updateSvc("memLimit", num + e.target.value);
                           }}
-                          className="w-full bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 rounded-2xl font-bold text-[11px] h-full pl-2.5 pr-6 appearance-none cursor-pointer hover:border-blue-400 transition-all focus:outline-none text-gray-700 dark:text-gray-300"
+                          className="w-full bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 rounded-2xl font-bold text-xs h-full pl-2.5 pr-6 appearance-none cursor-pointer hover:border-blue-400 transition-all focus:outline-none text-gray-700 dark:text-gray-300"
                         >
                           <option value="M">M</option>
                           <option value="G">G</option>
@@ -784,7 +784,7 @@ export function ComposeTab() {
                 </div>
                 <label className="flex items-center gap-3 p-3 bg-white dark:bg-[#0D1117] border border-gray-200 dark:border-gray-800 rounded-2xl cursor-pointer hover:border-gray-400 transition-all shadow-sm">
                   <input type="checkbox" checked={svc.useGpu} onChange={e => updateSvc("useGpu", e.target.checked)} className="w-4 h-4 rounded text-blue-600" />
-                  <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300 tracking-normal flex items-center gap-2">
+                  <span className="text-xs font-bold text-gray-700 dark:text-gray-300 tracking-normal flex items-center gap-2">
                     {t.compose.gpuRequest}
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   </span>
@@ -792,7 +792,7 @@ export function ComposeTab() {
               </div>
 
               <div className="relative group">
-                <p className="text-[11px] font-bold text-orange-400 tracking-normal mb-3 flex items-center gap-2">
+                <p className="text-xs font-bold text-orange-400 tracking-normal mb-3 flex items-center gap-2">
                   <MousePointer2 className="w-3.5 h-3.5" /> {t.compose.customYaml}
                 </p>
                 <textarea value={svc.customYaml} onChange={e => updateSvc("customYaml", e.target.value)} rows={3} placeholder="sysctls:&#10;  - net.core.somaxconn=1024"

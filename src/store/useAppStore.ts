@@ -1,11 +1,16 @@
 import { create } from 'zustand';
 
 interface AppState {
-  activeTab: 'dockerfile' | 'compose' | 'kubernetes' | 'templates';
+  activeTab: 'dockerfile' | 'compose' | 'kubernetes' | 'templates' | 'containers';
   activeTooltip: string | null;
   activeMenu: string;
   isFullStack: boolean;
   language: 'zh' | 'en';
+  dockerSocket: string;
+  kubeconfig: string;
+  containerRuntime: 'docker' | 'kubernetes';
+  containerNamespace: string;
+  isDashboardEnabled: boolean;
 
   // Manual Overrides Management
   overrides: {
@@ -14,7 +19,7 @@ interface AppState {
     kubernetes: { isEnabled: boolean; isEditing: boolean; code: string };
   };
 
-  setActiveTab: (tab: 'dockerfile' | 'compose' | 'kubernetes') => void;
+  setActiveTab: (tab: 'dockerfile' | 'compose' | 'kubernetes' | 'templates' | 'containers') => void;
   setActiveTooltip: (tooltipId: string | null) => void;
   setActiveMenu: (menuId: string) => void;
   setIsFullStack: (is: boolean) => void;
@@ -25,6 +30,11 @@ interface AppState {
   setOverrideCode: (tab: 'dockerfile' | 'compose' | 'kubernetes', code: string) => void;
   resetOverride: (tab: 'dockerfile' | 'compose' | 'kubernetes') => void;
   setLanguage: (lang: 'zh' | 'en') => void;
+  setDockerSocket: (path: string) => void;
+  setKubeconfig: (config: string) => void;
+  setContainerRuntime: (runtime: 'docker' | 'kubernetes') => void;
+  setContainerNamespace: (ns: string) => void;
+  setIsDashboardEnabled: (enabled: boolean) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
@@ -33,6 +43,11 @@ export const useAppStore = create<AppState>((set) => ({
   activeMenu: 'getting-started',
   isFullStack: false,
   language: 'zh',
+  dockerSocket: '',
+  kubeconfig: '',
+  containerRuntime: 'docker',
+  containerNamespace: 'default',
+  isDashboardEnabled: false,
   
   overrides: {
     dockerfile: { isEnabled: false, isEditing: false, code: '' },
@@ -40,7 +55,7 @@ export const useAppStore = create<AppState>((set) => ({
     kubernetes: { isEnabled: false, isEditing: false, code: '' },
   },
 
-  setActiveTab: (tab: 'dockerfile' | 'compose' | 'kubernetes') => set({ activeTab: tab }),
+  setActiveTab: (tab) => set({ activeTab: tab }),
   setActiveTooltip: (tooltipId: string | null) => set({ activeTooltip: tooltipId }),
   setActiveMenu: (menuId: string) => set({ activeMenu: menuId }),
   setIsFullStack: (is: boolean) => set({ isFullStack: is }),
@@ -58,4 +73,9 @@ export const useAppStore = create<AppState>((set) => ({
     overrides: { ...s.overrides, [tab]: { isEnabled: false, isEditing: false, code: '' } }
   })),
   setLanguage: (lang: 'zh' | 'en') => set({ language: lang }),
+  setDockerSocket: (path: string) => set({ dockerSocket: path }),
+  setKubeconfig: (config: string) => set({ kubeconfig: config }),
+  setContainerRuntime: (runtime) => set({ containerRuntime: runtime }),
+  setContainerNamespace: (ns) => set({ containerNamespace: ns }),
+  setIsDashboardEnabled: (enabled: boolean) => set({ isDashboardEnabled: enabled }),
 }));

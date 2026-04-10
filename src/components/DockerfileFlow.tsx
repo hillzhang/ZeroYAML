@@ -38,7 +38,7 @@ const BaseNode = ({ data }: any) => (
         <Box className="w-6 h-6" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-black text-blue-500/60 tracking-widest text-left">Base Image</p>
+        <p className="text-xs font-black text-blue-500/60 tracking-widest text-left">Base Image</p>
         <h3 className="text-base font-black text-white break-all leading-tight text-left tracking-tight">{data.image || 'scratch'}</h3>
       </div>
     </div>
@@ -53,8 +53,8 @@ const StepNode = ({ data }: any) => (
         <Terminal className="w-6 h-6" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-black text-indigo-500/60 tracking-widest text-left mb-2">Build Step / Layer</p>
-        <div className="p-3.5 bg-black/40 rounded-2xl border border-white/5 font-mono text-[12px] text-gray-200 leading-relaxed break-words whitespace-pre-wrap text-left">
+        <p className="text-xs font-black text-indigo-500/60 tracking-widest text-left mb-2">Build Step / Layer</p>
+        <div className="p-3.5 bg-black/40 rounded-2xl border border-white/5 font-mono text-sm text-gray-200 leading-relaxed break-words whitespace-pre-wrap text-left">
           {data.command || 'RUN ...'}
         </div>
       </div>
@@ -72,17 +72,17 @@ const ResourceNode = ({ data }: any) => (
       </div>
       <div className="flex-1 min-w-0 text-left">
         <div className="flex items-center gap-2 mb-2">
-           <span className="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-400 text-[10px] font-black tracking-widest border border-emerald-500/20">
+           <span className="px-2.5 py-0.5 rounded-lg bg-emerald-500/20 text-emerald-400 text-xs font-black tracking-widest border border-emerald-500/20">
               {data.type || 'COPY'}
            </span>
-           <p className="text-[10px] font-black text-emerald-500/40 tracking-widest leading-none">Instruction</p>
+           <p className="text-xs font-black text-emerald-500/40 tracking-widest leading-none">Instruction</p>
         </div>
         <div className="grid grid-cols-[1fr_24px_1fr] items-center gap-2 p-3 bg-emerald-500/[0.02] rounded-2xl border border-emerald-500/10">
-          <span className="text-[11px] font-mono font-bold text-emerald-500 break-all text-right">{data.src}</span>
+          <span className="text-xs font-mono font-bold text-emerald-500 break-all text-right">{data.src}</span>
           <div className="flex justify-center">
              <Rocket className="w-3.5 h-3.5 text-gray-600 rotate-90 shrink-0" />
           </div>
-          <span className="text-[11px] font-mono font-bold text-blue-400 break-all text-left">{data.dest}</span>
+          <span className="text-xs font-mono font-bold text-blue-400 break-all text-left">{data.dest}</span>
         </div>
       </div>
     </div>
@@ -98,8 +98,8 @@ const MetadataNode = ({ data }: any) => (
         <Globe className="w-4 h-4" />
       </div>
       <div className="flex-1 overflow-hidden text-left">
-        <p className="text-[9px] font-black text-purple-500/60 tracking-widest text-left">Expose / Env</p>
-        <h3 className="text-[11px] font-black text-gray-300 truncate tracking-wider text-left">{data.label}</h3>
+        <p className="text-xs font-black text-purple-500/60 tracking-widest text-left">Expose / Env</p>
+        <h3 className="text-xs font-black text-gray-300 truncate tracking-wider text-left">{data.label}</h3>
       </div>
     </div>
     <Handle type="target" position={Position.Top} className="!w-2 !h-2 !bg-purple-400 !border-gray-900" />
@@ -114,8 +114,8 @@ const ArtifactNode = ({ data }: any) => (
         <Zap className="w-8 h-8 fill-white" />
       </div>
       <div className="flex-1 min-w-0">
-        <p className="text-[10px] font-black text-indigo-100 tracking-widest text-left mb-2 opacity-80 leading-none">Output Entrypoint</p>
-        <div className="p-4 bg-black/20 rounded-2xl border border-white/10 font-mono text-[13px] font-black text-white leading-relaxed break-words whitespace-pre-wrap text-left shadow-inner">
+        <p className="text-xs font-black text-indigo-100 tracking-widest text-left mb-2 opacity-80 leading-none">Output Entrypoint</p>
+        <div className="p-4 bg-black/20 rounded-2xl border border-white/10 font-mono text-sm font-black text-white leading-relaxed break-words whitespace-pre-wrap text-left shadow-inner">
           {data.command || 'CMD ...'}
         </div>
       </div>
@@ -280,7 +280,7 @@ export const DockerfileFlow = ({ onClose }: { onClose: () => void }) => {
             </div>
             <div>
                <h3 className="text-xl font-black text-white tracking-tighter">{t.preview.buildFlowTitle}</h3>
-               <div className="flex items-center gap-2 text-[10px] text-gray-500 font-bold mt-0.5">
+               <div className="flex items-center gap-2 text-xs text-gray-500 font-bold mt-0.5">
                    <ArrowDown className="w-3 h-3" />
                    <span>IMAGE LAYER PIPELINE</span>
                </div>
@@ -312,22 +312,22 @@ export const DockerfileFlow = ({ onClose }: { onClose: () => void }) => {
           
           <Panel position="bottom-right" className="bg-gray-900/80 p-4 rounded-2xl border border-gray-800 shadow-2xl backdrop-blur-xl mb-12 mr-8">
              <div className="flex flex-col gap-3">
-                <p className="text-[10px] font-black text-gray-400 tracking-widest border-b border-gray-800 pb-2 mb-1">Build Layers</p>
+                <p className="text-xs font-black text-gray-400 tracking-widest border-b border-gray-800 pb-2 mb-1">Build Layers</p>
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                  <span className="text-[10px] font-black text-gray-400">Base Image</span>
+                  <span className="text-xs font-black text-gray-400">Base Image</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded bg-indigo-500" />
-                  <span className="text-[10px] font-black text-gray-400">Execution (Run)</span>
+                  <span className="text-xs font-black text-gray-400">Execution (Run)</span>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="w-3 h-3 rounded bg-emerald-500" />
-                  <span className="text-[10px] font-black text-gray-400">Injection (Copy)</span>
+                  <span className="text-xs font-black text-gray-400">Injection (Copy)</span>
                 </div>
                 <div className="flex items-center gap-3 text-left">
                   <div className="w-3 h-3 rounded bg-purple-500" />
-                  <span className="text-[10px] font-black text-gray-400">Config (Expose)</span>
+                  <span className="text-xs font-black text-gray-400">Config (Expose)</span>
                 </div>
              </div>
           </Panel>

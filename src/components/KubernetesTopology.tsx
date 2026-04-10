@@ -56,7 +56,7 @@ const K8sNode = ({ data, selected }: { data: any; selected?: boolean }) => {
           <Icon className="w-5 h-5" />
         </div>
         <div className="flex-1 overflow-hidden">
-          <p className="text-[10px] font-black uppercase tracking-widest opacity-60 leading-none mb-1">{data.type}</p>
+          <p className="text-xs font-black uppercase tracking-widest opacity-60 leading-none mb-1">{data.type}</p>
           <p className="text-sm font-black tracking-tight truncate">{data.name}</p>
         </div>
       </div>
@@ -104,7 +104,7 @@ const DeletableEdge = ({
         >
           {label && (
             <div 
-              className="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider shadow-lg border border-white/10"
+              className="px-2 py-0.5 rounded-full text-xs font-black uppercase tracking-wider shadow-lg border border-white/10"
               style={{ 
                 backgroundColor: labelStyle?.fill as string || '#3b82f6',
                 color: '#fff',
@@ -377,7 +377,7 @@ export function KubernetesTopology({ onClose }: { onClose: () => void }) {
             </div>
             <div>
                <h2 className="text-xl font-black tracking-tight dark:text-white uppercase leading-tight">{t.k8s.topology}</h2>
-               <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-0.5">
+               <div className="flex items-center gap-2 text-xs text-gray-400 font-bold uppercase tracking-widest mt-0.5">
                   <MousePointer2 className="w-3 h-3" />
                   <span>{t.k8s.topologySub}</span>
                </div>
@@ -400,7 +400,7 @@ export function KubernetesTopology({ onClose }: { onClose: () => void }) {
           <Controls className="!bg-gray-900 !border-gray-800 !shadow-2xl rounded-xl" />
           <Panel position="top-right" className="bg-gray-900/80 p-4 rounded-2xl border border-gray-800 shadow-2xl backdrop-blur-xl">
              <div className="flex flex-col gap-3">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-800 pb-2 mb-1">Legend</p>
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest border-b border-gray-800 pb-2 mb-1">Legend</p>
                 <div className="flex items-center gap-3"><div className="w-3 h-3 rounded-full bg-purple-500 ring-4 ring-purple-500/20" /><span className="text-xs font-bold text-gray-400 uppercase">Ingress → Service</span></div>
                 <div className="flex items-center gap-3"><div className="w-3 h-3 rounded-full bg-blue-500 ring-4 ring-blue-500/20" /><span className="text-xs font-bold text-gray-400 uppercase">Service → Workload</span></div>
                 <div className="flex items-center gap-3"><div className="w-3 h-3 rounded-full bg-orange-500 ring-4 ring-orange-500/20" /><span className="text-xs font-bold text-gray-400 uppercase">Workload → Storage</span></div>
@@ -419,14 +419,14 @@ export function KubernetesTopology({ onClose }: { onClose: () => void }) {
                <div className="grid grid-cols-1 gap-4">
                   <button onClick={() => handleModeSelect('env')} className="group flex flex-col items-start p-4 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-500 text-blue-600 dark:text-blue-400 hover:text-white rounded-2xl transition-all shadow-sm">
                     <span className="font-black uppercase text-sm mb-1 tracking-wider">Environment Variables</span>
-                    <span className="text-[10px] opacity-70 font-bold group-hover:opacity-100 uppercase">Inject as process environment</span>
+                    <span className="text-xs opacity-70 font-bold group-hover:opacity-100 uppercase">Inject as process environment</span>
                   </button>
                   <button onClick={() => handleModeSelect('vol')} className="group flex flex-col items-start p-4 bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-500 text-orange-600 dark:text-orange-400 hover:text-white rounded-2xl transition-all shadow-sm">
                     <span className="font-black uppercase text-sm mb-1 tracking-wider">Volume Mount</span>
-                    <span className="text-[10px] opacity-70 font-bold group-hover:opacity-100 uppercase">Mount as file system path</span>
+                    <span className="text-xs opacity-70 font-bold group-hover:opacity-100 uppercase">Mount as file system path</span>
                   </button>
                </div>
-               <button onClick={() => setModePicker(null)} className="w-full mt-6 py-2 text-[10px] font-black uppercase text-gray-400 hover:text-red-500 transition-colors">Cancel Connection</button>
+               <button onClick={() => setModePicker(null)} className="w-full mt-6 py-2 text-xs font-black uppercase text-gray-400 hover:text-red-500 transition-colors">Cancel Connection</button>
             </div>
           </div>
         )}
