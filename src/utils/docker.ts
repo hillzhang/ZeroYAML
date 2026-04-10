@@ -27,9 +27,9 @@ export function getDockerInstance(customPath?: string): Docker {
     const home = os.homedir();
     const commonPaths = [
       '/var/run/docker.sock', // 标准路径 / Docker Desktop / OrbStack Symlink
-      path.join(home, '.orbstack/run/docker.sock'), // OrbStack Direct
-      path.join(home, '.docker/run/docker.sock'),   // Docker contextual paths
-      path.join(home, '.colima/default/docker.sock'), // Colima
+      path.join(/* turbopackIgnore: true */ home, '.orbstack/run/docker.sock'), // OrbStack Direct
+      path.join(/* turbopackIgnore: true */ home, '.docker/run/docker.sock'),   // Docker contextual paths
+      path.join(/* turbopackIgnore: true */ home, '.colima/default/docker.sock'), // Colima
     ];
 
     for (const socketPath of commonPaths) {

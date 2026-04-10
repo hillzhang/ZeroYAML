@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  serverExternalPackages: ['dockerode'],
   // Disable tracing to avoid warnings about local filesystem operations
   outputFileTracing: false,
 };
